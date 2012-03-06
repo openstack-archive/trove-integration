@@ -1,0 +1,9 @@
+PUT /v1.0/1234/mgmt/configs/myconf HTTP/1.1
+User-Agent: python-example-client
+Host: ord.databases.api.rackspacecloud.com
+X-Auth-Token: 87c6033c-9ff6-405f-943e-2deb73f278b7
+Accept: application/xml
+Content-Type: application/xml
+
+<?xml version="1.0" ?>
+<config description="updated config value set with xml" key="xmlconfig" value="XML"/>

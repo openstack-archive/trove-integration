@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: 157
+Date: Wed, 25 Jan 2012 21:58:29 GMT
+
+<config description="updated some config value used in the system" key="myconf" value="testval_update" xmlns="http://docs.openstack.org/database/api/v1.0"/>

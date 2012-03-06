@@ -1,0 +1,43 @@
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 477
+Date: Wed, 23 Nov 2011 18:14:30 GMT
+
+<?xml version="1.0" encoding="UTF-8"?>
+<auth  xmlns="http://docs.rackspacecloud.com/auth/api/v1.1">
+  <token id="asdasdasd-adsasdads-asdasdasd-adsadsasd"
+    expires="2010-11-01T03:32:15-05:00" />
+  <serviceCatalog>
+    <service name="cloudFiles">
+      <endpoint
+        region="DFW"
+        v1Default="true"
+        publicURL="https://storage.clouddrive.com/v1/RackCloudFS_demo"
+        internalURL="https://storage-snet.clouddrive.com/v1/RackCloudFS_demo" />
+      <endpoint
+        region="ORD"
+        publicURL="https://otherstorage.clouddrive.com/v1/RackCloudFS_demo"
+        internalURL="https://otherstorage-snet.clouddrive.com/v1/RackCloudFS_demo" />
+    </service>
+    <service name="cloudFilesCDN">
+      <endpoint
+        region="DFW"
+        v1Default="true"
+        publicURL="https://cdn.clouddrive.com/v1/RackCloudFS_demo" />
+      <endpoint
+        region="ORD"
+        publicURL="https://othercdn.clouddrive.com/v1/RackCloudFS_demo" />
+    </service>
+    <service name="cloudServers">
+      <endpoint
+        v1Default="true"
+        publicURL="https://servers.api.rackspacecloud.com/v1.0/322781" />
+    </service>
+    <service name="cloudServersOpenStack">
+      <endpoint
+        region="DFW"
+        v1Default="false"
+        publicURL="https://dfw.servers.api.rackspacecloud.com/v2/322781" />
+    </service>
+  </serviceCatalog>
+</auth>

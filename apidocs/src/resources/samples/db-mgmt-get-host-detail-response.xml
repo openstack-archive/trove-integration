@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: 297
+Date: Wed, 25 Jan 2012 21:58:20 GMT
+
+<host name="host" percentUsed="17" totalRAM="6144" usedRAM="1024" xmlns="http://docs.openstack.org/database/api/v1.0">
+	<instances>
+		<instance id="1" name="json_rack_instance" status="active"/>
+		<instance id="2" name="xml_rack_instance" status="active"/>
+	</instances>
+</host>

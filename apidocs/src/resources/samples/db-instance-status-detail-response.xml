@@ -1,0 +1,24 @@
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: 1143
+Date: Wed, 25 Jan 2012 21:58:18 GMT
+
+<instance created="2012-01-25T21:53:18Z" hostname="e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com" id="692d8418-7a8f-47f1-8060-59846c6e024f" name="xml_rack_instance" rootEnabled="True" status="ACTIVE" updated="2012-01-25T21:55:30Z" xmlns="http://docs.openstack.org/database/api/v1.0">
+	<links>
+		<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/692d8418-7a8f-47f1-8060-59846c6e024f" rel="self"/>
+		<link href="https://ord.databases.api.rackspacecloud.com/instances/692d8418-7a8f-47f1-8060-59846c6e024f" rel="bookmark"/>
+	</links>
+	<volume size="2"/>
+	<databases>
+		<database character_set="utf8" collate="utf8_general_ci" name="anotherexampledb"/>
+		<database character_set="utf8" collate="utf8_general_ci" name="nextround"/>
+		<database character_set="utf8" collate="utf8_general_ci" name="sampledb"/>
+		<database character_set="utf8" collate="utf8_general_ci" name="testingdb"/>
+	</databases>
+	<flavor id="1">
+		<links>
+			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1" rel="self"/>
+			<link href="https://ord.databases.api.rackspacecloud.com/flavors/1" rel="bookmark"/>
+		</links>
+	</flavor>
+</instance>
