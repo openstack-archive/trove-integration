@@ -1,0 +1,5 @@
+conf.json
+Vagrantfile
+.my.cnf
+.vagrant
+.bash_history

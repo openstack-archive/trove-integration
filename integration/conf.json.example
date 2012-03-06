@@ -1,0 +1,11 @@
+{
+    "devstack":null,
+    "glance":null,
+    "horizon":null,
+    "keystone":null,
+    "nova":null,
+    "python_keystoneclient":null,
+    "python_novaclient":null,
+    "reddwarf_lite":null,
+    "tempest":null
+}

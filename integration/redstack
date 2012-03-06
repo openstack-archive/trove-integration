@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+echo "Reddwarf Dev Machine Controller"
+###############################################################################
+#                                                                             #
+# This script provides all the functionality to run all the steps from        #
+# setting up the enviornment, resetting the nova database to running the      #
+# test.                                                                       #
+#                                                                             #
+###############################################################################
+
+# Bail on errors.
+set -e
+
+if [ ! -f /integration/redstack ]; then
+    echo "This script is meant to run in a disposable dev environment. "
+    echo "Run create_vm to create such a machine."
+    exit 1
+fi
+
+# Load global configuration variables.
+source /integration/redstack.rc
+
+
+TEST_HOME="/integration/tests"
+
+INTEGRATION_CONF="/tmp/integration"
+TESTS_CONF="$INTEGRATION_CONF/tests.conf"
+
+
+
+###############################################################################
+# Utility functions
+###############################################################################
+
+APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
+
+exclaim () {
+    echo "*******************************************************************************"
+    echo "$@"
+    echo "*******************************************************************************"
+}
+
+pkg_install () {
+    echo Installing $@...
+    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS install $@
+}
+
+pkg_remove () {
+    echo Uninstalling $@...
+    sudo -E apt-get $APT_GET_ARGS remove $@
+}
+
+set_home_dir() {
+    self="${0#./}"
+    base="${self%/*}"
+    current=`pwd`
+    if [ "$base" = "$self" ] ; then
+        HOME="$current/"
+    elif [[ $base =~ ^/ ]]; then
+        HOME="$base/"
+    else
+        HOME="$current/$base/"
+    fi
+}
+
+set_http_proxy() {
+    if [ ! "${http_proxy}" = '' ]; then
+        HTTP_PROXY="http_proxy=$http_proxy https_proxy=$https_proxy"
+    fi
+}
+
+function echo_id_from_table () {
+    # Given a command that returns a table, prints only the id part.
+    echo `$@ | grep id | awk '{print $4}'`
+}
+
+function configure_keystone() {
+    exclaim "Configuring keystone..."
+    REDDWARF_TENANT=`echo_idp_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
+    REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
+                                                        --name=reddwarf --pass="REDDWARF-PASS" --email=reddwarf@example.com`
+    REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
+
+    echo "
+REDDWARF_TENANT=$REDDWARF_TENANT
+REDDWARF_USER=$REDDWARF_USER
+REDDWARF_ROLE=$REDDWARF_ROLE
+    " > $PATH_ENV_CONF
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 add-user-role $REDDWARF_USER $REDDWARF_ROLE $REDDWARF_TENANT
+
+    echo "Checking login..."
+    # Now attempt a login
+    curl -d '{"auth":{"passwordCredentials":{"username": "reddwarf", "password": "REDDWARF-PASS"},"tenantName":"reddwarf"}}' \
+     -H "Content-type: application/json" http://localhost:35357/v2.0/tokens
+}
+
+###############################################################################
+
+
+###############################################################################
+# Install all the required dependencies
+###############################################################################
+
+install_packages_1() {
+    # Called before devstack.
+    exclaim 'Installing dependencies (part 1)...'
+    pkg_install git-core
+}
+
+install_packages_2() {
+    # Called after devstack.
+    exclaim "Installing dependencies (part 2)..."
+    # The default version of pip Ubuntu installs is old.
+    cd /tmp
+    sudo pip install --upgrade pip
+    sudo pip install proboscis
+}
+
+install_devstack() {
+    exclaim "Installing devstack..."
+    # Installs devstack (if needed).
+    if [ ! -d $PATH_DEVSTACK ]; then
+        echo "DevStack not in a shared folder, cloning from git."
+        mkdir -p $PATH_DEVSTACK
+        git clone git://github.com/openstack-dev/devstack.git $PATH_DEVSTACK
+    fi
+}
+
+run_devstack() {
+    exclaim "Running devstack..."
+    cd $PATH_DEVSTACK
+    echo "
+MYSQL_PASSWORD=$MYSQL_PASSWORD
+RABBIT_PASSWORD=$RABBIT_PASSWORD
+SERVICE_TOKEN=$SERVICE_TOKEN
+ADMIN_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$SERVICE_PASSWORD" > localrc
+    ./stack.sh
+}
+
+cmd_install() {
+    install_packages_1
+    install_devstack
+    run_devstack
+    install_packages_2
+}
+
+
+
+###############################################################################
+# Build
+###############################################################################
+
+cmd_build() {
+    echo 'TODO: Build guest image.'
+}
+
+
+###############################################################################
+# Start Reddwarf and OpenStack daemons interactively in a screen session
+###############################################################################
+
+function screen_it {
+    screen -S stack -X screen -t $1
+    screen -S stack -p $1 -X stuff "$2$NL"
+}
+
+
+cmd_start() {
+    cd $PATH_DEVSTACK
+    ./rejoin-stack.sh
+}
+
+cmd_stop() {
+    cd $PATH_DEVSTACK
+    screen -S stack -X quit
+    rm *.pid*
+}
+
+###############################################################################
+# Initialize
+###############################################################################
+
+cmd_initialize() {
+    exclaim 'Initializing...'
+    mkdir -p $PATH_INTEGRATION_CONF
+    configure_keystone
+}
+
+###############################################################################
+# Test
+###############################################################################
+
+
+###############################################################################
+# Process the user provided command and run the appropriate command
+###############################################################################
+
+# Lets not run this as the root user
+if [ $EUID -eq 0 ]; then
+   echo "You are running this script as root. You need to run as a regular user"
+   exit 1
+fi
+
+# Set this to exit immediately on error
+set -o errexit
+
+set_home_dir
+set_http_proxy
+
+print_usage() {
+    echo "Usage: $0 [command]"
+    echo "
+    Commands :
+          install         - Install all the required dependencies
+          initialize      - Cleans nova database, sets everything up.
+          build           - Build the packages (including the agent)
+          start           - Start or resume screen session.
+          stop            - Kill screen session and all daemons.
+    "
+    exit 1
+}
+
+# Print the available commands
+if [ $# -lt 1 ]; then
+    print_usage
+fi
+
+case "$1" in
+    "install" ) cmd_install;;
+    "build" ) cmd_build;;
+    "initialize" ) cmd_initialize;;
+    "start" ) cmd_start;;
+    "stop" ) cmd_stop;;
+    * )
+        echo "'$1' not a valid command"
+        exit 1
+esac
