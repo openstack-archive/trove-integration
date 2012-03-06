@@ -1,0 +1,28 @@
+# Paths inside the VM.
+PATH_INTEGRATION_CONF="/tmp/integration"
+
+# devstack is either a shared folder or is downloaded by reddwarf-ci install.
+PATH_DEVSTACK=/devstack
+
+PATH_GLANCE=/opt/stack/glance
+
+# Path to Nova and python-novaclient (installed by devstack).
+PATH_NOVA=/opt/stack/nova
+PATH_NOVACLIENT=/opt/stack/python-novaclient
+
+# Path to reddwarf lite (installed by reddwarf-ci).
+PATH_REDDWARF=/opt/stack/reddwarf_lite
+
+PATH_REDDWARF_INT_TESTS=/integration/tests
+
+# Where the test configuration live (created by reddwarf-ci initialize).
+PATH_TESTS_CONF="$PATH_INTEGRATION_CONF/tests.conf"
+
+PATH_ENV_CONF="$PATH_INTEGRATION_CONF/env.rc"
+
+# Passwors used by devstack.
+MYSQL_PASSWORD=e1a2c042c828d3566d0a
+RABBIT_PASSWORD=f7999d1955c5014aa32c
+SERVICE_TOKEN=be19c524ddc92109a224
+ADMIN_PASSWORD=3de4922d8b6ac5a1aad9
+SERVICE_PASSWORD=7de4162d826bc5a11ad9
