@@ -1,0 +1,64 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 987
+Date: Wed, 25 Jan 2012 21:58:17 GMT
+
+{
+    "instance": {
+        "created": "2012-01-25T21:53:18Z", 
+        "databases": [
+            {
+                "character_set": "utf8", 
+                "collate": "utf8_general_ci", 
+                "name": "anotherexampledb"
+            }, 
+            {
+                "character_set": "utf8", 
+                "collate": "utf8_general_ci", 
+                "name": "nextround"
+            }, 
+            {
+                "character_set": "utf8", 
+                "collate": "utf8_general_ci", 
+                "name": "sampledb"
+            }, 
+            {
+                "character_set": "utf8", 
+                "collate": "utf8_general_ci", 
+                "name": "testingdb"
+            }
+        ], 
+        "flavor": {
+            "id": "1", 
+            "links": [
+                {
+                    "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1", 
+                    "rel": "self"
+                }, 
+                {
+                    "href": "https://ord.databases.api.rackspacecloud.com/flavors/1", 
+                    "rel": "bookmark"
+                }
+            ]
+        }, 
+        "hostname": "e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com", 
+        "id": "692d8418-7a8f-47f1-8060-59846c6e024f", 
+        "links": [
+            {
+                "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/692d8418-7a8f-47f1-8060-59846c6e024f", 
+                "rel": "self"
+            }, 
+            {
+                "href": "https://ord.databases.api.rackspacecloud.com/instances/692d8418-7a8f-47f1-8060-59846c6e024f", 
+                "rel": "bookmark"
+            }
+        ], 
+        "name": "xml_rack_instance", 
+        "rootEnabled": true, 
+        "status": "ACTIVE", 
+        "updated": "2012-01-25T21:55:30Z", 
+        "volume": {
+            "size": 2
+        }
+    }
+}

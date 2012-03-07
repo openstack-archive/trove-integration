@@ -1,0 +1,8 @@
+GET /v1.0/1234/mgmt/instances/6b27b40c-1355-41a9-a082-ebd7798539f9/diagnostics HTTP/1.1
+User-Agent: python-example-client
+Host: ord.databases.api.rackspacecloud.com
+X-Auth-Token: 2ba35268-4c11-4098-9069-5898b22755f9
+Accept: application/xml
+Content-Type: application/xml
+
+

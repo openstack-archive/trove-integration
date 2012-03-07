@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: 183
+Date: Wed, 25 Jan 2012 21:58:08 GMT
+
+<users xmlns="http://docs.openstack.org/database/api/v1.0">
+	<user name="dbuser3"/>
+	<user name="dbuser4"/>
+	<user name="testuser"/>
+	<user name="userwith2dbs"/>
+</users>

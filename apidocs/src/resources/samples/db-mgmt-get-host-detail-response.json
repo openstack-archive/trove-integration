@@ -1,0 +1,25 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 216
+Date: Wed, 25 Jan 2012 21:58:19 GMT
+
+{
+    "host": {
+        "instances": [
+            {
+                "id": 1, 
+                "name": "json_rack_instance", 
+                "status": "active"
+            }, 
+            {
+                "id": 2, 
+                "name": "xml_rack_instance", 
+                "status": "active"
+            }
+        ], 
+        "name": "host", 
+        "percentUsed": 17, 
+        "totalRAM": 6144, 
+        "usedRAM": 1024
+    }
+}

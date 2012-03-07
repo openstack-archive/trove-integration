@@ -1,0 +1,21 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 101
+Date: Wed, 25 Jan 2012 21:58:07 GMT
+
+{
+    "users": [
+        {
+            "name": "dbuser3"
+        }, 
+        {
+            "name": "dbuser4"
+        }, 
+        {
+            "name": "testuser"
+        }, 
+        {
+            "name": "userwith2dbs"
+        }
+    ]
+}
