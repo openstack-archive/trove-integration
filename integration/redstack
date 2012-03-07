@@ -157,15 +157,15 @@ install_devstack_code() {
 
 install_reviews_on_top_of_devstack() {
     exclaim "Putting gerrit review code on top of the existing devstack code"
-    run_review_for nova $PATH_NOVA $REVIEW_NOVA 
-    run_review_for python-novaclient $PATH_NOVACLIENT $REVIEW_PYTHON_NOVACLIENT 
+    run_review_for nova $PATH_NOVA $REVIEW_NOVA
+    run_review_for python-novaclient $PATH_NOVACLIENT $REVIEW_PYTHON_NOVACLIENT
     run_review_for keystone $PATH_KEYSTONE $REVIEW_KEYSTONE
-    run_review_for python-keystoneclient $PATH_KEYSTONECLIENT $REVIEW_PYTHON_KEYSTONECLIENT 
+    run_review_for python-keystoneclient $PATH_KEYSTONECLIENT $REVIEW_PYTHON_KEYSTONECLIENT
     run_review_for glance $PATH_GLANCE $REVIEW_GLANCE
 }
 
 run_review_for() {
-    # Splits based on colon in the REVIEW_ARG and pulls from 
+    # Splits based on colon in the REVIEW_ARG and pulls from
     GIT_NAME=$1
     PATH_ARG=$2
     REVIEW_ARG=$3
@@ -205,13 +205,27 @@ cmd_install() {
 # Build
 ###############################################################################
 
+setup_py() {
+    # Calls setup.py in the given directory.
+    echo "CD into $1"
+    pushd $1
+    sudo python setup.py develop
+    popd
+}
+
 cmd_build() {
-    echo 'TODO: Build guest image.'
+    # Run setup.py for all projects.
+    exclaim "Calling setup for all dependencies..."
+    setup_py $PATH_NOVA
+    setup_py $PATH_PYTHON_NOVACLIENT
+    setup_py $PATH_PYTHON_REDDWARFCLIENT
+    setup_py $PATH_REDDWARF
 }
 
 
 cmd_unit_tests() {
-    echo 'TODO: Run unit tests.'
+    exclaim "Running Reddwarf Unit Tests..."
+    $PATH_REDDWARF/run_tests.sh -N
 }
 
 ###############################################################################
@@ -324,6 +338,7 @@ print_usage() {
           install         - Install all the required dependencies
           initialize      - Cleans nova database, sets everything up.
           build           - Build the packages (including the agent)
+          unit-tests      - Run the unit tests.
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
           initialize      - Sets up Reddwarf database.

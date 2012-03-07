@@ -12,10 +12,11 @@ PATH_KEYSTONECLIENT=/opt/stack/python-keystoneclient
 
 # Path to Nova and python-novaclient (installed by devstack).
 PATH_NOVA=/opt/stack/nova
-PATH_NOVACLIENT=/opt/stack/python-novaclient
+PATH_PYTHON_NOVACLIENT=/opt/stack/python-novaclient
 
 # Path to reddwarf lite (installed by reddwarf-ci).
 PATH_REDDWARF=/opt/stack/reddwarf_lite
+PATH_PYTHON_REDDWARFCLIENT=/opt/stack/python-reddwarfclient
 
 PATH_REDDWARF_INT_TESTS=/integration/tests
 
