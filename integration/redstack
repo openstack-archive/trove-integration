@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-echo "Reddwarf Dev Machine Controller"
+###############################################################################
+# RedStack, the Reddwarf Dev Machine Controller                               #
 ###############################################################################
 #                                                                             #
 # This script provides all the functionality to run all the steps from        #
@@ -20,6 +21,9 @@ fi
 # Load global configuration variables.
 source /integration/redstack.rc
 
+if [ -f $PATH_ENV_CONF ]; then
+    source $PATH_ENV_CONF
+fi
 
 TEST_HOME="/integration/tests"
 
@@ -76,17 +80,26 @@ function echo_id_from_table () {
 
 function configure_keystone() {
     exclaim "Configuring keystone..."
-    REDDWARF_TENANT=`echo_idp_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
-    REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
-                                                        --name=reddwarf --pass="REDDWARF-PASS" --email=reddwarf@example.com`
-    REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
+     REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
+     REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
+                                                         --name=reddwarf --pass="REDDWARF-PASS" --email=reddwarf@example.com`
+     REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
+
+     echo "
+ REDDWARF_TENANT=$REDDWARF_TENANT
+ REDDWARF_USER=$REDDWARF_USER
+ REDDWARF_ROLE=$REDDWARF_ROLE
+     " > $PATH_ENV_CONF
 
     echo "
-REDDWARF_TENANT=$REDDWARF_TENANT
-REDDWARF_USER=$REDDWARF_USER
-REDDWARF_ROLE=$REDDWARF_ROLE
-    " > $PATH_ENV_CONF
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 add-user-role $REDDWARF_USER $REDDWARF_ROLE $REDDWARF_TENANT
+# REDDWARF_TENANT=$REDDWARF_TENANT
+# REDDWARF_USER=$REDDWARF_USER
+# REDDWARF_ROLE=$REDDWARF_ROLE"
+    keystone --endpoint http://localhost:35357/v2.0 \
+        --token be19c524ddc92109a224 user-role-add \
+        --tenant_id $REDDWARF_TENANT \
+        --user $REDDWARF_USER \
+        --role $REDDWARF_ROLE
 
     echo "Checking login..."
     # Now attempt a login
@@ -156,36 +169,91 @@ cmd_build() {
 }
 
 
-###############################################################################
-# Start Reddwarf and OpenStack daemons interactively in a screen session
-###############################################################################
+cmd_unit_tests() {
 
-function screen_it {
-    screen -S stack -X screen -t $1
-    screen -S stack -p $1 -X stuff "$2$NL"
 }
 
+###############################################################################
+# Start various OpenStack daemons interactively in a screen session
+###############################################################################
 
-cmd_start() {
+cmd_start_deps() {
     cd $PATH_DEVSTACK
     ./rejoin-stack.sh
 }
 
-cmd_stop() {
+cmd_stop_deps() {
     cd $PATH_DEVSTACK
     screen -S stack -X quit
     rm *.pid*
 }
 
+
 ###############################################################################
-# Initialize
+# Initialize Reddwarf
 ###############################################################################
+
+rd_manage() {
+    cd $PATH_REDDWARF
+    bin/reddwarf-manage --config-file=etc/reddwarf/reddwarf.conf.sample $@
+}
 
 cmd_initialize() {
     exclaim 'Initializing...'
+
+    #run_devstack
     mkdir -p $PATH_INTEGRATION_CONF
+
+    exclaim "Creating Keystone users..."
     configure_keystone
+
+    exclaim "Initializing the Reddwarf Database..."
+    rd_manage db_sync
 }
+
+###############################################################################
+# Start Reddwarf specific daemons interactively in a screen session
+###############################################################################
+
+function screen_it {
+    echo "Starting $@..."
+    screen -S reddwarf -X screen -t $1
+    screen -S reddwarf -p $1 -X stuff "$2$NL"
+}
+
+cmd_start() {
+    if [ ! -f ~/.screenrc ]; then
+    cat >~/.screenrc <<EOF
+hardstatus on
+hardstatus alwayslastline
+hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c"
+
+defscrollback 1024
+
+vbell off
+startup_message off
+EOF
+    fi
+
+    NL=`echo -ne '\015'`
+
+    screen -d -m -S reddwarf -t reddwarf
+    sleep 1
+
+    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-server --config-file=etc/reddwarf/reddwarf.conf.sample"
+    screen -S reddwarf -x
+}
+
+###############################################################################
+# Stop any active Reddwarf screen session
+###############################################################################
+###############################################################################
+
+cmd_stop() {
+    screen -S reddwarf -X quit
+    rm *.pid*
+}
+
 
 ###############################################################################
 # Test
@@ -215,8 +283,11 @@ print_usage() {
           install         - Install all the required dependencies
           initialize      - Cleans nova database, sets everything up.
           build           - Build the packages (including the agent)
-          start           - Start or resume screen session.
-          stop            - Kill screen session and all daemons.
+          start-deps      - Start or resume daemons Reddwarf depends on.
+          stop-deps       - Kill daemons Reddwarf depends on.
+          initialize      - Sets up Reddwarf database.
+          start           - Start or resume daemons Reddwarf depends on.
+          stop            - Kill daemons Reddwarf depends on.
     "
     exit 1
 }
@@ -229,7 +300,10 @@ fi
 case "$1" in
     "install" ) cmd_install;;
     "build" ) cmd_build;;
+    "unit-tests" ) cmd_unit_tests;;
     "initialize" ) cmd_initialize;;
+    "start-deps" ) cmd_start_deps;;
+    "stop-deps" ) cmd_stop_deps;;
     "start" ) cmd_start;;
     "stop" ) cmd_stop;;
     * )
