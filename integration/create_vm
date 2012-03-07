@@ -16,9 +16,6 @@ class Config(object):
     Very simple configuration file thats just some JSON.
     """
 
-    keys = ['devstack', 'glance', 'horizon', 'keystone', 'nova',
-            'python_keystoneclient', 'python_novaclient', 'reddwarf_lite',
-            'tempest']
     vm_paths = {
         'devstack':"/devstack",
         'glance': '/opt/stack/glance',
@@ -28,11 +25,12 @@ class Config(object):
         'python_keystoneclient': "/opt/stack/python-keystoneclient",
         'python_novaclient': "/opt/stack/python-novaclient",
         'reddwarf_lite':"/opt/stack/reddwarf_lite",
+        'python_reddwarfclient':"/opt/stack/python-reddwarfclient",
         'tempest':"/opt/stack/tempest"
     }
 
     def __init__(self, **kwargs):
-        for name in Config.keys:
+        for name in Config.vm_paths.keys():
             if name not in kwargs:
                 raise RuntimeError('Missing configuration value "%s".' % name)
             value = kwargs[name]
@@ -66,13 +64,12 @@ Vagrant::Config.run do |global_config|
     config.vm.share_folder "integration", "/integration", "./"
 
 """)
-            for key in Config.keys:
+            for key in Config.vm_paths.keys():
                 local_path = getattr(self, key)
                 vm_path = Config.vm_paths[key]
                 if local_path is not None:
                     file.write('\tconfig.vm.share_folder "%s", "%s", "%s" \n'
                                % (key, vm_path, local_path))
-
             file.write("""
 
   end
