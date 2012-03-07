@@ -19,7 +19,8 @@ if [ ! -f /integration/redstack ]; then
 fi
 
 # Load global configuration variables.
-source /integration/redstack.rc
+. /integration/redstack.rc
+. /integration/reviews.rc
 
 if [ -f $PATH_ENV_CONF ]; then
     source $PATH_ENV_CONF
@@ -132,16 +133,54 @@ install_packages_2() {
 install_devstack() {
     exclaim "Installing devstack..."
     # Installs devstack (if needed).
-    if [ ! -d $PATH_DEVSTACK ]; then
+    if [ ! -d $PATH_DEVSTACK_SRC ]; then
         echo "DevStack not in a shared folder, cloning from git."
-        mkdir -p $PATH_DEVSTACK
-        git clone git://github.com/openstack-dev/devstack.git $PATH_DEVSTACK
+        mkdir -p $PATH_DEVSTACK_SRC
+        git clone git://github.com/openstack-dev/devstack.git $PATH_DEVSTACK_SRC
     fi
+}
+
+install_devstack_code() {
+    exclaim "Installing devstack projects..."
+    # Ensures present user can get to the devstack dirs
+    sudo mkdir -p $PATH_DEVSTACK_OUTPUT
+    if [ ! -w $PATH_DEVSTACK_OUTPUT ]; then
+        sudo chown `whoami` $PATH_DEVSTACK_OUTPUT
+    fi
+    # Clones all of the code to where devstack expects it to be
+    cd $PATH_DEVSTACK_OUTPUT
+    for project in glance horizon keystone nova python-keystoneclient python-novaclient python-quantumclient
+    do
+      git clone git://github.com/openstack/$project
+    done
+}
+
+install_reviews_on_top_of_devstack() {
+    exclaim "Putting gerrit review code on top of the existing devstack code"
+    run_review_for nova $PATH_NOVA $REVIEW_NOVA 
+    run_review_for python-novaclient $PATH_NOVACLIENT $REVIEW_PYTHON_NOVACLIENT 
+    run_review_for keystone $PATH_KEYSTONE $REVIEW_KEYSTONE
+    run_review_for python-keystoneclient $PATH_KEYSTONECLIENT $REVIEW_PYTHON_KEYSTONECLIENT 
+    run_review_for glance $PATH_GLANCE $REVIEW_GLANCE
+}
+
+run_review_for() {
+    # Splits based on colon in the REVIEW_ARG and pulls from 
+    GIT_NAME=$1
+    PATH_ARG=$2
+    REVIEW_ARG=$3
+    for review in `echo $REVIEW_ARG| tr ":" "\n"`
+    do
+        # This should be the ref spec for what we pull
+        pushd $PATH_ARG
+        git pull https://review.openstack.org/p/openstack/$GIT_NAME refs/changes/$review
+        popd
+    done
 }
 
 run_devstack() {
     exclaim "Running devstack..."
-    cd $PATH_DEVSTACK
+    cd $PATH_DEVSTACK_SRC
     echo "
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 RABBIT_PASSWORD=$RABBIT_PASSWORD
@@ -154,6 +193,8 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD" > localrc
 cmd_install() {
     install_packages_1
     install_devstack
+    install_devstack_code
+    install_reviews_on_top_of_devstack
     run_devstack
     install_packages_2
 }
@@ -170,7 +211,7 @@ cmd_build() {
 
 
 cmd_unit_tests() {
-
+    echo 'TODO: Run unit tests.'
 }
 
 ###############################################################################
@@ -178,12 +219,12 @@ cmd_unit_tests() {
 ###############################################################################
 
 cmd_start_deps() {
-    cd $PATH_DEVSTACK
+    cd $PATH_DEVSTACK_SRC
     ./rejoin-stack.sh
 }
 
 cmd_stop_deps() {
-    cd $PATH_DEVSTACK
+    cd $PATH_DEVSTACK_SRC
     screen -S stack -X quit
     rm *.pid*
 }

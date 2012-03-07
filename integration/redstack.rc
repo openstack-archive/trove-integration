@@ -2,9 +2,13 @@
 PATH_INTEGRATION_CONF="/tmp/integration"
 
 # devstack is either a shared folder or is downloaded by reddwarf-ci install.
-PATH_DEVSTACK=/devstack
+PATH_DEVSTACK_SRC=~/devstack
+PATH_DEVSTACK_OUTPUT=/opt/stack
 
 PATH_GLANCE=/opt/stack/glance
+
+PATH_KEYSTONE=/opt/stack/keystone
+PATH_KEYSTONECLIENT=/opt/stack/python-keystoneclient
 
 # Path to Nova and python-novaclient (installed by devstack).
 PATH_NOVA=/opt/stack/nova
