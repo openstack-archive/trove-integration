@@ -61,7 +61,7 @@ Vagrant::Config.run do |global_config|
 
     config.ssh.timeout  = 3600
 
-    config.vm.share_folder "integration", "/integration", "./"
+    config.vm.share_folder "integration", "/integration", "../"
 
 """)
             for key in Config.vm_paths.keys():
