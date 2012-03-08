@@ -14,9 +14,6 @@
 
 import time
 
-from sqlalchemy.sql.expression import text
-
-from reddwarf.guest.dbaas import LocalSqlClient
 
 from proboscis import before_class
 from proboscis import test
@@ -34,6 +31,11 @@ from tests.api.users import TestUsers
 from tests.api.instances import instance_info
 from tests.util import init_engine
 from tests import util
+from tests import WHITE_BOX
+
+if WHITE_BOX:
+    from sqlalchemy.sql.expression import text
+    from reddwarf.guest.dbaas import LocalSqlClient
 
 GROUP="dbaas.api.root"
 

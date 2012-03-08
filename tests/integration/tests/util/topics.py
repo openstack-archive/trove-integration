@@ -15,11 +15,14 @@
 
 """Utility methods to check topics."""
 
-from nova import flags
-from nova import utils
-from nova.scheduler import manager  # Do this to create flag "scheduler_driver"
 
-FLAGS = flags.FLAGS
+from tests import WHITE_BOX
+
+if WHITE_BOX:
+    from nova import flags
+    from nova import utils
+    from nova.scheduler import manager  # Do this to create flag "scheduler_driver"
+    FLAGS = flags.FLAGS
 
 
 class FakeContext(object):

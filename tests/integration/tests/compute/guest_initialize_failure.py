@@ -15,8 +15,7 @@
 
 import time
 from tests import util
-from nova.exception import VolumeNotFound
-from nova.scheduler.driver import Scheduler
+
 
 GROUP='dbaas.guest.initialize.failure'
 
@@ -32,17 +31,6 @@ from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
 from novaclient.exceptions import NotFound
-from nova import context
-from nova import utils
-from nova.compute import power_state
-from nova.compute import vm_states
-from nova.notifier import api as notifier
-from reddwarf.api.common import dbaas_mapping
-from reddwarf.db import api as dbapi
-from reddwarf.utils import poll_until
-from reddwarf.scheduler import simple # import used for FLAG values
-from nova import flags
-from reddwarf.compute.manager import ReddwarfInstanceMetaData
 from tests.util import test_config
 from tests.util import test_config
 from tests.util import check_database
@@ -56,9 +44,25 @@ from tests.util import TestClient
 from tests.util.users import Requirements
 
 from tests.util.instance import InstanceTest
+from tests import WHITE_BOX
 
 
-FLAGS = flags.FLAGS
+if WHITE_BOX:
+    from nova.exception import VolumeNotFound
+    from nova.scheduler.driver import Scheduler
+    from nova import context
+    from nova import utils
+    from nova.compute import power_state
+    from nova.compute import vm_states
+    from nova.notifier import api as notifier
+    from reddwarf.api.common import dbaas_mapping
+    from reddwarf.db import api as dbapi
+    from reddwarf.utils import poll_until
+    from reddwarf.scheduler import simple # import used for FLAG values
+    from nova import flags
+    from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    FLAGS = flags.FLAGS
+
 VOLUME_TIME_OUT = 30
 
 

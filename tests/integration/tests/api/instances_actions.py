@@ -24,30 +24,29 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import fail
 from proboscis.decorators import time_out
 
-from sqlalchemy import create_engine
-from sqlalchemy import exc as sqlalchemy_exc
-from sqlalchemy.sql.expression import text
-from tests.util.check import Checker
-
-from nova import context
-from nova import db
-
-from nova.compute import power_state
-
-from novaclient.exceptions import BadRequest
-
-from reddwarf.api.common import dbaas_mapping
-from reddwarf.guest.dbaas import LocalSqlClient
-from reddwarf.utils import poll_until
-
-from reddwarfclient.exceptions import UnprocessableEntity
-
 import tests
+from tests.util.check import Checker
+from novaclient.exceptions import BadRequest
+from reddwarfclient.exceptions import UnprocessableEntity
 from tests.api.instances import GROUP as INSTANCE_GROUP
 from tests.api.instances import GROUP_START
 from tests.api.instances import instance_info
 from tests.api.instances import assert_unprocessable
 from tests import util
+from tests import WHITE_BOX
+
+if WHITE_BOX:
+    from nova import context
+    from nova import db
+    from nova.compute import power_state
+    from sqlalchemy import create_engine
+    from sqlalchemy import exc as sqlalchemy_exc
+    from sqlalchemy.sql.expression import text
+    from reddwarf.api.common import dbaas_mapping
+    from reddwarf.guest.dbaas import LocalSqlClient
+    from reddwarf.utils import poll_until
+
+
 
 
 GROUP = "dbaas.api.instances.actions"

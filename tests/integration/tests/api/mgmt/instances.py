@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nova import context
 from novaclient import exceptions
 
 from proboscis import before_class
@@ -27,6 +26,11 @@ from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
 from tests.api.instances import CreateInstance
+from tests import WHITE_BOX
+
+if WHITE_BOX:
+    from nova import context
+
 
 GROUP="dbaas.api.mgmt.instances"
 
@@ -82,4 +86,4 @@ class MgmtInstancesIndex(object):
         full_index = self.admin_client.management.index()
         # There should be no instances that are neither deleted or not-deleted.
         assert_equal(len(full_index), sum(instance_counts))
-        
+

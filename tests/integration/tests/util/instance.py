@@ -21,11 +21,6 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import assert_is_not_none
 from proboscis.asserts import fail
 
-from nova import flags
-from nova import context
-from nova import utils
-from nova.compute import power_state
-from nova import exception
 from novaclient.exceptions import NotFound as NotFound404
 from reddwarf.api.common import dbaas_mapping
 from reddwarf.compute.manager import ReddwarfInstanceMetaData
@@ -36,8 +31,16 @@ from tests.util import create_test_client
 from tests.util import report
 from tests.util import test_config
 from tests.util.users import Requirements
+from tests import WHITE_BOX
 
-FLAGS = flags.FLAGS
+if WHITE_BOX:
+    from nova import flags
+    from nova import context
+    from nova import utils
+    from nova.compute import power_state
+    from nova import exception
+
+    FLAGS = flags.FLAGS
 
 
 class InstanceTest(object):

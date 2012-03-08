@@ -33,6 +33,19 @@ from tests import initialize
 from tests import util
 from tests import wb_test
 from tests.volumes import VOLUMES_DRIVER
+from tests import WHITE_BOX
+
+
+if WHITE_BOX:
+    FLAGS = flags.FLAGS
+    from nova import context
+    from nova import exception
+    from nova import flags
+    from nova import utils
+    from reddwarf import exception as reddwarf_exception
+    from reddwarf.utils import poll_until
+    from reddwarf import volume
+    from reddwarf.tests.volume import driver as test_driver
 
 if WHITE_BOX:
     from nova import context
@@ -359,7 +372,7 @@ class MountVolume(VolumeTest):
         self.assertTrue(os.path.exists(self.story.test_mount_file_path))
 
     def test_mount_options(self):
-        cmd = "mount -l | awk '/%s.*noatime/ { print $1 }'" 
+        cmd = "mount -l | awk '/%s.*noatime/ { print $1 }'"
         cmd %= LOCAL_MOUNT_PATH.replace('/','')
         out, err = util.process(cmd)
         self.assertEqual(os.path.realpath(self.story.device_path), out.strip(),

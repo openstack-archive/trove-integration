@@ -30,9 +30,9 @@
 import re
 import subprocess
 
+from eventlet import greenthread
+
 from novaclient.v1_1.client import Client
-from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -44,11 +44,14 @@ from reddwarfclient import Dbaas
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
+from tests import WHITE_BOX
 
 
-if test_config.white_box:
+if WHITE_BOX:
     from nova import flags
     from nova import utils
+    from sqlalchemy import create_engine
+    from sqlalchemy.exc import OperationalError
     from reddwarf import dns # import for flag values
     from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
     from reddwarf import exception
@@ -236,3 +239,87 @@ def get_vz_ip_for_device(instance_id, device):
         assert_false(True, err)
     else:
         return ip.strip()
+
+
+class LoopingCallDone(Exception):
+    """Exception to break out and stop a LoopingCall.
+
+    The poll-function passed to LoopingCall can raise this exception to
+    break out of the loop normally. This is somewhat analogous to
+    StopIteration.
+
+    An optional return-value can be included as the argument to the exception;
+    this return-value will be returned by LoopingCall.wait()
+
+    """
+
+    def __init__(self, retvalue=True):
+        """:param retvalue: Value that LoopingCall.wait() should return."""
+        self.retvalue = retvalue
+
+
+class LoopingCall(object):
+    def __init__(self, f=None, *args, **kw):
+        self.args = args
+        self.kw = kw
+        self.f = f
+        self._running = False
+
+    def start(self, interval, now=True):
+        self._running = True
+        done = event.Event()
+
+        def _inner():
+            if not now:
+                greenthread.sleep(interval)
+            try:
+                while self._running:
+                    self.f(*self.args, **self.kw)
+                    if not self._running:
+                        break
+                    greenthread.sleep(interval)
+            except LoopingCallDone, e:
+                self.stop()
+                done.send(e.retvalue)
+            except Exception:
+                logging.exception('in looping call')
+                done.send_exception(*sys.exc_info())
+                return
+            else:
+                done.send(True)
+
+        self.done = done
+
+        greenthread.spawn(_inner)
+        return self.done
+
+    def stop(self):
+        self._running = False
+
+    def wait(self):
+        return self.done.wait()
+
+
+class PollTimeOut(RuntimeError):
+    message = _("Polling request timed out.")
+
+
+def poll_until(retriever, condition=lambda value: value,
+               sleep_time=1, time_out=None):
+    """Retrieves object until it passes condition, then returns it.
+
+    If time_out_limit is passed in, PollTimeOut will be raised once that
+    amount of time is eclipsed.
+
+    """
+    start_time = time.time()
+
+    def poll_and_check():
+        obj = retriever()
+        if condition(obj):
+            raise LoopingCallDone(retvalue=obj)
+        if time_out is not None and time.time() > start_time + time_out:
+            raise PollTimeOut
+    lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
+    return lc.wait()
+
