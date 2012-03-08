@@ -36,7 +36,8 @@ __all__ = [
     "use_venv",
     "values",
     "volume_service",
-    "keystone_service"
+    "keystone_service",
+    "whitebox"
 ]
 
 
@@ -119,6 +120,7 @@ def _setup():
     global volume_service
     global keystone_service
     global glance_image
+    global white_box
     values = load_configuration()
     use_venv = values.get("use_venv", True)
     nova_auth_url = str(values.get("nova_auth_url", "http://localhost:5000/v2.0"))
@@ -155,5 +157,7 @@ def _setup():
     dbaas_image = values.get("dbaas_image", None)
     typical_nova_image_name = values.get("typical_nova_image_name", None)
 
+    # If true, we import certain classes and test using internal code.
+    white_box = values.get("white_box", False)
 
 _setup()

@@ -34,25 +34,26 @@ from novaclient.v1_1.client import Client
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from nova import flags
-from nova import utils
 from proboscis import test
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_raises
 from proboscis.asserts import assert_true
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
-from reddwarf import dns # import for flag values
-from reddwarf.notifier import logfile_notifier  # This is here so flags are loaded
-from reddwarf import exception
-from reddwarf.utils import poll_until
 from reddwarfclient import Dbaas
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
 
 
-FLAGS = flags.FLAGS
+if test_config.white_box:
+    from nova import flags
+    from nova import utils
+    from reddwarf import dns # import for flag values
+    from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
+    from reddwarf import exception
+    from reddwarf.utils import poll_until
+    FLAGS = flags.FLAGS
 
 
 def assert_mysql_failure_msg_was_permissions_issue(msg):
@@ -96,8 +97,6 @@ def get_dns_entry_factory():
         class_name = FLAGS.dns_instance_entry_factory
         _dns_entry_factory = utils.import_object(class_name)
     return _dns_entry_factory
-
-entry_factory = utils.import_object(FLAGS.dns_instance_entry_factory)
 
 
 def check_database(instance_id, dbname):

@@ -418,11 +418,15 @@ cmd_stop() {
 # Run Integration Tests
 ###############################################################################
 
-cmd_unit_tests() {
+cmd_int_tests() {
     exclaim "Running Reddwarf Integration Tests..."
-    export PYTHONPATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS
-    python $INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/int_tests.py  --verbose --verbose $*
-    $PATH_REDDWARF/run_tests.sh -N
+    export NEMESIS_CONF=/integration/scripts/conf/test.conf
+    NEW_PATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS/nemesis
+    echo "Python path : $NEW_PATH"
+    export PYTHONPATH=$NEW_PATH
+    args="$INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/nemesis/int_tests.py  --verbose --verbose $@"
+    echo "python $args"
+    python $args
 }
 
 
@@ -454,6 +458,7 @@ print_usage() {
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
           start           - Start or resume daemons Reddwarf depends on.
+          int-tests       - Runs the integration tests (requires all daemons).
           stop            - Kill daemons Reddwarf depends on.
     "
     exit 1
@@ -474,6 +479,7 @@ case "$1" in
     "stop-deps" ) cmd_stop_deps;;
     "start" ) cmd_start;;
     "stop" ) cmd_stop;;
+    "int-tests" ) cmd_int_tests $@;;
     * )
         echo "'$1' not a valid command"
         exit 1

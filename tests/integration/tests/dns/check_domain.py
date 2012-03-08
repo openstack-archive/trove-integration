@@ -21,32 +21,33 @@ they will create the domain if its not found (see below for details).
 import os
 import time
 import unittest
-from nova import utils
-from reddwarf.dns.rsdns.driver import create_client_with_flag_values
-from nova import flags
 from proboscis import test
 from proboscis import before_class
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_not_equal
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
-
-import rsdns
-from reddwarf.dns.driver import DnsEntry
-from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
-from reddwarf.dns.rsdns.driver import RsDnsDriver
-from reddwarf.dns.rsdns.driver import RsDnsZone
-from reddwarf.utils import poll_until
+from tests import wb_test
+from tests import WHITE_BOX
 from tests.util import should_run_rsdns_tests
 
+if WHITE_BOX:
+    from nova import utils
+    from nova import flags
+    import rsdns
+    from reddwarf.dns.rsdns.driver import create_client_with_flag_values
+    from reddwarf.dns.driver import DnsEntry
+    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from reddwarf.dns.rsdns.driver import RsDnsDriver
+    from reddwarf.dns.rsdns.driver import RsDnsZone
+    from reddwarf.utils import poll_until
+    FLAGS = flags.FLAGS
+    TEST_CONTENT="126.1.1.1"
+    TEST_NAME="hiwassup.%s" % FLAGS.dns_domain_name
+    DNS_DOMAIN_ID=None
 
-FLAGS = flags.FLAGS
-TEST_CONTENT="126.1.1.1"
-TEST_NAME="hiwassup.%s" % FLAGS.dns_domain_name
-DNS_DOMAIN_ID=None
 
-
-@test(groups=["rsdns.domains", "rsdns.show_entries"])
+@wb_test(groups=["rsdns.domains", "rsdns.show_entries"])
 class ClientTests(object):
 
     @before_class
@@ -65,8 +66,8 @@ class ClientTests(object):
         print(domains)
 
 
-@test(groups=["rsdns.domains"], depends_on=[ClientTests],
-      enabled=should_run_rsdns_tests())
+@wb_test(groups=["rsdns.domains"], depends_on=[ClientTests],
+         enabled=should_run_rsdns_tests())
 class RsDnsDriverTests(object):
     """Tests the RS DNS Driver."""
 

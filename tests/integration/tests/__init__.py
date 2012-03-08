@@ -29,3 +29,11 @@ DBAAS_API = "dbaas.api"
 PRE_INSTANCES = "dbaas.api.pre_instances"
 INSTANCES = "dbaas.api.instances"
 POST_INSTANCES = "dbaas.api.post_instances"
+
+from proboscis import test
+from tests.util.test_config import white_box as WHITE_BOX
+
+def wb_test(*args, **kwargs):
+    # Decorate as a test only if we're doing white box testing.
+    if WHITE_BOX:
+        return test(*args, **kwargs)
