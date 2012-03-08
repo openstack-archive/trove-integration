@@ -81,16 +81,28 @@ function echo_id_from_table () {
 
 function configure_keystone() {
     exclaim "Configuring keystone..."
-     REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
-     REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
+    
+    # First we should check if these exist
+    REDDWARF_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'`
+    if [ -z $REDDWARF_TENANT ]; then
+        REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
+    fi
+    
+    REDDWARF_USER=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-list | grep reddwarf | awk '{print $2}'`
+    if [ -z $REDDWARF_USER ]; then
+        REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
                                                          --name=reddwarf --pass="REDDWARF-PASS" --email=reddwarf@example.com`
-     REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
-
-     echo "
- REDDWARF_TENANT=$REDDWARF_TENANT
- REDDWARF_USER=$REDDWARF_USER
- REDDWARF_ROLE=$REDDWARF_ROLE
-     " > $PATH_ENV_CONF
+    fi
+    REDDWARF_ROLE=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep reddwarf | awk '{print $2}'`
+    if [ -z "$REDDWARF_ROLE" ]; then
+        REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
+    fi
+    
+    echo "
+REDDWARF_TENANT=$REDDWARF_TENANT
+REDDWARF_USER=$REDDWARF_USER
+REDDWARF_ROLE=$REDDWARF_ROLE
+" > $PATH_ENV_CONF
 
     echo "
 # REDDWARF_TENANT=$REDDWARF_TENANT
@@ -257,9 +269,16 @@ cmd_stop_deps() {
 # Initialize Reddwarf
 ###############################################################################
 
+fix_rd_configfile() {
+    cd $PATH_REDDWARF
+    cp etc/reddwarf/reddwarf.conf.sample /tmp
+    # Do some munging to get it a-working
+    sed -i.bak "s/reddwarf_tenant_id=.*/reddwarf_tenant_id=$REDDWARF_TENANT/g" /tmp/reddwarf.conf.sample
+}
+
 rd_manage() {
     cd $PATH_REDDWARF
-    bin/reddwarf-manage --config-file=etc/reddwarf/reddwarf.conf.sample $@
+    bin/reddwarf-manage --config-file=/tmp/reddwarf.conf.sample $@
 }
 
 cmd_initialize() {
@@ -270,6 +289,9 @@ cmd_initialize() {
 
     exclaim "Creating Keystone users..."
     configure_keystone
+    
+    exclaim "Making a temporary reddwarf config file..."
+    fix_rd_configfile
 
     exclaim "Initializing the Reddwarf Database..."
     rd_manage db_sync
@@ -304,7 +326,7 @@ EOF
     screen -d -m -S reddwarf -t reddwarf
     sleep 1
 
-    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-server --config-file=etc/reddwarf/reddwarf.conf.sample"
+    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-server --config-file=/tmp/reddwarf.conf.sample"
     screen -S reddwarf -x
 }
 
