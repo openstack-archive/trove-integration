@@ -15,39 +15,27 @@
 
 import time
 from tests import util
-from nova.exception import VolumeNotFound
-from nova.scheduler.driver import Scheduler
 
 GROUP='dbaas.compute.reboot.vz'
+
+from novaclient.exceptions import NotFound
 
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
-from proboscis.asserts import assert_true
 from proboscis.asserts import assert_is_not_none
+from proboscis.asserts import assert_true
 from proboscis.asserts import fail
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from novaclient.exceptions import NotFound
-from nova import context
-from nova import utils
-from nova.compute import power_state
-from nova.compute import vm_states
-from nova.notifier import api as notifier
-from nova.virt import openvz_conn
-from reddwarf.api.common import dbaas_mapping
-from reddwarf.db import api as dbapi
-from reddwarf.utils import poll_until
-from reddwarf.scheduler import simple # import used for FLAG values
-from nova import flags
-from reddwarf.compute.manager import ReddwarfInstanceMetaData
 from tests.api.instances import GROUP_START
 from tests.api.instances import GROUP_TEST
-from tests.util import test_config
-from tests.util import test_config
+from tests.api.instances import instance_info
+
+from tests.util import TestClient
 from tests.util import check_database
 from tests.util import count_notifications
 from tests.util import create_dns_entry
@@ -55,15 +43,31 @@ from tests.util import create_test_client
 from tests.util import process
 from tests.util import restart_compute_service
 from tests.util import string_in_list
-from tests.util import TestClient
-
-from tests.api.instances import instance_info
-from tests.util.users import Requirements
+from tests.util import test_config
 from tests.util.instance import InstanceTest
+from tests.util.users import Requirements
 
+from tests import wb_test
+from tests import WHITE_BOX
 
+if WHITE_BOX:
+    from nova import context
+    from nova import flags
+    from nova import utils
+    from nova.compute import power_state
+    from nova.compute import vm_states
+    from nova.exception import VolumeNotFound
+    from nova.notifier import api as notifier
+    from nova.scheduler.driver import Scheduler
+    from nova.virt import openvz_conn
 
-FLAGS = flags.FLAGS
+    from reddwarf.api.common import dbaas_mapping
+    from reddwarf.db import api as dbapi
+    from reddwarf.utils import poll_until
+    from reddwarf.scheduler import simple # import used for FLAG values
+    from reddwarf.compute.manager import ReddwarfInstanceMetaData
+
+    FLAGS = flags.FLAGS
 
 @test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, GROUP])
 class VerifyRebootRestartsTheVZ(InstanceTest):

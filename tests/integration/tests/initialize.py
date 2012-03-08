@@ -19,9 +19,6 @@ import time
 import socket
 
 from nose.plugins.skip import SkipTest
-from nova import context
-from nova import utils
-from nova.db import api as dbapi
 
 from proboscis import test
 from proboscis.decorators import time_out
@@ -34,6 +31,14 @@ from tests.util.test_config import glance_images_directory
 from tests.util.test_config import keystone_bin
 from tests.util.test_config import nova_code_root
 from tests.util.test_config import python_cmd_list
+
+from tests import wb_test
+from tests import WHITE_BOX
+
+if WHITE_BOX:
+    from nova import context
+    from nova import utils
+    from nova.db import api as dbapi
 
 dbaas_image = None
 instance_name = None

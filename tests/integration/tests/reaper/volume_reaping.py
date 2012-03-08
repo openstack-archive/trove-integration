@@ -14,34 +14,41 @@
 #    under the License.
 
 from datetime import timedelta
+
 from nose.tools import assert_raises
+
+from novaclient.exceptions import NotFound
+
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
-from proboscis.asserts import assert_true
 from proboscis.asserts import assert_is_not_none
+from proboscis.asserts import assert_true
 from proboscis.asserts import fail
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from nova import context
-from nova import flags
-from nova import volume
-from nova import utils
-from nova.db import api as db_api
-from novaclient.exceptions import NotFound
-from reddwarf.compute.manager import ReddwarfInstanceInitializer
+from tests import WHITE_BOX
+from tests import wb_test
 from tests.util import test_config
-from tests.util.instance import InstanceTest
 from tests.util import wait_for_compute_service
+from tests.util.instance import InstanceTest
 
-from reddwarf.reaper import driver  # Do this to get the FLAG values.
+if WHITE_BOX:
+    from nova import context
+    from nova import flags
+    from nova import volume
+    from nova import utils
+    from nova.db import api as db_api
 
-FLAGS = flags.FLAGS
+    from reddwarf.compute.manager import ReddwarfInstanceInitializer
+    from reddwarf.reaper import driver  # Do this to get the FLAG values.
+
+    FLAGS = flags.FLAGS
+
 GROUP = 'reddwarf.reaper'
-
 
 @test(groups=[GROUP, GROUP + ".volume"],
       depends_on_groups=["services.initialize"])

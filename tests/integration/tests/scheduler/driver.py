@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from datetime import datetime
+
 import time
 import unittest
 
@@ -25,25 +26,29 @@ from proboscis import test
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from nova import db
-from nova import exception
-from nova import flags
-from nova.notifier import api as notifier
-from nova.utils import LoopingCall
+from tests import WHITE_BOX
 from tests import initialize
+from tests import wb_test
 from tests.scheduler import SCHEDULER_DRIVER_GROUP
-from tests.volumes import VOLUMES_DRIVER
-from tests.util import create_dbaas_client
+from tests.util import TestClient
 from tests.util import count_notifications
+from tests.util import create_dbaas_client
 from tests.util import create_test_client
 from tests.util import test_config
-from tests.util import TestClient
 from tests.util.users import Requirements
-from reddwarf.utils import poll_until
+from tests.volumes import VOLUMES_DRIVER
 
+if WHITE_BOX:
+    from nova import db
+    from nova import exception
+    from nova import flags
+    from nova.notifier import api as notifier
+    from nova.utils import LoopingCall
+
+    from reddwarf.utils import poll_until
+    FLAGS = flags.FLAGS
 
 GROUP = SCHEDULER_DRIVER_GROUP
-FLAGS = flags.FLAGS
 
 # Test variables
 client = None
