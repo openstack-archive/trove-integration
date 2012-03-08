@@ -28,7 +28,6 @@ from proboscis.decorators import time_out
 
 from tests import WHITE_BOX
 from tests import initialize
-from tests import wb_test
 from tests.scheduler import SCHEDULER_DRIVER_GROUP
 from tests.util import TestClient
 from tests.util import count_notifications

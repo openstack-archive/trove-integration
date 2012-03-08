@@ -40,15 +40,20 @@ from proboscis.decorators import time_out
 from proboscis.decorators import TimeoutError
 from proboscis import test
 
-from nova import context
-from nova import rpc
-from nova import utils
-from nova.exception import ProcessExecutionError
+
 from tests import util as test_utils
 from tests.util import test_config
 from tests.util.services import Service
 from tests.util.services import start_proc
-from nova.rpc.impl_kombu import ConnectionContext
+from tests import WHITE_BOX
+
+
+if WHITE_BOX:
+    from nova import context
+    from nova import rpc
+    from nova import utils
+    from nova.exception import ProcessExecutionError
+    from nova.rpc.impl_kombu import ConnectionContext
 
 
 def topic_name():

@@ -5,21 +5,26 @@ from proboscis import test
 from proboscis.decorators import time_out
 
 from reddwarfclient import Dbaas
-from nova import flags
-from nova import utils
 
-from reddwarf import exception
-from reddwarf.utils import poll_until
-
-import rsdns
 from tests.api.instances import instance_info
 from tests.api.instances import GROUP_START as INSTANCE_START
 from tests.api.instances import GROUP_TEST
 from tests.api.instances import GROUP_STOP as INSTANCE_STOP
+from tests import WHITE_BOX
+
+
+if WHITE_BOX:
+    import rsdns
+    from nova import flags
+    from nova import utils
+
+    from reddwarf import exception
+    from reddwarf.utils import poll_until
+
+    FLAGS = flags.FLAGS
 
 dns_driver = None
 
-FLAGS = flags.FLAGS
 GROUP = "dbaas.guest.dns"
 
 

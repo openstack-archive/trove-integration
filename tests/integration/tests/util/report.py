@@ -10,6 +10,9 @@ from os import path
 from tests.util import test_config
 
 
+USE_LOCAL_OVZ = test_config.values['use_local_ovz']
+
+
 class Reporter(object):
     """Saves the logs from a test run."""
 
@@ -23,8 +26,9 @@ class Reporter(object):
 
     def _find_all_instance_ids(self):
         instances = []
-        for dir in os.listdir("/vz/private"):
-            instances.append(dir)
+        if USE_LOCAL_OVZ:
+            for dir in os.listdir("/vz/private"):
+                instances.append(dir)
         return instances
 
     def log(self, msg):
@@ -40,12 +44,16 @@ class Reporter(object):
     def _update_instance(self, id):
         root = "%s/%s" % (self.root_path, id)
         def save_file(path, short_name):
-            try:
-                shutil.copyfile("/vz/private/%s/%s" % (id, path),
-                                "%s-%s.log" % (root, short_name))
-            except (shutil.Error, IOError) as err:
-                self.log("ERROR logging %s for instance id %s! : %s"
-                % (path, id, err))
+            if USE_LOCAL_OVZ:
+                try:
+                    shutil.copyfile("/vz/private/%s/%s" % (id, path),
+                                    "%s-%s.log" % (root, short_name))
+                except (shutil.Error, IOError) as err:
+                    self.log("ERROR logging %s for instance id %s! : %s"
+                             % (path, id, err))
+            else:
+                #TODO: Can we somehow capture these (maybe SSH to the VM)?
+                pass
 
         save_file("/var/log/firstboot", "firstboot")
         save_file("/var/log/syslog", "syslog")

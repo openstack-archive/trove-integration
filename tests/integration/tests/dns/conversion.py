@@ -20,21 +20,23 @@ import unittest
 from proboscis import test
 from proboscis.decorators import expect_exception
 
-from nova import flags
-from rsdns.client.records import Record
-from reddwarf.dns.rsdns.driver import EntryToRecordConverter
-from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
-from reddwarf.dns.rsdns.driver import RsDnsZone
+from tests import wb_test
+from tests import WHITE_BOX
 
-FLAGS = flags.FLAGS
-driver = None
+if WHITE_BOX:
+    from nova import flags
+    from rsdns.client.records import Record
+    from reddwarf.dns.rsdns.driver import EntryToRecordConverter
+    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from reddwarf.dns.rsdns.driver import RsDnsZone
+    FLAGS = flags.FLAGS
+    driver = None
+    DEFAULT_ZONE = RsDnsZone(1, "dbaas.rackspace.org")
+    TEST_CONTENT="126.1.1.1"
+    TEST_NAME="hiwassup.dbaas.rackspace.org"
 
-DEFAULT_ZONE = RsDnsZone(1, "dbaas.rackspace.org")
-TEST_CONTENT="126.1.1.1"
-TEST_NAME="hiwassup.dbaas.rackspace.org"
 
-
-@test(groups=["unit", "rsdns.conversion"])
+@wb_test(groups=["unit", "rsdns.conversion"])
 class ConvertingNovaEntryNamesToRecordNames(unittest.TestCase):
 
     def setUp(self):
@@ -56,7 +58,7 @@ class ConvertingNovaEntryNamesToRecordNames(unittest.TestCase):
         self.assertEqual("blah.org..blah.org", long_name)
 
 
-@test(groups=["unit", "rsdns.conversion"])
+@wb_test(groups=["unit", "rsdns.conversion"])
 class ConvertingRecordsToEntries(unittest.TestCase):
 
     def setUp(self):
@@ -76,7 +78,7 @@ class ConvertingRecordsToEntries(unittest.TestCase):
         self.assertEqual("SOA", entry.type)
 
 
-@test(groups=["rsdns.conversion"])
+@wb_test(groups=["rsdns.conversion"])
 class WhenCreatingAnEntryForAnInstance(unittest.TestCase):
     # This isn't a unit test because RsDnsInstanceEntryFactory connects to the
     # service.

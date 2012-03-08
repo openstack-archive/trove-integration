@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     repl = False
     nose_args = []
-    conf_file = "~/nemesis.conf"
+    conf_file = "~/test.conf"
     show_elapsed = True
     groups = []
     print("RUNNING TEST ARGS :  " + str(sys.argv))
@@ -107,8 +107,8 @@ if __name__ == '__main__':
             repl = True
         if arg[:7] == "--conf=":
             conf_file = os.path.expanduser(arg[7:])
-            print("Setting NEMESIS_CONF to " + conf_file)
-            os.environ["NEMESIS_CONF"] = conf_file
+            print("Setting TEST_CONF to " + conf_file)
+            os.environ["TEST_CONF"] = conf_file
         elif arg[:8] == "--group=":
             groups.append(arg[8:])
         elif arg[:11] == "--flagfile=":
@@ -118,34 +118,36 @@ if __name__ == '__main__':
         else:
             nose_args.append(arg)
 
-    # TODO(tim.simpson):
-    # Before Proboscis was at its current state, it was necessary to load the
-    # configuration as an environment variable because decorators where used
-    # to show tests depended on running services, and these needed the
-    # configuration values.  However, now there is probably a better way to
-    # handle this than forcing this to be imported after the environment
-    # variable is set.
+    # Many of the test decorators depend on configuration values, so before
+    # start importing modules we have to load the test config followed by the
+    # flag files.
 
-    # Set up the flag file values, which we need to call certain Nova code.
-    from tests.util import test_config
-    nova_conf = test_config.values["nova_conf"]
+    from tests import WHITE_BOX
 
-    from nova import utils
-    utils.default_flagfile(str(nova_conf))
+    if WHITE_BOX:  # If white-box testing, set up the flags.
+        # Set up the flag file values, which we need to call certain Nova code.
+        from tests.util import test_config
+        nova_conf = test_config.values["nova_conf"]
 
-    from nova import flags
-    FLAGS = flags.FLAGS
-    FLAGS(sys.argv)
+        from nova import utils
+        utils.default_flagfile(str(nova_conf))
 
+        from nova import flags
+        FLAGS = flags.FLAGS
+        FLAGS(sys.argv)
+
+    # Set up the report, and print out how we're running the tests.
     from tests.util import report
     from datetime import datetime
     report.log("Reddwarf Integration Tests, %s" % datetime.now())
     report.log("Invoked via command: " + str(sys.argv))
     report.log("Groups = " + str(groups))
-    report.log("Test configuration file = %s" % nova_conf)
+    report.log("Test conf file = %s" % os.environ["TEST_CONF"])
+    if WHITE_BOX:
+        report.log("")
+        report.log("Test FLAG file = %s" % nova_conf)
 
-    # Now that the FlagFiles and other args have been parsed, time to import
-    # everything.
+    # Now that all configurations are loaded its time to import everything.
 
     import proboscis
     from tests.dns import check_domain
@@ -154,7 +156,8 @@ if __name__ == '__main__':
 
     # The DNS stuff is problematic. Not loading the other tests allow us to
     # run its functional tests only.
-    if not os.environ.get("ADD_DOMAINS", "False") == 'True':
+    ADD_DOMAINS = os.environ.get("ADD_DOMAINS", "False") == 'True'
+    if not ADD_DOMAINS:
         from tests import initialize
         from tests.api import flavors
         from tests.api import versions
@@ -171,8 +174,6 @@ if __name__ == '__main__':
         from tests.openvz import dbaas_ovz
         from tests.dns import dns
         from tests.guest import amqp_restarts
-        from tests.guest import dbaas_tests
-        from tests.guest import pkg_tests
         from tests.reaper import volume_reaping
         from tests.scheduler import driver
         from tests.scheduler import SCHEDULER_DRIVER_GROUP
@@ -182,21 +183,27 @@ if __name__ == '__main__':
         from tests.openvz import compute_reboot_vz as compute_reboot
         from tests import util
 
+        black_box_groups = [
+            "services.initialize",
+        ]
+        proboscis.register(groups=["blackbox"],
+                           depends_on_groups=black_box_groups)
+
+        # This is for the old white-box tests...
         host_ovz_groups = [
             "dbaas.guest",
             compute_reboot.GROUP,
             "dbaas.guest.dns",
             SCHEDULER_DRIVER_GROUP,
-            pkg_tests.GROUP,
             VOLUMES_DRIVER,
             guest_initialize_failure.GROUP,
             volume_reaping.GROUP
         ]
-        if util.should_run_rsdns_tests():
+        if WHITE_BOX and util.should_run_rsdns_tests():
             host_ovz_groups += ["rsdns.conversion", "rsdns.domains",
                                 "rsdns.eventlet"]
-
-        proboscis.register(groups=["host.ovz"], depends_on_groups=host_ovz_groups)
+        proboscis.register(groups=["host.ovz"],
+                           depends_on_groups=host_ovz_groups)
 
     atexit.register(_clean_up)
 
@@ -204,8 +211,8 @@ if __name__ == '__main__':
 
     from nose import config
     from nose import core
-    from run_tests import NovaTestResult
-    from run_tests import NovaTestRunner
+    from tests.colorizer import NovaTestResult
+    from tests.colorizer import NovaTestRunner
     from proboscis.case import TestResult as ProboscisTestResult
 
     class IntegrationTestResult(NovaTestResult, ProboscisTestResult):
@@ -293,11 +300,9 @@ if __name__ == '__main__':
             self.__finished = True
             return result
 
-    testdir = os.path.abspath(os.path.join("nova", "integration", "tests"))
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
                       verbosity=3,
-                      workingDir=testdir,
                       plugins=core.DefaultPluginManager())
     runner = IntegrationTestRunner(stream=c.stream,
                                    verbosity=c.verbosity,

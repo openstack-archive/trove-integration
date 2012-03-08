@@ -36,7 +36,6 @@ from tests.util import process
 from tests.util import string_in_list
 from tests.util import assert_mysql_connection_fails
 
-from tests import wb_test
 from tests import WHITE_BOX
 
 if WHITE_BOX:

@@ -44,7 +44,9 @@ from reddwarfclient import Dbaas
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
-from tests import WHITE_BOX
+
+
+WHITE_BOX = test_config.white_box
 
 
 if WHITE_BOX:

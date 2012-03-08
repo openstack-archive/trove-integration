@@ -81,13 +81,13 @@ function echo_id_from_table () {
 
 function configure_keystone() {
     exclaim "Configuring keystone..."
-    
+
     # First we should check if these exist
     REDDWARF_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'`
     if [ -z $REDDWARF_TENANT ]; then
         REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
     fi
-    
+
     REDDWARF_USER=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-list | grep reddwarf | awk '{print $2}'`
     if [ -z $REDDWARF_USER ]; then
         REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
@@ -97,7 +97,7 @@ function configure_keystone() {
     if [ -z "$REDDWARF_ROLE" ]; then
         REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
     fi
-    
+
     echo "
 REDDWARF_TENANT=$REDDWARF_TENANT
 REDDWARF_USER=$REDDWARF_USER
@@ -139,6 +139,8 @@ install_packages_2() {
     # The default version of pip Ubuntu installs is old.
     cd /tmp
     sudo pip install --upgrade pip
+
+    pkg_install python-pexpect
     sudo pip install proboscis
 }
 
@@ -362,7 +364,7 @@ cmd_initialize() {
 
     exclaim "Creating Keystone users..."
     configure_keystone
-    
+
     exclaim "Making a temporary reddwarf config file..."
     fix_rd_configfile
 
@@ -420,11 +422,16 @@ cmd_stop() {
 
 cmd_int_tests() {
     exclaim "Running Reddwarf Integration Tests..."
-    export NEMESIS_CONF=/integration/scripts/conf/test.conf
-    NEW_PATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS/nemesis
+    export TEST_CONF=/integration/scripts/conf/test.conf
+    NEW_PATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS/integration
     echo "Python path : $NEW_PATH"
     export PYTHONPATH=$NEW_PATH
-    args="$INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/nemesis/int_tests.py  --verbose --verbose $@"
+    if [ $# -lt 1 ]; then
+        args="--group=blackbox"
+    else
+        args="$@"
+    fi
+    args="$INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/integration/int_tests.py  --verbose --verbose $args"
     echo "python $args"
     python $args
 }

@@ -47,7 +47,6 @@ from tests.util import test_config
 from tests.util.instance import InstanceTest
 from tests.util.users import Requirements
 
-from tests import wb_test
 from tests import WHITE_BOX
 
 if WHITE_BOX:
@@ -83,7 +82,7 @@ class VerifyRebootRestartsTheVZ(InstanceTest):
 
     def ensure_vz_power_state(self, power_state):
         """Ensures the database has the correct state"""
-        poll_until(self._get_compute_instance_state, 
+        poll_until(self._get_compute_instance_state,
                    lambda state : state == power_state,
                    sleep_time=2, time_out=60)
 
@@ -91,20 +90,20 @@ class VerifyRebootRestartsTheVZ(InstanceTest):
         """Ensures the hypervisor has the correct state"""
         def get_info_from_conn():
             return self.conn.get_info(self.name)['state']
-        poll_until(get_info_from_conn, 
+        poll_until(get_info_from_conn,
                    lambda state : state == power_state,
                    sleep_time=2, time_out=60)
 
     def stop_vz(self):
         """Manually shuts down the VZ. This does not use the _stop
-           method in the driver since we need the status to _not_ 
+           method in the driver since we need the status to _not_
            be updated to shutdown for the resume case to work in
            the managers reboot path in the compute manager init_host"""
         utils.execute('vzctl', 'stop', self.local_id,
                       run_as_root=True)
 
     def logout_iscsi(self):
-        """Forcing a iscsi logout to simulate a power shutoff. This 
+        """Forcing a iscsi logout to simulate a power shutoff. This
            will not take corruption into account at present."""
         utils.execute('iscsiadm', '-m', 'node', '--logout',
                       run_as_root=True)

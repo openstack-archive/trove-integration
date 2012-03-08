@@ -31,13 +31,11 @@ from proboscis.decorators import time_out
 from tests import WHITE_BOX
 from tests import initialize
 from tests import util
-from tests import wb_test
 from tests.volumes import VOLUMES_DRIVER
 from tests import WHITE_BOX
 
 
 if WHITE_BOX:
-    FLAGS = flags.FLAGS
     from nova import context
     from nova import exception
     from nova import flags
@@ -47,18 +45,8 @@ if WHITE_BOX:
     from reddwarf import volume
     from reddwarf.tests.volume import driver as test_driver
 
-if WHITE_BOX:
-    from nova import context
-    from nova import exception
-    from nova import flags
-    from nova import utils
-
-    from reddwarf import exception as reddwarf_exception
-    from reddwarf import volume
-    from reddwarf.tests.volume import driver as test_driver
-    from reddwarf.utils import poll_until
-
     FLAGS = flags.FLAGS
+
 
 UUID_PATTERN = re.compile('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-'
                           '[0-9a-f]{4}-[0-9a-f]{12}$')
@@ -493,9 +481,9 @@ class Initialize(VolumeTest):
                                         self.story.volume_id,
                                         self.story.host)
 
-    @expect_exception(exception.InvalidDevicePath)
     def test_30_check_device_exists(self):
-        self.story.client._format(self.story.device_path)
+        assert_raises(exception.InvalidDevicePath, self.story.client._format,
+                      self.story.device_path)
 
 
 @test(groups=[VOLUMES_DRIVER], depends_on_classes=[Initialize])

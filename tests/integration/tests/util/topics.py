@@ -16,7 +16,11 @@
 """Utility methods to check topics."""
 
 
-from tests import WHITE_BOX
+from tests.util import test_config
+
+
+WHITE_BOX = test_config.white_box
+
 
 if WHITE_BOX:
     from nova import flags

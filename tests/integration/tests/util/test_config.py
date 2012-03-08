@@ -45,15 +45,15 @@ def load_configuration():
     """Loads and returns the configuration file as a dictionary.
 
     The file to load is found by looking for a value in the environment
-    variable NEMESIS_CONF.  The file itself is stored as JSON.
+    variable TEST_CONF.  The file itself is stored as JSON.
 
     """
-    if not "NEMESIS_CONF" in os.environ:
+    if not "TEST_CONF" in os.environ:
         raise RuntimeError("Please define an environment variable named " +
-                           "NEMESIS_CONF with the location to a conf file.")
-    file_path = os.path.expanduser(os.environ["NEMESIS_CONF"])
+                           "TEST_CONF with the location to a conf file.")
+    file_path = os.path.expanduser(os.environ["TEST_CONF"])
     if not os.path.exists(file_path):
-        raise RuntimeError("Could not find NEMESIS_CONF at " + file_path + ".")
+        raise RuntimeError("Could not find TEST_CONF at " + file_path + ".")
     file_contents = open(file_path, "r").read()
     try:
         return json.loads(file_contents)
@@ -79,10 +79,13 @@ def nova_code_root():
     """The path to the Nova source code."""
     return str(values.get("nova_code_root"))
 
+def keystone_code_root():
+    """The path to the Keystone source code."""
+    return str(values.get("keystone_code_root"))
 
 def keystone_bin(service):
     """The path of the specific keystone service"""
-    default_path = os.path.join("/usr/local/bin/", service)
+    default_path = os.path.join(keystone_code_root(), service)
     if os.path.exists(default_path):
         path = default_path
     else:
@@ -131,13 +134,15 @@ def _setup():
     nova_code_root = str(values["nova_code_root"])
     nova_conf = str(values["nova_conf"])
     keystone_conf = str(values["keystone_conf"])
+    reddwarf_code_root = str(values["reddwarf_code_root"])
+    reddwarf_conf = str(values["reddwarf_conf"])
     glance_image = str(values["glance_image"])
     if not nova_conf:
         raise ValueError("Configuration value \"nova_conf\" not found.")
 
     dbaas = WebService(cmd=python_cmd_list() +
-                           ["%s/bin/reddwarf-api" % nova_code_root,
-                            "--flagfile=%s" % nova_conf],
+                           ["%s/bin/reddwarf-api" % reddwarf_code_root,
+                            "--flagfile=%s" % reddwarf_conf],
                         url=dbaas_url)
     nova = WebService(cmd=python_cmd_list() +
                           ["%s/bin/nova-api" % nova_code_root,

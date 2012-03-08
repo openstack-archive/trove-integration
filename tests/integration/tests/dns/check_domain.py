@@ -27,8 +27,8 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_not_equal
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
-from tests import wb_test
 from tests import WHITE_BOX
+from tests import wb_test
 from tests.util import should_run_rsdns_tests
 
 if WHITE_BOX:
@@ -67,7 +67,7 @@ class ClientTests(object):
 
 
 @wb_test(groups=["rsdns.domains"], depends_on=[ClientTests],
-         enabled=should_run_rsdns_tests())
+         enabled=WHITE_BOX and should_run_rsdns_tests())
 class RsDnsDriverTests(object):
     """Tests the RS DNS Driver."""
 
@@ -116,7 +116,7 @@ class RsDnsDriverTests(object):
                   record.""")
 
     @test(depends_on=[ensure_domain_specified_in_flags_exists],
-          enabled=FLAGS.dns_domain_name != "dbaas.rackspace.com")
+          enabled=WHITE_BOX and FLAGS.dns_domain_name != "dbaas.rackspace.com")
     def delete_all_entries(self):
         """Deletes all entries under the default domain."""
         list = self.driver.get_entries()

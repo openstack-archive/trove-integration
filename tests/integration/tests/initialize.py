@@ -29,16 +29,18 @@ from tests.util.services import WebService
 from tests.util.test_config import glance_bin_root
 from tests.util.test_config import glance_images_directory
 from tests.util.test_config import keystone_bin
+from tests.util.test_config import keystone_code_root
 from tests.util.test_config import nova_code_root
 from tests.util.test_config import python_cmd_list
 
-from tests import wb_test
 from tests import WHITE_BOX
 
 if WHITE_BOX:
     from nova import context
     from nova import utils
     from nova.db import api as dbapi
+
+KEYSTONE_ALL = test_config.values.get('keystone_use_combined', True)
 
 dbaas_image = None
 instance_name = None
@@ -191,7 +193,7 @@ class Volume(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[Volume])
+      depends_on_classes=[Volume], enabled=(not KEYSTONE_ALL))
 class KeystoneAPI(unittest.TestCase):
     """Starts the Keystone Service API"""
 
@@ -206,12 +208,26 @@ class KeystoneAPI(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[KeystoneAPI])
+      depends_on_classes=[KeystoneAPI], enabled=(not KEYSTONE_ALL))
 class KeystoneAdmin(unittest.TestCase):
     """Starts the Keystone Admin API"""
 
     def setUp(self):
         path = keystone_bin("keystone-admin")
+        self.service = Service(python_cmd_list() +
+                               [path, "-c %s" % keystone_conf()])
+
+    def test_start(self):
+        if not self.service.is_service_alive():
+            self.service.start()
+
+@test(groups=["services.initialize"],
+      depends_on_classes=[KeystoneAPI], enabled=KEYSTONE_ALL)
+class KeystoneAll(unittest.TestCase):
+    """Starts the Keystone combined daemon."""
+
+    def setUp(self):
+        path = keystone_bin("keystone-all")
         self.service = Service(python_cmd_list() +
                                [path, "-c %s" % keystone_conf()])
 
@@ -252,7 +268,7 @@ class Api(unittest.TestCase):
 @test(groups=["services.initialize"],
       depends_on_classes=[Compute, Network, Scheduler, Volume, KeystoneAdmin,
                           KeystoneAPI])
-class PlatformApi(unittest.TestCase):
+class ReddwarfApi(unittest.TestCase):
     """Starts the Reddwarf API."""
 
     def setUp(self):

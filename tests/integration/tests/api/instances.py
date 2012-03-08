@@ -30,14 +30,6 @@ from datetime import datetime
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
 from novaclient import exceptions as nova_exceptions
-from nova import context
-from nova import db
-from nova import exception as backend_exception
-from reddwarf.api.common import dbaas_mapping
-from reddwarf.api.instances import FLAGS as dbaas_FLAGS
-from nova.compute import power_state
-from reddwarf.db import api as dbapi
-from reddwarf.utils import poll_until
 
 from reddwarfclient import exceptions
 
@@ -61,6 +53,19 @@ from tests.util import create_test_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
+from tests import WHITE_BOX
+
+
+if WHITE_BOX:
+    from nova import context
+    from nova import db
+    from nova import exception as backend_exception
+    from reddwarf.api.common import dbaas_mapping
+    from reddwarf.api.instances import FLAGS as dbaas_FLAGS
+    from nova.compute import power_state
+    from reddwarf.db import api as dbapi
+    from reddwarf.utils import poll_until
+
 
 try:
     import rsdns

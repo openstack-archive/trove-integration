@@ -31,7 +31,6 @@ from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
 from tests import WHITE_BOX
-from tests import wb_test
 from tests.util import test_config
 from tests.util import wait_for_compute_service
 from tests.util.instance import InstanceTest

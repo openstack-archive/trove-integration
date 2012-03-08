@@ -22,11 +22,6 @@ from proboscis.asserts import assert_is_not_none
 from proboscis.asserts import fail
 
 from novaclient.exceptions import NotFound as NotFound404
-from reddwarf.api.common import dbaas_mapping
-from reddwarf.compute.manager import ReddwarfInstanceMetaData
-from reddwarf.compute.manager import VALID_ABORT_STATES
-from reddwarf.db import api as dbapi
-from reddwarf.utils import poll_until
 from tests.util import create_test_client
 from tests.util import report
 from tests.util import test_config
@@ -39,6 +34,11 @@ if WHITE_BOX:
     from nova import utils
     from nova.compute import power_state
     from nova import exception
+    from reddwarf.api.common import dbaas_mapping
+    from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    from reddwarf.compute.manager import VALID_ABORT_STATES
+    from reddwarf.db import api as dbapi
+    from reddwarf.utils import poll_until
 
     FLAGS = flags.FLAGS
 

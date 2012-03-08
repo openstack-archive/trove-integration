@@ -39,11 +39,13 @@ from proboscis.asserts import assert_true
 
 from nova import flags
 from nova import utils
-from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
 from tests.util import should_run_rsdns_tests
+from tests import WHITE_BOX
 
-FLAGS = flags.FLAGS
 
+if WHITE_BOX:
+    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    FLAGS = flags.FLAGS
 
 @test(groups=["rsdns.eventlet"])
 class RsdnsEventletTests(object):
@@ -52,7 +54,7 @@ class RsdnsEventletTests(object):
     def assert_record_created(self, index):
         assert_true(index in self.new_records, "Record %d wasn't created!" % index)
 
-    @before_class(enabled=should_run_rsdns_tests())
+    @before_class(enabled=WHITE_BOX and should_run_rsdns_tests())
     def create_driver(self):
         """Creates the DNS Driver used in subsequent tests."""
         self.driver = utils.import_object(FLAGS.dns_driver)
@@ -70,7 +72,7 @@ class RsdnsEventletTests(object):
         self.driver.create_entry(entry)
         self.new_records[index] = True
 
-    @test(enabled=should_run_rsdns_tests())
+    @test(enabled=WHITE_BOX and should_run_rsdns_tests())
     def use_dns_from_a_single_thread(self):
         """Add DNS records one at a time."""
         self.new_records = {}
@@ -78,7 +80,7 @@ class RsdnsEventletTests(object):
             self.make_record(index)
             self.assert_record_created(index)
 
-    @test(enabled=should_run_rsdns_tests())
+    @test(enabled=WHITE_BOX and should_run_rsdns_tests())
     def use_dns_from_multiple_greenthreads(self):
         """Add multiple DNS records at once."""
         self.new_records = {}
