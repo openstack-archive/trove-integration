@@ -241,6 +241,79 @@ cmd_build() {
 
 
 ###############################################################################
+# Build
+###############################################################################
+
+generate_empty_passphrase_ssh_key() {
+    expect -c "
+spawn /usr/bin/ssh-keygen -f $HOME/.ssh/id_rsa -q
+expect \"empty for no passphrase\"
+send \n
+expect assphrase
+send \n
+expect eof"
+}
+
+function get_glance_id () {
+    echo `$@ | awk '{print $6}'`
+}
+
+cmd_build_image() {
+    USERNAME=`whoami`
+    HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
+    pkg_install kvm-pxe ubuntu-vm-builder
+    VM_PATH=/tmp/oneiric_mysql_image
+    UBUNTU_DISTRO="ubuntu 11.10"
+    UBUNTU_DISTRO_NAME=oneiric
+
+    # Create the guest with the specific files
+    # Assuming this is run from development/bootstrap/bootstrap.sh
+    if [[ -e $HOMEDIR/.ssh/id_rsa.pub ]]
+    then
+        # There is already a public key, no need to generate
+        echo "Key already created, moving on"
+    else
+        pkg_install expect
+        # Generate a public key
+        generate_empty_passphrase_ssh_key
+    fi
+    
+    echo "
+# Copies all the reddwarf code to the guest image
+sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}
+# Starts the reddwarf guestagent
+${PATH_REDDWARF}/bin/reddwarf-guestagent --configfile=${PATH_REDDWARF}/etc/reddwarf/reddwarf-guestagent.conf.sample
+" > /tmp/bootstrap_init.sh
+    
+    COPY_FILE=/tmp/guest-agent-files.txt
+    rm -fr $COPY_FILE
+    # These will be the way the firstboot script phones home to get the latest guest via scp.
+    # See bootstrap_init.sh for more info on what it does
+    echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
+    echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
+
+    # Now put the pub key in this machines auth keys so the vm can log in to the host (scp)
+    # TODO(hub-cap): make this better using a ssh command or checking for existence
+    cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
+
+    #build a qemu image
+    sudo ubuntu-vm-builder qemu $UBUNTU_DISTRO_NAME --addpkg vim \
+         --addpkg mysql-server --addpkg openssh-server \
+         --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
+         --firstboot /tmp/bootstrap_init.sh -d $VM_PATH
+
+    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
+    #TODO(hub-cap): Finish the glance upload command.
+    # GLANCE_IMAGEID=`get_glance_id glance add name="${UBUNTU_DISTRO_NAME}_mysql_image" is_public=true \
+    #    container_format=ovf disk_format=qcow2 \
+    #    distro='"$UBUNTU_DISTRO"' -A $REDDWARF_TOKEN < $QCOW_IMAGE`
+    
+    #TODO(hub-cap): Upload this sucker to our database.
+    # "update service_images set image_id = '$GLANCE_IMAGEID';"  
+}
+
+
+###############################################################################
 # Run Unit Tests
 ###############################################################################
 
@@ -376,10 +449,10 @@ print_usage() {
           install         - Install all the required dependencies
           initialize      - Cleans nova database, sets everything up.
           build           - Build the packages (including the agent)
+          build-image     - Builds the vm image.
           unit-tests      - Run the unit tests.
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
-          initialize      - Sets up Reddwarf database.
           start           - Start or resume daemons Reddwarf depends on.
           stop            - Kill daemons Reddwarf depends on.
     "
@@ -394,6 +467,7 @@ fi
 case "$1" in
     "install" ) cmd_install;;
     "build" ) cmd_build;;
+    "build-image" ) cmd_build_image;;
     "unit-tests" ) cmd_unit_tests;;
     "initialize" ) cmd_initialize;;
     "start-deps" ) cmd_start_deps;;
