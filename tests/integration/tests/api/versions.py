@@ -41,7 +41,8 @@ class Versions(object):
         assert_equal(1, len(versions))
         assert_equal("CURRENT", versions[0].status,
                      message="Version status: %s" % versions[0].status)
-        assert_equal("v1.0", versions[0].id,
+        expected_version = test_config.values['reddwarf_version']
+        assert_equal(expected_version, versions[0].id,
                      message="Version ID: %s" % versions[0].id)
 
     def _request(self, url, method='GET', response='200'):
