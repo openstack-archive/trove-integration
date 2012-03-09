@@ -79,24 +79,79 @@ function echo_id_from_table () {
     echo `$@ | grep id | awk '{print $4}'`
 }
 
+function keystone_add_user() {
+    # Adds a user. Prints the UUID to standard out.
+    USER_NAME=$1
+    USER_PASS=$2
+    USER_EMAIL=$3
+    # Create the user "reddwarf"
+    USER_UUID=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-list | grep $USER_NAME | awk '{print $2}'`
+    if [ -z $USER_UUID ]; then
+        USER_UUID=`echo_id_from_table keystone \
+                   --endpoint http://localhost:35357/v2.0  \
+                   --token be19c524ddc92109a224 user-create \
+                   --name=$USER_NAME --pass="$USER_PASS" --email=$USER_EMAIL`
+    fi
+
+    echo $USER_UUID
+}
+
+function keystone_add_user_role() {
+    TENANT_UUID=$1
+    USER_UUID=$2
+    ROLE_UUID=$3
+    echo "keystone --endpoint http://localhost:35357/v2.0
+        --token be19c524ddc92109a224 user-role-add
+        --tenant_id $TENANT_UUID
+        --user $USER_UUID
+        --role $ROLE_UUID"
+    keystone --endpoint http://localhost:35357/v2.0 \
+        --token be19c524ddc92109a224 user-role-add \
+        --tenant_id $TENANT_UUID \
+        --user $USER_UUID \
+        --role $ROLE_UUID
+}
+
+
+keystone_manage () {
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 $@
+}
+
 function configure_keystone() {
     exclaim "Configuring keystone..."
 
+
+    # Create the tenant "reddwarf".
     # First we should check if these exist
     REDDWARF_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'`
     if [ -z $REDDWARF_TENANT ]; then
         REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
     fi
 
-    REDDWARF_USER=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-list | grep reddwarf | awk '{print $2}'`
-    if [ -z $REDDWARF_USER ]; then
-        REDDWARF_USER=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-create \
-                                                         --name=reddwarf --pass="REDDWARF-PASS" --email=reddwarf@example.com`
-    fi
     REDDWARF_ROLE=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep reddwarf | awk '{print $2}'`
     if [ -z "$REDDWARF_ROLE" ]; then
         REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
     fi
+
+    REDDWARF_USER=`keystone_add_user reddwarf REDDWARF-PASS reddwarf@example.com`
+
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    # TODO: Restrict permissions.
+    REDDWARF_USER=`keystone_add_user admin admin admin@example.com`
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    REDDWARF_USER=`keystone_add_user Boss admin boss@example.com`
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    REDDWARF_USER=`keystone_add_user chunk chunk chunk@example.com`
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    REDDWARF_USER=`keystone_add_user daffy daffy daffy@example.com`
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
 
     echo "
 REDDWARF_TENANT=$REDDWARF_TENANT
@@ -108,16 +163,24 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 # REDDWARF_TENANT=$REDDWARF_TENANT
 # REDDWARF_USER=$REDDWARF_USER
 # REDDWARF_ROLE=$REDDWARF_ROLE"
-    keystone --endpoint http://localhost:35357/v2.0 \
-        --token be19c524ddc92109a224 user-role-add \
-        --tenant_id $REDDWARF_TENANT \
-        --user $REDDWARF_USER \
-        --role $REDDWARF_ROLE
 
     echo "Checking login..."
     # Now attempt a login
     curl -d '{"auth":{"passwordCredentials":{"username": "reddwarf", "password": "REDDWARF-PASS"},"tenantName":"reddwarf"}}' \
      -H "Content-type: application/json" http://localhost:35357/v2.0/tokens
+
+
+
+    # Register reddwarf service.
+    SERVICE_UUID=`keystone_manage service-list | grep reddwarf | awk '{print $2}'`
+    if [ -z $SERVICE_UUID ]; then
+        OS_USERNAME=reddwarf OS_PASSWORD=REDDWARF-PASS \
+        keystone_manage service-create --name=reddwarf \
+                            --type=dbaas \
+                            --description="Reddwarf" \
+                            --role=$REDDWARF_ROLE
+    fi
+
 }
 
 ###############################################################################
@@ -133,6 +196,17 @@ install_packages_1() {
     pkg_install git-core
 }
 
+
+#TODO: Find 1. if this is necessary and 2. see if we can get devstack to do it.
+add_to_keystone_conf() {
+    echo "
+catalog.RegionOne.image.publicURL = http://10.0.2.15:9292/v1
+catalog.RegionOne.image.adminURL = http://10.0.2.15:9292/v1
+catalog.RegionOne.image.internalURL = http://10.0.2.15:9292/v1
+catalog.RegionOne.image.name = 'Reddwarf'
+    " >> $PATH_KEYSTONE/etc/default_catalog.templates
+}
+
 install_packages_2() {
     # Called after devstack.
     exclaim "Installing dependencies (part 2)..."
@@ -142,6 +216,8 @@ install_packages_2() {
 
     pkg_install python-pexpect
     sudo pip install proboscis
+
+    add_to_keystone_conf
 }
 
 install_devstack() {
@@ -279,14 +355,14 @@ cmd_build_image() {
         # Generate a public key
         generate_empty_passphrase_ssh_key
     fi
-    
+
     echo "
 # Copies all the reddwarf code to the guest image
 sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}
 # Starts the reddwarf guestagent
 ${PATH_REDDWARF}/bin/reddwarf-guestagent --configfile=${PATH_REDDWARF}/etc/reddwarf/reddwarf-guestagent.conf.sample
 " > /tmp/bootstrap_init.sh
-    
+
     COPY_FILE=/tmp/guest-agent-files.txt
     rm -fr $COPY_FILE
     # These will be the way the firstboot script phones home to get the latest guest via scp.
@@ -309,9 +385,9 @@ ${PATH_REDDWARF}/bin/reddwarf-guestagent --configfile=${PATH_REDDWARF}/etc/reddw
     # GLANCE_IMAGEID=`get_glance_id glance add name="${UBUNTU_DISTRO_NAME}_mysql_image" is_public=true \
     #    container_format=ovf disk_format=qcow2 \
     #    distro='"$UBUNTU_DISTRO"' -A $REDDWARF_TOKEN < $QCOW_IMAGE`
-    
+
     #TODO(hub-cap): Upload this sucker to our database.
-    # "update service_images set image_id = '$GLANCE_IMAGEID';"  
+    # "update service_images set image_id = '$GLANCE_IMAGEID';"
 }
 
 
