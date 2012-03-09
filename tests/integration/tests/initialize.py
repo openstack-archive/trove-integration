@@ -32,7 +32,7 @@ from tests.util.test_config import keystone_bin
 from tests.util.test_config import keystone_code_root
 from tests.util.test_config import nova_code_root
 from tests.util.test_config import python_cmd_list
-
+from tests.util.test_config import use_reaper
 from tests import WHITE_BOX
 
 if WHITE_BOX:
@@ -237,7 +237,8 @@ class KeystoneAll(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[Compute, Network, Scheduler, Volume])
+      depends_on_classes=[Compute, Network, Scheduler, Volume],
+      enabled=use_reaper)
 class Reaper(unittest.TestCase):
     """Starts the Reaper."""
 
@@ -276,11 +277,12 @@ class ReddwarfApi(unittest.TestCase):
 
     def test_start(self):
         if not self.service.is_service_alive():
-            self.service.start(time_out=60 * 5)
+            self.service.start(time_out=5)
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[Compute, Network, Scheduler, Volume])
+      depends_on_classes=[Compute, Network, Scheduler, Volume],
+      enabled=WHITE_BOX)
 class WaitForTopics(unittest.TestCase):
     """Waits until needed services are up."""
 
@@ -293,7 +295,7 @@ class WaitForTopics(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[WaitForTopics])
+      depends_on_classes=[WaitForTopics], enabled=WHITE_BOX)
 class ServicesTestable(unittest.TestCase):
     """Check Services are ready for Tests
 

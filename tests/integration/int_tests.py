@@ -185,6 +185,7 @@ if __name__ == '__main__':
 
         black_box_groups = [
             "services.initialize",
+            versions.GROUP
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)

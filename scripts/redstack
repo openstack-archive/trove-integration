@@ -486,7 +486,7 @@ case "$1" in
     "stop-deps" ) cmd_stop_deps;;
     "start" ) cmd_start;;
     "stop" ) cmd_stop;;
-    "int-tests" ) cmd_int_tests $@;;
+    "int-tests" ) shift; cmd_int_tests $@;;
     * )
         echo "'$1' not a valid command"
         exit 1

@@ -123,6 +123,7 @@ def _setup():
     global volume_service
     global keystone_service
     global glance_image
+    global use_reaper
     global white_box
     values = load_configuration()
     use_venv = values.get("use_venv", True)
@@ -137,13 +138,20 @@ def _setup():
     reddwarf_code_root = str(values["reddwarf_code_root"])
     reddwarf_conf = str(values["reddwarf_conf"])
     glance_image = str(values["glance_image"])
+    use_reaper = values["use_reaper"]
     if not nova_conf:
         raise ValueError("Configuration value \"nova_conf\" not found.")
 
-    dbaas = WebService(cmd=python_cmd_list() +
-                           ["%s/bin/reddwarf-api" % reddwarf_code_root,
-                            "--flagfile=%s" % reddwarf_conf],
-                        url=dbaas_url)
+    if str(values.get("reddwarf_api_format", "new")) == "old":
+        dbaas = WebService(cmd=python_cmd_list() +
+                               ["%s/bin/reddwarf-api" % reddwarf_code_root,
+                                "--flagfile=%s" % reddwarf_conf],
+                            url=dbaas_url)
+    else:
+        dbaas = WebService(cmd=python_cmd_list() +
+                               ["%s/bin/reddwarf-server" % reddwarf_code_root,
+                                "--config-file=%s" % reddwarf_conf],
+                            url=dbaas_url)
     nova = WebService(cmd=python_cmd_list() +
                           ["%s/bin/nova-api" % nova_code_root,
                            "--flagfile=%s" % nova_conf],
