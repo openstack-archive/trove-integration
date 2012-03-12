@@ -195,17 +195,6 @@ install_packages_1() {
     pkg_install git-core
 }
 
-
-#TODO: Find 1. if this is necessary and 2. see if we can get devstack to do it.
-add_to_keystone_conf() {
-    echo "
-catalog.RegionOne.image.publicURL = http://10.0.2.15:9292/v1
-catalog.RegionOne.image.adminURL = http://10.0.2.15:9292/v1
-catalog.RegionOne.image.internalURL = http://10.0.2.15:9292/v1
-catalog.RegionOne.image.name = 'Reddwarf'
-    " >> $PATH_KEYSTONE/etc/default_catalog.templates
-}
-
 install_packages_2() {
     # Called after devstack.
     exclaim "Installing dependencies (part 2)..."
@@ -215,8 +204,6 @@ install_packages_2() {
 
     pkg_install python-pexpect
     sudo pip install proboscis
-
-    add_to_keystone_conf
 }
 
 install_devstack() {
