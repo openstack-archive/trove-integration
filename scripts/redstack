@@ -177,8 +177,7 @@ REDDWARF_ROLE=$REDDWARF_ROLE
         OS_USERNAME=reddwarf OS_PASSWORD=REDDWARF-PASS \
         keystone_manage service-create --name=reddwarf \
                             --type=dbaas \
-                            --description="Reddwarf" \
-                            --role=$REDDWARF_ROLE
+                            --description="Reddwarf"
     fi
 
 }
