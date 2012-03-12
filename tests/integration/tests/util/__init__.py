@@ -103,7 +103,6 @@ def get_dns_entry_factory():
         _dns_entry_factory = utils.import_object(class_name)
     return _dns_entry_factory
 
-
 def check_database(instance_id, dbname):
     """Checks if the name appears in an instance's list of databases."""
     default_db = re.compile("[\w\n]*%s[\w\n]*" % dbname)

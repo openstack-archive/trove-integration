@@ -100,6 +100,7 @@ class InstanceTestInfo(object):
         self.databases = None # The databases created on the instance.
         self.host_info = None # Host Info before creating instances
         self.user_context = None # A regular user context
+        self.users = None # The users created on the instance.
 
     def check_database(self, dbname):
         return check_database(self.get_local_id(), dbname)
@@ -245,6 +246,10 @@ class CreateInstance(unittest.TestCase):
                           "collate": "latin2_general_ci"})
         databases.append({"name": "db2"})
         instance_info.databases = databases
+        users = []
+        users.append({"name": "lite", "password": "litepass",
+                      "databases": [{"name": "firstdb"}]})
+        instance_info.users = users
         instance_info.volume = {'size': 2}
 
         if create_new_instance():
@@ -252,7 +257,7 @@ class CreateInstance(unittest.TestCase):
                                                instance_info.name,
                                                instance_info.dbaas_flavor_href,
                                                instance_info.volume,
-                                               databases)
+                                               databases, users)
         else:
             id = existing_instance()
             instance_info.initial_result = dbaas.instances.get(id)
@@ -482,6 +487,28 @@ class TestVolume(unittest.TestCase):
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
+      groups=[GROUP, GROUP_TEST])
+class TestAfterInstanceCreatedGuestData(object):
+    """
+    Test the optional parameters (databases and users) passed in to create
+    instance call were created.
+    """
+
+    @test
+    def test_databases(self):
+        for db in instance_info.databases:
+            if not instance_info.check_database(db["name"]):
+                fail("Database '%s' was not created" % db["name"])
+
+    @test
+    def test_users(self):
+        users = dbaas.users.list(instance_info.id)
+        usernames = [user.name for user in users]
+        for user in instance_info.users:
+            assert_true(user["name"] in usernames)
+
+
+@test(depends_on_classes=[WaitForGuestInstallationToFinish],
       groups=[GROUP, GROUP_START, "dbaas.listing"])
 class TestInstanceListing(object):
     """ Test the listing of the instance information """
@@ -682,6 +709,14 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
         # The client reshapes the exception into just an OpenStackException.
         assert_raises(nova_exceptions.NotFound, dbaas_admin.management.show, -1)
 
+    def test_mgmt_ips_associated(self):
+        # Test that the management index properly associates an instances with
+        # ONLY its IPs.
+        mgmt_index = dbaas_admin.management.index()
+        # Every instances has exactly one address.
+        for instance in mgmt_index:
+            self.assertEqual(1, len(instance.ips))
+
     def test_mgmt_data(self):
         # Test that the management API returns all the values we expect it to.
         info = instance_info
@@ -706,7 +741,6 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
                 'character_set': 'latin2',
                 'collate': 'latin2_general_ci',
                 }],
-            'users': [],
             'volume': {
                 'id': volume.id,
                 'name': volume.display_name,
@@ -725,6 +759,11 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
             self.assertEqual(getattr(mgmt_details, k), v,
                 "Attr %r expected to be %r but was %r." %
                 (k, v, getattr(mgmt_details, k)))
+        print(mgmt_details.users)
+        for user in mgmt_details.users:
+            self.assertTrue('name' in user, "'name' not in users element.")
+
+
 
 
 class CheckInstance(object):
@@ -793,7 +832,12 @@ def diagnostic_tests_helper(diagnostics):
                       'threads']
     CheckInstance(None).attrs_exist(diagnostics._info, expected_attrs,
                                     msg="Diagnostics")
+    actual_version = diagnostics.version
+    update_test_conf = test_config.values.get("guest-update-test", None)
+    if update_test_conf is not None:
+        if actual_version == update_test_conf['next-version']:
+            return  # This is acceptable but may not match the regex.
     version_pattern = re.compile(r'[a-f0-9]+')
-    msg = "Version %s does not match pattern %s." % (diagnostics.version,
+    msg = "Version %s does not match pattern %s." % (actual_version,
                                                      version_pattern)
-    assert_true(version_pattern.match(diagnostics.version), msg)
+    assert_true(version_pattern.match(actual_version), msg)
