@@ -66,7 +66,8 @@ class MgmtInstancesIndex(object):
                 'deleted_at',
                 'deleted',
                 'flavorid',
-                'ips'
+                'ips',
+                'volumes'
             ]
         index = self.admin_client.management.index()
         for instance in index:
@@ -86,4 +87,4 @@ class MgmtInstancesIndex(object):
         full_index = self.admin_client.management.index()
         # There should be no instances that are neither deleted or not-deleted.
         assert_equal(len(full_index), sum(instance_counts))
-
+        

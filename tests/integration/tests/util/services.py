@@ -29,7 +29,6 @@ from proboscis import decorators
 
 def _is_web_service_alive(url):
     """Does a HTTP GET request to see if the web service is up."""
-    import sys
     client = Http()
     try:
         resp = client.request(url, 'GET')
