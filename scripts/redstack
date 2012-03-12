@@ -146,7 +146,7 @@ function configure_keystone() {
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
 
     # TODO: Restrict permissions.
-    REDDWARF_USER=`keystone_add_user admin admin admin@example.com`
+    REDDWARF_USER=`keystone_add_user radmin radmin radmin@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
 
     REDDWARF_USER=`keystone_add_user Boss admin boss@example.com`

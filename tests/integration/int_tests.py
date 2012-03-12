@@ -187,7 +187,9 @@ if __name__ == '__main__':
         black_box_groups = [
             #flavors.GROUP,
             "services.initialize",
-            versions.GROUP
+            "dbaas.setup",
+            "dbaas.preinstance",
+            versions.GROUP,
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)

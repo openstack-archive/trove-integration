@@ -144,7 +144,7 @@ def create_new_instance():
 
 @test(groups=[GROUP, GROUP_START, 'dbaas.setup'],
       depends_on_groups=["services.initialize"])
-class Setup(object):
+class InstanceSetup(object):
     """Makes sure the client can hit the ReST service.
 
     This test also uses the API to find the image and flavor to use.
@@ -156,16 +156,20 @@ class Setup(object):
         """Sets up the client."""
         global dbaas
         global dbaas_admin
-        instance_info.user = test_config.users.find_user_by_name("chunk")
-        instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
-        instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
-                                                            instance_info.user.tenant)
-        dbaas = create_test_client(instance_info.user)
-        instance_info.dbaas = dbaas
-        dbaas_admin = create_test_client(instance_info.admin_user)
         # TODO(rnirmal): We need to better split out the regular client and
         # the admin client
-        instance_info.dbaas_admin = dbaas_admin
+        instance_info.user = test_config.users.find_user(Requirements(is_admin=False))
+        instance_info.dbaas = create_test_client(instance_info.user)
+        dbaas = instance_info.dbaas
+
+        instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
+        instance_info.dbaas_admin = create_test_client(instance_info.admin_user)
+        dbaas_admin = instance_info.dbaas_admin
+
+        if WHITE_BOX:
+            instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
+                                                                instance_info.user.tenant)
+
 
     @test
     def auth_token(self):
@@ -173,19 +177,20 @@ class Setup(object):
         print("Auth Token: %s" % dbaas.client.auth_token)
         print("Service URL: %s" % dbaas_admin.client.management_url)
         assert_not_equal(dbaas.client.auth_token, None)
-        assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
+        if WHITE_BOX:
+            assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
 
-    @test
+    @test(enabled=WHITE_BOX)
     def find_image(self):
         result = dbaas_admin.find_image_and_self_href(test_config.dbaas_image)
         instance_info.dbaas_image, instance_info.dbaas_image_href = result
 
-    @test
+    @test(enabled=WHITE_BOX)
     def test_find_flavor(self):
         result = dbaas_admin.find_flavor_and_self_href(flavor_id=1)
         instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
 
-    @test
+    @test(enabled=WHITE_BOX)
     def test_add_imageref_config(self):
         key = "reddwarf_imageref"
         value = 1
@@ -209,8 +214,8 @@ class Setup(object):
             instance_info.name = dbaas.instances.get(id).name
 
 
-@test(depends_on_classes=[Setup], depends_on_groups=['dbaas.setup'],
-      groups=[tests.DBAAS_API])
+@test(depends_on_classes=[InstanceSetup], depends_on_groups=['dbaas.setup'],
+      groups=[tests.DBAAS_API, 'dbaas.preinstance'])
 class PreInstanceTest(object):
     """Instance tests before creating an instance"""
 
@@ -672,7 +677,7 @@ class DeleteInstance(object):
                  "time: %s" % (str(instance_info.id), attempts, str(ex)))
 
     @time_out(30)
-    @test
+    @test(enabled=WHITE_BOX)
     def test_volume_is_deleted(self):
         try:
             while True:
@@ -723,10 +728,6 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
         ir = info.initial_result
         cid = ir.id
         instance_id = instance_info.local_id
-        volumes = db.volume_get_all_by_instance(context.get_admin_context(), instance_id)
-        self.assertEqual(len(volumes), 1)
-        volume = volumes[0]
-
         expected = {
             'id': ir.id,
             'name': ir.name,
@@ -741,13 +742,18 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
                 'character_set': 'latin2',
                 'collate': 'latin2_general_ci',
                 }],
-            'volume': {
-                'id': volume.id,
-                'name': volume.display_name,
-                'size': volume.size,
-                'description': volume.display_description,
-                },
             }
+
+        if WHITE_BOX:
+            volumes = db.volume_get_all_by_instance(context.get_admin_context(), instance_id)
+            self.assertEqual(len(volumes), 1)
+            volume = volumes[0]
+            expected['volume'] = {
+                     'id': volume.id,
+                     'name': volume.display_name,
+                     'size': volume.size,
+                     'description': volume.display_description,
+                     }
 
         expected_entry = info.expected_dns_entry()
         if expected_entry:
