@@ -501,12 +501,17 @@ cmd_int_tests() {
     NEW_PATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS/integration
     echo "Python path : $NEW_PATH"
     export PYTHONPATH=$NEW_PATH
+    # By default use the blackbox group.
     if [ $# -lt 1 ]; then
         args="--group=blackbox"
     else
         args="$@"
     fi
-    args="$INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/integration/int_tests.py  --verbose --verbose $args"
+
+    # -- verbose makes it prettier.
+    # -- logging-clear-handlers keeps the novaclient and other things from
+    #    spewing logs to stdout.
+    args="$INT_TEST_OPTIONS -B $PATH_REDDWARF_INT_TESTS/integration/int_tests.py  --verbose --logging-clear-handlers $args"
     echo "python $args"
     python $args
 }

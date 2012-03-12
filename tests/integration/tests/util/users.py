@@ -24,13 +24,17 @@ possess instead of specifying exact identities in the test code.
 class Requirements(object):
     """Defines requirements a test has of a user."""
 
-    def __init__(self, is_admin):
+    def __init__(self, is_admin, services=None):
         self.is_admin = is_admin
+        self.services = services or ["reddwarf"]
 
     def satisfies(self, reqs):
         """True if these requirements conform to the given requirements."""
         if reqs.is_admin != self.is_admin:
             return False
+        for service in reqs.services:
+            if service not in self.services:
+                return False
         return True
 
 
@@ -44,7 +48,7 @@ class ServiceUser(object):
 
     """
 
-    def __init__(self, auth_user=None, auth_key=None,
+    def __init__(self, auth_user=None, auth_key=None, services=None,
                  tenant=None, requirements=None):
         """Creates info on a user."""
         self.auth_user = auth_user
@@ -60,7 +64,7 @@ class Users(object):
     def __init__(self, user_list):
         self.users = []
         for user_dict in user_list:
-            reqs = Requirements(**user_dict["requirements"])            
+            reqs = Requirements(**user_dict["requirements"])
             user = ServiceUser(auth_user=user_dict["auth_user"],
                                auth_key=user_dict["auth_key"],
                                tenant=user_dict["tenant"],

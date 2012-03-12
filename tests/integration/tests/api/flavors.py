@@ -23,7 +23,8 @@ from proboscis import before_class
 from proboscis import test
 
 import tests
-from tests.util import create_test_client
+from tests.util import create_dbaas_client
+from tests.util import create_nova_client
 from tests.util import test_config
 from tests.util.users import Requirements
 
@@ -80,14 +81,18 @@ class Flavors(object):
 
     @before_class
     def setUp(self):
-        user = test_config.users.find_user(Requirements(is_admin=False))
-        self.client = create_test_client(user)
+        nova_user = test_config.users.find_user(
+            Requirements(is_admin=False, services=["nova"]))
+        rd_user = test_config.users.find_user(
+            Requirements(is_admin=False, services=["reddwarf"]))
+        self.nova_client = create_nova_client(nova_user)
+        self.rd_client = create_dbaas_client(rd_user)
 
 
     @test
     def confirm_flavors_lists_are_nearly_identical(self):
-        os_flavors = self.client.os.flavors.list()
-        dbaas_flavors = self.client.dbaas.flavors.list()
+        os_flavors = self.nova_client.flavors.list()
+        dbaas_flavors = self.rd_client.flavors.list()
 
         print("Open Stack Flavors:")
         print(os_flavors)

@@ -42,6 +42,7 @@ be used.
 from __future__ import absolute_import
 import atexit
 import gettext
+import logging
 import os
 import time
 import unittest
@@ -184,6 +185,7 @@ if __name__ == '__main__':
         from tests import util
 
         black_box_groups = [
+            #flavors.GROUP,
             "services.initialize",
             versions.GROUP
         ]

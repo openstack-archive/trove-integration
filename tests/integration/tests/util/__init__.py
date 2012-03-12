@@ -161,18 +161,19 @@ def create_dns_entry(id, uuid):
     return entry
 
 
-def create_openstack_client(user):
-    """Creates a rich client for the OpenStack API using the test config."""
+def create_nova_client(user):
+    """Creates a rich client for the Nova API using the test config."""
     test_config.nova.ensure_started()
     openstack = Client(user.auth_user, user.auth_key,
-                       user.tenant, test_config.nova_auth_url)
+                       user.tenant, test_config.nova_auth_url,
+                       service_type=test_config.values['nova_service_type'])
     openstack.authenticate()
     return openstack
 
 
 def create_test_client(user):
     """Creates a test client loaded with asserts that works with both APIs."""
-    os_client = create_openstack_client(user)
+    os_client = create_nova_client(user)
     dbaas_client = create_dbaas_client(user)
     assert dbaas_client.client.auth_token is not None
     return TestClient(dbaas_client=dbaas_client, os_client=os_client)
