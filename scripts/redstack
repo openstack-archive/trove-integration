@@ -172,8 +172,6 @@ REDDWARF_ROLE=$REDDWARF_ROLE
     curl -d '{"auth":{"passwordCredentials":{"username": "reddwarf", "password": "REDDWARF-PASS"},"tenantName":"reddwarf"}}' \
      -H "Content-type: application/json" http://localhost:35357/v2.0/tokens
 
-
-
     # Register reddwarf service.
     SERVICE_UUID=`keystone_manage service-list | grep reddwarf | awk '{print $2}'`
     if [ -z $SERVICE_UUID ]; then
@@ -195,7 +193,7 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 install_packages_1() {
     # Called before devstack.
     exclaim 'Installing dependencies (part 1)...'
-    pkg_install git-core
+    pkg_install git-core kvm-pxe ubuntu-vm-builder
 }
 
 install_packages_2() {
@@ -316,12 +314,14 @@ cmd_build() {
 
 
 ###############################################################################
-# Build
+# Build the image
 ###############################################################################
 
 generate_empty_passphrase_ssh_key() {
+    exclaim "generating a empty passphrase DEV ONLY rsa key"
+    HOMEDIR=$1
     expect -c "
-spawn /usr/bin/ssh-keygen -f $HOME/.ssh/id_rsa -q
+spawn /usr/bin/ssh-keygen -f $HOMEDIR/.ssh/id_rsa -q
 expect \"empty for no passphrase\"
 send \n
 expect assphrase
@@ -333,58 +333,104 @@ function get_glance_id () {
     echo `$@ | awk '{print $6}'`
 }
 
-cmd_build_image() {
-    USERNAME=`whoami`
-    HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
-    pkg_install kvm-pxe ubuntu-vm-builder
-    VM_PATH=/tmp/oneiric_mysql_image
-    UBUNTU_DISTRO="ubuntu 11.10"
-    UBUNTU_DISTRO_NAME=oneiric
+function upload_image_to_glance() {
+    exclaim "uploading the image to glance."
+
+    IMAGE_NAME=$1
+    REDDWARF_TOKEN=$2
+    IMAGE_LOC=$3
+    UBUNTU_DISTRO=$4
+    
+    GLANCE_IMAGEID=`get_glance_id glance add --silent-upload name="$IMAGE_NAME" is_public=true \
+       container_format=ovf disk_format=qcow2 \
+       distro="$UBUNTU_DISTRO" -A $REDDWARF_TOKEN < $IMAGE_LOC`
+
+    #TODO(hub-cap): Upload this sucker to our database.
+    # This should be a reddwarf-manage function
+    echo "update service_images set image_id = '$GLANCE_IMAGEID';"
+}
+
+function build_vm() {
+    exclaim "Actually building the image, this can take up to 15 minutes"
+
+    HOMEDIR=$1
+    USERNAME=$2
+    UBUNTU_DISTRO_NAME=$3
+    VM_PATH=$4
 
     # Create the guest with the specific files
-    # Assuming this is run from development/bootstrap/bootstrap.sh
-    if [[ -e $HOMEDIR/.ssh/id_rsa.pub ]]
+    mkdir -p $HOMEDIR/.ssh
+    if [ ! -e $HOMEDIR/.ssh/id_rsa.pub ]
     then
-        # There is already a public key, no need to generate
-        echo "Key already created, moving on"
-    else
         pkg_install expect
+
         # Generate a public key
-        generate_empty_passphrase_ssh_key
+        generate_empty_passphrase_ssh_key $HOMEDIR
     fi
 
-    echo "
+    # Generate the bootstrap_init file for --firstboot use in the ubuntu-vm-builder
+    # This file copies the current reddwarf codebase into each spawned image
+    # and executes the guestagent binfile, starting the service.
+    # Please note, this is ONLY for dev and should not be considered production ready.
+    echo "#!/usr/bin/env bash
+
 # Copies all the reddwarf code to the guest image
 sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}
+# Install all the dependencies
+pip install -r /home/${USERNAME}/reddwarf_lite/tools/pip-requires
 # Starts the reddwarf guestagent
-${PATH_REDDWARF}/bin/reddwarf-guestagent --configfile=${PATH_REDDWARF}/etc/reddwarf/reddwarf-guestagent.conf.sample
+/home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --configfile=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample
 " > /tmp/bootstrap_init.sh
+
+    # Now put the pub key in this machines auth keys
+    # so the vm can log in to the host (scp from bootstrap_init.sh)
+    # This will also enable us to log in to the dev instances w/o a password
+    is_in_keyfile=`cat $HOMEDIR/.ssh/id_rsa.pub |grep -f - $HOMEDIR/.ssh/authorized_keys |wc -l`
+    if [ $is_in_keyfile == 0 ]
+    then
+        echo "Adding keyfile to authorized_keys, it does not yet exist"
+        cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
+    fi
 
     COPY_FILE=/tmp/guest-agent-files.txt
     rm -fr $COPY_FILE
     # These will be the way the firstboot script phones home to get the latest guest via scp.
     # See bootstrap_init.sh for more info on what it does
+    # man ubuntu-vm-builder for more infomration on the --copy flag
     echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
     echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
-
-    # Now put the pub key in this machines auth keys so the vm can log in to the host (scp)
-    # TODO(hub-cap): make this better using a ssh command or checking for existence
-    cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
+    echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
 
     #build a qemu image
     sudo ubuntu-vm-builder qemu $UBUNTU_DISTRO_NAME --addpkg vim \
          --addpkg mysql-server --addpkg openssh-server \
+         --addpkg gcc --addpkg python-dev \
+         --addpkg libxml2-dev --addpkg libxslt-dev \
+         --addpkg python-setuptools --addpkg python-pip \
          --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
          --firstboot /tmp/bootstrap_init.sh -d $VM_PATH
+}
+
+cmd_build_image() {
+    exclaim "Building a image for use with development and integration tests."
+
+    USERNAME=`whoami`
+    HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
+    VM_PATH=/tmp/oneiric_mysql_image
+    UBUNTU_DISTRO=ubuntu_oneiric
+    UBUNTU_DISTRO_NAME=oneiric
+
+    # If the path doesnt exist, build it, otherwise just upload it
+    if [ ! -d $VM_PATH ]
+    then
+        build_vm $HOMEDIR $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH
+    fi
 
     QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    #TODO(hub-cap): Finish the glance upload command.
-    # GLANCE_IMAGEID=`get_glance_id glance add name="${UBUNTU_DISTRO_NAME}_mysql_image" is_public=true \
-    #    container_format=ovf disk_format=qcow2 \
-    #    distro='"$UBUNTU_DISTRO"' -A $REDDWARF_TOKEN < $QCOW_IMAGE`
+    REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
 
-    #TODO(hub-cap): Upload this sucker to our database.
-    # "update service_images set image_id = '$GLANCE_IMAGEID';"
+    # Now upload it
+    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO
 }
 
 
@@ -559,9 +605,9 @@ fi
 case "$1" in
     "install" ) cmd_install;;
     "build" ) cmd_build;;
+    "initialize" ) cmd_initialize;;
     "build-image" ) cmd_build_image;;
     "unit-tests" ) cmd_unit_tests;;
-    "initialize" ) cmd_initialize;;
     "start-deps" ) cmd_start_deps;;
     "stop-deps" ) cmd_stop_deps;;
     "start" ) cmd_start;;
