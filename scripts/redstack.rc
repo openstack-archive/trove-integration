@@ -14,8 +14,14 @@ PATH_KEYSTONECLIENT=/opt/stack/python-keystoneclient
 PATH_NOVA=/opt/stack/nova
 PATH_PYTHON_NOVACLIENT=/opt/stack/python-novaclient
 
-# Path to reddwarf lite (installed by reddwarf-ci).
+# reddwarf lite information
+REPO_REDDWARF=https://github.com/hub-cap/reddwarf_lite.git
+BRANCH_REDDWARF=master
 PATH_REDDWARF=/opt/stack/reddwarf_lite
+
+# reddwarfclient information
+REPO_REDDWARFCLIENT=https://github.com/hub-cap/python-reddwarfclient.git
+BRANCH_REDDWARFCLIENT=master
 PATH_PYTHON_REDDWARFCLIENT=/opt/stack/python-reddwarfclient
 
 PATH_REDDWARF_INT_TESTS=/integration/tests

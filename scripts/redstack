@@ -22,6 +22,9 @@ fi
 . /integration/scripts/redstack.rc
 . /integration/scripts/reviews.rc
 
+# Load functions devstack style
+. /integration/scripts/functions
+
 if [ -f $PATH_ENV_CONF ]; then
     source $PATH_ENV_CONF
 fi
@@ -271,12 +274,20 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD" > localrc
     ./stack.sh
 }
 
+ensure_local_sources() {
+    # this method will only clone if the sources dont exist, 
+    # or if RECLONE=yes is set
+    git_clone $REPO_REDDWARF $PATH_REDDWARF $BRANCH_REDDWARF
+    git_clone $REPO_REDDWARFCLIENT $PATH_PYTHON_REDDWARFCLIENT $BRANCH_REDDWARFCLIENT
+}
+
 cmd_install() {
     install_packages_1
     install_devstack
     install_devstack_code
     install_reviews_on_top_of_devstack
     run_devstack
+    ensure_local_sources
     install_packages_2
 }
 
@@ -410,7 +421,9 @@ fix_rd_configfile() {
     cd $PATH_REDDWARF
     cp etc/reddwarf/reddwarf.conf.sample /tmp
     # Do some munging to get it a-working
-    sed -i.bak "s/reddwarf_tenant_id=.*/reddwarf_tenant_id=$REDDWARF_TENANT/g" /tmp/reddwarf.conf.sample
+    # Tenant is no longer needed from the config, but we are leaving it in
+    # until we have a better example of stuff to sed out.
+    # sed -i.bak "s/reddwarf_tenant_id=.*/reddwarf_tenant_id=$REDDWARF_TENANT/g" /tmp/reddwarf.conf.sample
 }
 
 rd_manage() {
