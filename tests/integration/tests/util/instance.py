@@ -22,7 +22,6 @@ from proboscis.asserts import assert_is_not_none
 from proboscis.asserts import fail
 
 from novaclient.exceptions import NotFound as NotFound404
-from tests.util import create_test_client
 from tests.util import report
 from tests.util import test_config
 from tests.util.users import Requirements
@@ -70,7 +69,7 @@ class InstanceTest(object):
             user_requirements = Requirements(is_admin=True)
         # Find user, create DBAAS rich client
         self.user = test_config.users.find_user(user_requirements)
-        self.dbaas = create_test_client(self.user)
+        self.dbaas = create_dbaas_client(self.user)
         # Get flavor
         result = self.dbaas.find_flavor_and_self_href(flavor_id=1)
         self.dbaas_flavor, self.dbaas_flavor_href = result

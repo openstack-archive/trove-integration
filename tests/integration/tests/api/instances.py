@@ -49,7 +49,7 @@ from tests.util import report
 from tests.util import check_database
 from tests.util import create_dns_entry
 from tests.util import create_dbaas_client
-from tests.util import create_test_client
+from tests.util import create_nova_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
@@ -159,11 +159,16 @@ class InstanceSetup(object):
         # TODO(rnirmal): We need to better split out the regular client and
         # the admin client
         instance_info.user = test_config.users.find_user(Requirements(is_admin=False))
-        instance_info.dbaas = create_test_client(instance_info.user)
+        instance_info.dbaas = create_dbaas_client(instance_info.user)
+
+        nova_user = test_config.users.find_user(
+            Requirements(is_admin=False, services=["nova"]))
+        self.nova_client = create_nova_client(nova_user)
+
         dbaas = instance_info.dbaas
 
         instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
-        instance_info.dbaas_admin = create_test_client(instance_info.admin_user)
+        instance_info.dbaas_admin = create_dbaas_client(instance_info.admin_user)
         dbaas_admin = instance_info.dbaas_admin
 
         if WHITE_BOX:
@@ -177,21 +182,23 @@ class InstanceSetup(object):
         print("Auth Token: %s" % dbaas.client.auth_token)
         print("Service URL: %s" % dbaas_admin.client.management_url)
         assert_not_equal(dbaas.client.auth_token, None)
-        if WHITE_BOX:
-            assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
+        assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
 
     @test(enabled=WHITE_BOX)
     def find_image(self):
         result = dbaas_admin.find_image_and_self_href(test_config.dbaas_image)
         instance_info.dbaas_image, instance_info.dbaas_image_href = result
 
-    @test(enabled=WHITE_BOX)
+    @test
     def test_find_flavor(self):
-        result = dbaas_admin.find_flavor_and_self_href(flavor_id=1)
+        result = self.nova_client.find_flavor_and_self_href(flavor_id=1)
         instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
 
     @test(enabled=WHITE_BOX)
     def test_add_imageref_config(self):
+        #TODO(tim.simpson): I'm not sure why this is here. The default image
+        # setup should be in initialization test code that lives somewhere else,
+        # probably with the code that uploads the image.
         key = "reddwarf_imageref"
         value = 1
         description = "Default Image for Reddwarf"

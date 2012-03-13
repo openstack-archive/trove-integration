@@ -38,6 +38,7 @@ from proboscis import test
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_raises
 from proboscis.asserts import assert_true
+from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
 from reddwarfclient import Dbaas
@@ -142,9 +143,18 @@ def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
     test_config.nova.ensure_started()
     dbaas = Dbaas(user.auth_user, user.auth_key,
-                  user.tenant, test_config.reddwarf_auth_url)
+                  user.tenant, test_config.reddwarf_auth_url,
+                  service_type='reddwarf')
     dbaas.authenticate()
-    return dbaas
+    with Check() as check:
+        check.is_not_none(dbaas.client.auth_token, "Auth token not set!")
+        if user.requirements.is_admin:
+            expected = test_config.dbaas_url
+            actual = dbaas.client.management_url
+            msg = "Dbaas management url was set to %s, but according to the " \
+                  "test config it must be %s!" % (actual, expected)
+            check.equal(actual, expected, msg)
+    return TestClient(dbaas)
 
 
 def create_dns_entry(id, uuid):
@@ -168,15 +178,7 @@ def create_nova_client(user):
                        user.tenant, test_config.nova_auth_url,
                        service_type=test_config.values['nova_service_type'])
     openstack.authenticate()
-    return openstack
-
-
-def create_test_client(user):
-    """Creates a test client loaded with asserts that works with both APIs."""
-    os_client = create_nova_client(user)
-    dbaas_client = create_dbaas_client(user)
-    assert dbaas_client.client.auth_token is not None
-    return TestClient(dbaas_client=dbaas_client, os_client=os_client)
+    return TestClient(openstack)
 
 
 def find_mysql_procid_on_instance(local_id):

@@ -203,6 +203,16 @@ install_packages_1() {
     pkg_install git-core kvm-pxe ubuntu-vm-builder
 }
 
+
+add_to_keystone_conf() {
+    echo "
+    catalog.RegionOne.reddwarf.publicURL = http://10.0.2.15:8779/v0.1
+    catalog.RegionOne.reddwarf.adminURL = http://10.0.2.15:8779/v0.1
+    catalog.RegionOne.reddwarf.internalURL = http://10.0.2.15:8779/v0.1
+    catalog.RegionOne.reddwarf.name = 'Reddwarf'
+    " >> $PATH_KEYSTONE/etc/default_catalog.templates
+}
+
 install_packages_2() {
     # Called after devstack.
     exclaim "Installing dependencies (part 2)..."
@@ -212,7 +222,14 @@ install_packages_2() {
 
     pkg_install python-pexpect
     sudo pip install proboscis
+
+    cmd_stop_deps
+
+    add_to_keystone_conf
+
+    cmd_start_deps
 }
+
 
 install_devstack() {
     exclaim "Installing devstack..."
