@@ -3,3 +3,5 @@ Vagrantfile
 .my.cnf
 .vagrant
 .bash_history
+.rnd
+host-syslog.log

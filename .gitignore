@@ -1,3 +1,5 @@
 *.sublime-project
 *.sublime-workspace
 scripts/.screenrc
+report/
+run_tests.log

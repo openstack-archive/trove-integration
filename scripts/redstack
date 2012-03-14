@@ -53,6 +53,11 @@ pkg_install () {
     sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS install $@
 }
 
+pkg_update () {
+    echo Updating $@...
+    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS update $@
+}
+
 pkg_remove () {
     echo Uninstalling $@...
     sudo -E apt-get $APT_GET_ARGS remove $@
@@ -191,8 +196,10 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 ###############################################################################
 
 install_packages_1() {
-    # Called before devstack.
-    exclaim 'Installing dependencies (part 1)...'
+    # Called before devstack
+    exclaim 'Updating dependencies (part 1a)...'
+    pkg_update
+    exclaim 'Installing dependencies (part 1b)...'
     pkg_install git-core kvm-pxe ubuntu-vm-builder
 }
 
@@ -273,7 +280,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD" > localrc
 }
 
 ensure_local_sources() {
-    # this method will only clone if the sources dont exist, 
+    # this method will only clone if the sources dont exist,
     # or if RECLONE=yes is set
     git_clone $REPO_REDDWARF $PATH_REDDWARF $BRANCH_REDDWARF
     git_clone $REPO_REDDWARFCLIENT $PATH_PYTHON_REDDWARFCLIENT $BRANCH_REDDWARFCLIENT
@@ -340,7 +347,7 @@ function upload_image_to_glance() {
     REDDWARF_TOKEN=$2
     IMAGE_LOC=$3
     UBUNTU_DISTRO=$4
-    
+
     GLANCE_IMAGEID=`get_glance_id glance add --silent-upload name="$IMAGE_NAME" is_public=true \
        container_format=ovf disk_format=qcow2 \
        distro="$UBUNTU_DISTRO" -A $REDDWARF_TOKEN < $IMAGE_LOC`
@@ -584,8 +591,8 @@ print_usage() {
     echo "
     Commands :
           install         - Install all the required dependencies
-          initialize      - Cleans nova database, sets everything up.
           build           - Build the packages (including the agent)
+          initialize      - Cleans nova database, sets everything up.
           build-image     - Builds the vm image.
           unit-tests      - Run the unit tests.
           start-deps      - Start or resume daemons Reddwarf depends on.
@@ -611,8 +618,8 @@ case "$1" in
     "start-deps" ) cmd_start_deps;;
     "stop-deps" ) cmd_stop_deps;;
     "start" ) cmd_start;;
-    "stop" ) cmd_stop;;
     "int-tests" ) shift; cmd_int_tests $@;;
+    "stop" ) cmd_stop;;
     * )
         echo "'$1' not a valid command"
         exit 1
