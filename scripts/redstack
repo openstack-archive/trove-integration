@@ -390,8 +390,8 @@ function upload_image_to_glance() {
 
     #TODO(hub-cap): Upload this sucker to our database.
     # This should be a reddwarf-manage function
-    echo "sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
-    echo "sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
+    echo "sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite \"INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');\""
+    echo "sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite \"UPDATE service_images SET image_id = '$GLANCE_IMAGEID';\""
 }
 
 function build_vm() {
