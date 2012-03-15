@@ -205,12 +205,12 @@ install_packages_1() {
 
 
 add_to_keystone_conf() {
-    echo "
-    catalog.RegionOne.reddwarf.publicURL = http://10.0.2.15:8779/v0.1
-    catalog.RegionOne.reddwarf.adminURL = http://10.0.2.15:8779/v0.1
-    catalog.RegionOne.reddwarf.internalURL = http://10.0.2.15:8779/v0.1
+    echo '
+    catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v0.1/$(tenant_id)s
+    catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v0.1/$(tenant_id)s
+    catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v0.1/$(tenant_id)s
     catalog.RegionOne.reddwarf.name = 'Reddwarf'
-    " >> $PATH_KEYSTONE/etc/default_catalog.templates
+    ' >> $PATH_KEYSTONE/etc/default_catalog.templates
 }
 
 install_packages_2() {
@@ -221,13 +221,31 @@ install_packages_2() {
     sudo pip install --upgrade pip
 
     pkg_install python-pexpect
-    sudo pip install proboscis
+    #TODO(tim.simpson): Install unstable branch for now.
 
+    exclaim "Installing Proboscis."
+    sudo pip install openstack.nose_plugin
+    #sudo pip install proboscis
+
+    sudo rm -rf /opt/stack/python-proboscis
+    cd /opt/stack
+    git_clone https://github.com/TimSimpsonR/python-proboscis.git \
+        /opt/stack/python-proboscis runs_after_dangerous
+    cd /opt/stack/python-proboscis
+    sudo python setup.py develop
+    cd /tmp
+
+    # This is probably a kludge, but we turn off the error stuff here because
+    # if we can't stop the screen its not important enough to kill this
+    # process.
+    set +e
     cmd_stop_deps
-
+    set -e
     add_to_keystone_conf
 
+    set +e
     cmd_start_deps
+    set -e
 }
 
 
@@ -297,6 +315,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD" > localrc
 }
 
 ensure_local_sources() {
+    exclaim "Making sure local sources are up to date..."
     # this method will only clone if the sources dont exist,
     # or if RECLONE=yes is set
     git_clone $REPO_REDDWARF $PATH_REDDWARF $BRANCH_REDDWARF
@@ -568,7 +587,7 @@ cmd_stop() {
 cmd_int_tests() {
     exclaim "Running Reddwarf Integration Tests..."
     export TEST_CONF=/integration/scripts/conf/test.conf
-    NEW_PATH=$PYTHONPATH:$PATH_REDDWARF:$PATH_REDDWARF_INT_TESTS/integration
+    NEW_PATH=$PYTHONPATH:$PATH_REDDWARF_INT_TESTS/integration
     echo "Python path : $NEW_PATH"
     export PYTHONPATH=$NEW_PATH
     # By default use the blackbox group.

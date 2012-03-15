@@ -147,6 +147,10 @@ if __name__ == '__main__':
     if WHITE_BOX:
         report.log("")
         report.log("Test FLAG file = %s" % nova_conf)
+    report.log("")
+    report.log("sys.path:")
+    for path in sys.path:
+        report.log("\t%s" % path)
 
     # Now that all configurations are loaded its time to import everything.
 
@@ -187,7 +191,7 @@ if __name__ == '__main__':
         black_box_groups = [
             #flavors.GROUP,
             "services.initialize",
-            "dbaas.setup",
+            "dbaas.guest.initialize", #instances.GROUP_START,
             "dbaas.preinstance",
             versions.GROUP,
         ]

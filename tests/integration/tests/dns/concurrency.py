@@ -37,14 +37,14 @@ from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_true
 
-from nova import flags
-from nova import utils
 from tests.util import should_run_rsdns_tests
 from tests import WHITE_BOX
 
 
 if WHITE_BOX:
     from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from nova import flags
+    from nova import utils
     FLAGS = flags.FLAGS
 
 @test(groups=["rsdns.eventlet"])

@@ -149,11 +149,11 @@ def create_dbaas_client(user):
     with Check() as check:
         check.is_not_none(dbaas.client.auth_token, "Auth token not set!")
         if user.requirements.is_admin:
-            expected = test_config.dbaas_url
+            expected_prefix = test_config.dbaas_url
             actual = dbaas.client.management_url
-            msg = "Dbaas management url was set to %s, but according to the " \
-                  "test config it must be %s!" % (actual, expected)
-            check.equal(actual, expected, msg)
+            msg = "Dbaas management url was expected to start with %s, but " \
+                  "was %s." % (expected_prefix, actual)
+            check.true(actual.startswith(expected_prefix), msg)
     return TestClient(dbaas)
 
 

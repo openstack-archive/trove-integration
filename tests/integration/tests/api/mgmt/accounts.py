@@ -24,6 +24,7 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import fail
 
 import tests
+from tests import CLEAN_SLATE
 from tests.api.instances import instance_info
 from tests.util import test_config
 from tests.util import create_dbaas_client
@@ -32,7 +33,8 @@ from tests.util.users import Requirements
 GROUP="dbaas.api.mgmt.accounts"
 
 
-@test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES], depends_on_groups=["services.initialize"])
+@test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES],
+      depends_on_groups=["services.initialize"], enabled=CLEAN_SLATE)
 class AccountsBeforeInstanceCreation(object):
 
     @before_class
@@ -52,7 +54,8 @@ class AccountsBeforeInstanceCreation(object):
         assert_equal(self.user.auth_user, account_info.name)
 
 
-@test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"])
+@test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"],
+      enabled=CLEAN_SLATE)
 class AccountsAfterInstanceCreation(object):
 
     @before_class
@@ -75,7 +78,8 @@ class AccountsAfterInstanceCreation(object):
         assert_equal(instance['name'], instance_info.name)
 
 
-@test(groups=[tests.POST_INSTANCES, GROUP], depends_on_groups=["dbaas.guest.shutdown"])
+@test(groups=[tests.POST_INSTANCES, GROUP],
+      depends_on_groups=["dbaas.guest.shutdown"], enabled=CLEAN_SLATE)
 class AccountsAfterInstanceDeletion(object):
 
     @before_class

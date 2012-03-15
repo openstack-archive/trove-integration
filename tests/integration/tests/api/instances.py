@@ -175,15 +175,6 @@ class InstanceSetup(object):
             instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
                                                                 instance_info.user.tenant)
 
-
-    @test
-    def auth_token(self):
-        """Make sure Auth token is correct and config is set properly."""
-        print("Auth Token: %s" % dbaas.client.auth_token)
-        print("Service URL: %s" % dbaas_admin.client.management_url)
-        assert_not_equal(dbaas.client.auth_token, None)
-        assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
-
     @test(enabled=WHITE_BOX)
     def find_image(self):
         result = dbaas_admin.find_image_and_self_href(test_config.dbaas_image)
@@ -221,20 +212,17 @@ class InstanceSetup(object):
             instance_info.name = dbaas.instances.get(id).name
 
 
-@test(depends_on_classes=[InstanceSetup], depends_on_groups=['dbaas.setup'],
-      groups=[tests.DBAAS_API, 'dbaas.preinstance'])
-class PreInstanceTest(object):
-    """Instance tests before creating an instance"""
-
-    @test(enabled=create_new_instance())
-    def test_delete_instance_not_found(self):
-        # Looks for a random UUID that (most probably) does not exist.
-        assert_raises(nova_exceptions.NotFound, dbaas.instances.delete,
-                      "7016efb6-c02c-403e-9628-f6f57d0920d0")
+@test(depends_on_classes=[InstanceSetup], groups=[GROUP])
+def test_delete_instance_not_found(self):
+    """Deletes an instance that does not exist."""
+    # Looks for a random UUID that (most probably) does not exist.
+    assert_raises(nova_exceptions.NotFound, dbaas.instances.delete,
+                  "7016efb6-c02c-403e-9628-f6f57d0920d0")
 
 
-@test(depends_on_classes=[PreInstanceTest], groups=[GROUP, GROUP_START, tests.INSTANCES],
-      depends_on_groups=[tests.PRE_INSTANCES])
+@test(depends_on_classes=[InstanceSetup],
+      groups=[GROUP, GROUP_START, tests.INSTANCES],
+      runs_after_groups=[tests.PRE_INSTANCES])
 class CreateInstance(unittest.TestCase):
     """Test to create a Database Instance
 
@@ -242,12 +230,8 @@ class CreateInstance(unittest.TestCase):
 
     """
 
-    def test_before_instances_are_started(self):
-        # give the services some time to start up
-        time.sleep(2)
-
     def test_instance_size_too_big(self):
-        too_big = dbaas_FLAGS.reddwarf_max_accepted_volume_size
+        too_big = test_config.values['reddwarf_max_accepted_volume_size']
         assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
                       "way_too_large", instance_info.dbaas_flavor_href,
                       {'size': too_big + 1}, [])
@@ -325,9 +309,10 @@ class CreateInstance(unittest.TestCase):
         CheckInstance(result._info).guest_status()
 
     def test_security_groups_created(self):
-        if not db.security_group_exists(context.get_admin_context(),
-                                        instance_info.user.tenant, "tcp_3306"):
-            assert_false(True, "Security groups did not get created")
+        if WHITE_BOX:
+            if not db.security_group_exists(context.get_admin_context(),
+                instance_info.user.tenant, "tcp_3306"):
+                assert_false(True, "Security groups did not get created")
 
 def assert_unprocessable(func, *args):
     try:
