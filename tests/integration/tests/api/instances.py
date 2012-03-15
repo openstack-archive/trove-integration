@@ -53,6 +53,7 @@ from tests.util import create_nova_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
+from tests import TEST_MGMT
 from tests import WHITE_BOX
 
 
@@ -281,12 +282,13 @@ class CreateInstance(unittest.TestCase):
         CheckInstance(result._info).volume()
 
     def test_create_failure_with_empty_volume(self):
-        instance_name = "instance-failure-with-no-volume-size"
-        databases = []
-        volume = {}
-        assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
-                      instance_name, instance_info.dbaas_flavor_href, volume,
-                      databases)
+        if test_config.values['reddwarf_must_have_volume']:
+            instance_name = "instance-failure-with-no-volume-size"
+            databases = []
+            volume = {}
+            assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
+                          instance_name, instance_info.dbaas_flavor_href,
+                          volume, databases)
 
     def test_create_failure_with_no_volume_size(self):
         instance_name = "instance-failure-with-no-volume-size"
@@ -297,16 +299,17 @@ class CreateInstance(unittest.TestCase):
                       databases)
 
     def test_mgmt_get_instance_on_create(self):
-        result = dbaas_admin.management.show(instance_info.id)
-        expected_attrs = ['account_id', 'addresses', 'created', 'databases',
-                          'flavor', 'guest_status', 'host', 'hostname', 'id',
-                          'name', 'server_state_description', 'status',
-                          'updated', 'users', 'volume', 'root_enabled_at',
-                          'root_enabled_by']
-        CheckInstance(result._info).attrs_exist(result._info, expected_attrs,
-                                                msg="Mgmt get instance")
-        CheckInstance(result._info).flavor()
-        CheckInstance(result._info).guest_status()
+        if TEST_MGMT:
+            result = dbaas_admin.management.show(instance_info.id)
+            expected_attrs = ['account_id', 'addresses', 'created', 'databases',
+                              'flavor', 'guest_status', 'host', 'hostname',
+                              'id', 'name', 'server_state_description',
+                              'status', 'updated', 'users', 'volume',
+                              'root_enabled_at', 'root_enabled_by']
+            CheckInstance(result._info).attrs_exist(result._info,
+                expected_attrs, msg="Mgmt get instance")
+            CheckInstance(result._info).flavor()
+            CheckInstance(result._info).guest_status()
 
     def test_security_groups_created(self):
         if WHITE_BOX:

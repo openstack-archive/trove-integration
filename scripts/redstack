@@ -376,6 +376,11 @@ function get_glance_id () {
     echo `$@ | awk '{print $6}'`
 }
 
+function rdl_sqlite () {
+    echo sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite "$@"
+    sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite "$@"
+}
+
 function upload_image_to_glance() {
     exclaim "uploading the image to glance."
 
@@ -390,7 +395,10 @@ function upload_image_to_glance() {
 
     #TODO(hub-cap): Upload this sucker to our database.
     # This should be a reddwarf-manage function
-    echo "update service_images set image_id = '$GLANCE_IMAGEID';"
+    exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
+
+    rdl_sqlite "INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
+    rdl_sqlite "UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
 }
 
 function build_vm() {
@@ -445,13 +453,16 @@ pip install -r /home/${USERNAME}/reddwarf_lite/tools/pip-requires
     echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
 
     #build a qemu image
-    sudo ubuntu-vm-builder qemu $UBUNTU_DISTRO_NAME --addpkg vim \
+    VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME --addpkg vim \
          --addpkg mysql-server --addpkg openssh-server \
          --addpkg gcc --addpkg python-dev \
          --addpkg libxml2-dev --addpkg libxslt-dev \
          --addpkg python-setuptools --addpkg python-pip \
          --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
-         --firstboot /tmp/bootstrap_init.sh -d $VM_PATH
+         --firstboot /tmp/bootstrap_init.sh -d $VM_PATH"
+    echo "Running the following command:"
+    echo "sudo ubuntu-vm-builder $VM_BUILDER_ARGS"
+    sudo ubuntu-vm-builder $VM_BUILDER_ARGS
 }
 
 cmd_build_image() {
@@ -627,12 +638,12 @@ print_usage() {
     echo "
     Commands :
           install         - Install all the required dependencies
-          build           - Build the packages (including the agent)
-          initialize      - Cleans nova database, sets everything up.
-          build-image     - Builds the vm image.
-          unit-tests      - Run the unit tests.
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
+          build           - Build the packages (including the agent)
+          build-image     - Builds the vm image.
+          initialize      - Cleans nova database, sets everything up.
+          unit-tests      - Run the unit tests.
           start           - Start or resume daemons Reddwarf depends on.
           int-tests       - Runs the integration tests (requires all daemons).
           stop            - Kill daemons Reddwarf depends on.

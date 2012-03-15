@@ -40,6 +40,7 @@ from tests.util.test_config import white_box as WHITE_BOX
 # True if we're positive we've started from a clean slate.
 from tests.util.test_config import clean_slate as CLEAN_SLATE
 
+from tests.util.test_config import test_mgmt as TEST_MGMT
 
 # The following decorate a test only if we're doing white box testing.
 def wb_test(home=None, **kwargs):
