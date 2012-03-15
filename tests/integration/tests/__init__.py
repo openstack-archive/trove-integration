@@ -34,7 +34,11 @@ POST_INSTANCES = "dbaas.api.post_instances"
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
+# True if we can "see" the internals, such as the database, or can import
+# nova and reddwarf code.
 from tests.util.test_config import white_box as WHITE_BOX
+# True if we're positive we've started from a clean slate.
+from tests.util.test_config import clean_slate as CLEAN_SLATE
 
 
 # The following decorate a test only if we're doing white box testing.

@@ -32,7 +32,6 @@ from tests.scheduler import SCHEDULER_DRIVER_GROUP
 from tests.util import TestClient
 from tests.util import count_notifications
 from tests.util import create_dbaas_client
-from tests.util import create_test_client
 from tests.util import test_config
 from tests.util.users import Requirements
 from tests.volumes import VOLUMES_DRIVER
@@ -65,7 +64,7 @@ def setUp():
     """Set up vars needed by this story."""
     user = test_config.users.find_user(Requirements(is_admin=True))
     global client
-    client = create_test_client(user)
+    client = create_dbaas_client(user)
     flavors = client.find_flavors_by_ram(ram=8192)
     assert_true(len(flavors) >= 1, "No flavor found!")
     flavor = flavors[0]

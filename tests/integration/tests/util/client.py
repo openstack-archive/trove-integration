@@ -38,10 +38,9 @@ class TestClient(object):
 
     """
 
-    def __init__(self, dbaas_client, os_client):
-        """Accepts a dbaas and os client. They may have different urls."""
-        self.dbaas = dbaas_client
-        self.os = os_client
+    def __init__(self, real_client):
+        """Accepts a normal client."""
+        self.real_client = real_client
 
     @staticmethod
     def find_flavor_self_href(flavor):
@@ -81,8 +80,4 @@ class TestClient(object):
         return image, image_href
 
     def __getattr__(self, item):
-        if item in ['ipgroups', 'servers', 'zones']:
-            preferred_client = self.os
-        else:
-            preferred_client = self.dbaas
-        return getattr(preferred_client, item)
+        return getattr(self.real_client, item)

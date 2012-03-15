@@ -36,7 +36,6 @@ from tests.util import test_config
 from tests.util import check_database
 from tests.util import count_notifications
 from tests.util import create_dns_entry
-from tests.util import create_test_client
 from tests.util import process
 from tests.util import restart_compute_service
 from tests.util import string_in_list

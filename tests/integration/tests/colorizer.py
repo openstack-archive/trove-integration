@@ -68,7 +68,11 @@ from nose import config
 from nose import core
 from nose import result
 
-from nova import log as logging
+from tests import WHITE_BOX
+
+
+if WHITE_BOX:
+    from nova import log as logging
 
 
 class _AnsiColorizer(object):

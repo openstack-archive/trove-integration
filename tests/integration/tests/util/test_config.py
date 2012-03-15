@@ -124,7 +124,9 @@ def _setup():
     global keystone_service
     global glance_image
     global use_reaper
+    global clean_slate
     global white_box
+    clean_slate = os.environ.get("CLEAN_SLATE", "False") == "True"
     values = load_configuration()
     use_venv = values.get("use_venv", True)
     nova_auth_url = str(values.get("nova_auth_url", "http://localhost:5000/v2.0"))

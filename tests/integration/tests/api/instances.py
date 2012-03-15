@@ -49,7 +49,7 @@ from tests.util import report
 from tests.util import check_database
 from tests.util import create_dns_entry
 from tests.util import create_dbaas_client
-from tests.util import create_test_client
+from tests.util import create_nova_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
@@ -144,7 +144,7 @@ def create_new_instance():
 
 @test(groups=[GROUP, GROUP_START, 'dbaas.setup'],
       depends_on_groups=["services.initialize"])
-class Setup(object):
+class InstanceSetup(object):
     """Makes sure the client can hit the ReST service.
 
     This test also uses the API to find the image and flavor to use.
@@ -156,37 +156,40 @@ class Setup(object):
         """Sets up the client."""
         global dbaas
         global dbaas_admin
-        instance_info.user = test_config.users.find_user_by_name("chunk")
-        instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
-        instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
-                                                            instance_info.user.tenant)
-        dbaas = create_test_client(instance_info.user)
-        instance_info.dbaas = dbaas
-        dbaas_admin = create_test_client(instance_info.admin_user)
         # TODO(rnirmal): We need to better split out the regular client and
         # the admin client
-        instance_info.dbaas_admin = dbaas_admin
+        instance_info.user = test_config.users.find_user(Requirements(is_admin=False))
+        instance_info.dbaas = create_dbaas_client(instance_info.user)
 
-    @test
-    def auth_token(self):
-        """Make sure Auth token is correct and config is set properly."""
-        print("Auth Token: %s" % dbaas.client.auth_token)
-        print("Service URL: %s" % dbaas_admin.client.management_url)
-        assert_not_equal(dbaas.client.auth_token, None)
-        assert_equal(dbaas_admin.client.management_url, test_config.dbaas_url)
+        nova_user = test_config.users.find_user(
+            Requirements(is_admin=False, services=["nova"]))
+        self.nova_client = create_nova_client(nova_user)
 
-    @test
+        dbaas = instance_info.dbaas
+
+        instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
+        instance_info.dbaas_admin = create_dbaas_client(instance_info.admin_user)
+        dbaas_admin = instance_info.dbaas_admin
+
+        if WHITE_BOX:
+            instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
+                                                                instance_info.user.tenant)
+
+    @test(enabled=WHITE_BOX)
     def find_image(self):
         result = dbaas_admin.find_image_and_self_href(test_config.dbaas_image)
         instance_info.dbaas_image, instance_info.dbaas_image_href = result
 
     @test
     def test_find_flavor(self):
-        result = dbaas_admin.find_flavor_and_self_href(flavor_id=1)
+        result = self.nova_client.find_flavor_and_self_href(flavor_id=1)
         instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
 
-    @test
+    @test(enabled=WHITE_BOX)
     def test_add_imageref_config(self):
+        #TODO(tim.simpson): I'm not sure why this is here. The default image
+        # setup should be in initialization test code that lives somewhere else,
+        # probably with the code that uploads the image.
         key = "reddwarf_imageref"
         value = 1
         description = "Default Image for Reddwarf"
@@ -209,20 +212,17 @@ class Setup(object):
             instance_info.name = dbaas.instances.get(id).name
 
 
-@test(depends_on_classes=[Setup], depends_on_groups=['dbaas.setup'],
-      groups=[tests.DBAAS_API])
-class PreInstanceTest(object):
-    """Instance tests before creating an instance"""
-
-    @test(enabled=create_new_instance())
-    def test_delete_instance_not_found(self):
-        # Looks for a random UUID that (most probably) does not exist.
-        assert_raises(nova_exceptions.NotFound, dbaas.instances.delete,
-                      "7016efb6-c02c-403e-9628-f6f57d0920d0")
+@test(depends_on_classes=[InstanceSetup], groups=[GROUP])
+def test_delete_instance_not_found(self):
+    """Deletes an instance that does not exist."""
+    # Looks for a random UUID that (most probably) does not exist.
+    assert_raises(nova_exceptions.NotFound, dbaas.instances.delete,
+                  "7016efb6-c02c-403e-9628-f6f57d0920d0")
 
 
-@test(depends_on_classes=[PreInstanceTest], groups=[GROUP, GROUP_START, tests.INSTANCES],
-      depends_on_groups=[tests.PRE_INSTANCES])
+@test(depends_on_classes=[InstanceSetup],
+      groups=[GROUP, GROUP_START, tests.INSTANCES],
+      runs_after_groups=[tests.PRE_INSTANCES])
 class CreateInstance(unittest.TestCase):
     """Test to create a Database Instance
 
@@ -230,12 +230,8 @@ class CreateInstance(unittest.TestCase):
 
     """
 
-    def test_before_instances_are_started(self):
-        # give the services some time to start up
-        time.sleep(2)
-
     def test_instance_size_too_big(self):
-        too_big = dbaas_FLAGS.reddwarf_max_accepted_volume_size
+        too_big = test_config.values['reddwarf_max_accepted_volume_size']
         assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
                       "way_too_large", instance_info.dbaas_flavor_href,
                       {'size': too_big + 1}, [])
@@ -313,9 +309,10 @@ class CreateInstance(unittest.TestCase):
         CheckInstance(result._info).guest_status()
 
     def test_security_groups_created(self):
-        if not db.security_group_exists(context.get_admin_context(),
-                                        instance_info.user.tenant, "tcp_3306"):
-            assert_false(True, "Security groups did not get created")
+        if WHITE_BOX:
+            if not db.security_group_exists(context.get_admin_context(),
+                instance_info.user.tenant, "tcp_3306"):
+                assert_false(True, "Security groups did not get created")
 
 def assert_unprocessable(func, *args):
     try:
@@ -672,7 +669,7 @@ class DeleteInstance(object):
                  "time: %s" % (str(instance_info.id), attempts, str(ex)))
 
     @time_out(30)
-    @test
+    @test(enabled=WHITE_BOX)
     def test_volume_is_deleted(self):
         try:
             while True:
@@ -723,10 +720,6 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
         ir = info.initial_result
         cid = ir.id
         instance_id = instance_info.local_id
-        volumes = db.volume_get_all_by_instance(context.get_admin_context(), instance_id)
-        self.assertEqual(len(volumes), 1)
-        volume = volumes[0]
-
         expected = {
             'id': ir.id,
             'name': ir.name,
@@ -741,13 +734,18 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
                 'character_set': 'latin2',
                 'collate': 'latin2_general_ci',
                 }],
-            'volume': {
-                'id': volume.id,
-                'name': volume.display_name,
-                'size': volume.size,
-                'description': volume.display_description,
-                },
             }
+
+        if WHITE_BOX:
+            volumes = db.volume_get_all_by_instance(context.get_admin_context(), instance_id)
+            self.assertEqual(len(volumes), 1)
+            volume = volumes[0]
+            expected['volume'] = {
+                     'id': volume.id,
+                     'name': volume.display_name,
+                     'size': volume.size,
+                     'description': volume.display_description,
+                     }
 
         expected_entry = info.expected_dns_entry()
         if expected_entry:
