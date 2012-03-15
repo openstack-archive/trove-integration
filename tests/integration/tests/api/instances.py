@@ -53,6 +53,7 @@ from tests.util import create_nova_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
+from tests import TEST_MGMT
 from tests import WHITE_BOX
 
 
