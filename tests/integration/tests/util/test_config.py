@@ -37,7 +37,8 @@ __all__ = [
     "values",
     "volume_service",
     "keystone_service",
-    "whitebox"
+    "whitebox",
+    "test_mgmt"
 ]
 
 
@@ -126,6 +127,7 @@ def _setup():
     global use_reaper
     global clean_slate
     global white_box
+    global test_mgmt
     clean_slate = os.environ.get("CLEAN_SLATE", "False") == "True"
     values = load_configuration()
     use_venv = values.get("use_venv", True)
@@ -174,5 +176,7 @@ def _setup():
 
     # If true, we import certain classes and test using internal code.
     white_box = values.get("white_box", False)
+    # If true, we run the mgmt tests, if not we don't.
+    test_mgmt = values.get("test_mgmt", False)
 
 _setup()
