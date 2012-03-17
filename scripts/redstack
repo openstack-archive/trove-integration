@@ -427,10 +427,8 @@ function build_vm() {
 
 # Copies all the reddwarf code to the guest image
 sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}
-# Install all the dependencies
-pip install -r /home/${USERNAME}/reddwarf_lite/tools/pip-requires
 # Starts the reddwarf guestagent
-/home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --configfile=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample
+/home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample > /home/${USERNAME}/guestagent.log
 " > /tmp/bootstrap_init.sh
 
     # Now put the pub key in this machines auth keys
@@ -458,6 +456,13 @@ pip install -r /home/${USERNAME}/reddwarf_lite/tools/pip-requires
          --addpkg gcc --addpkg python-dev \
          --addpkg libxml2-dev --addpkg libxslt-dev \
          --addpkg python-setuptools --addpkg python-pip \
+         --addpkg python-sqlalchemy --addpkg python-lxml \
+         --addpkg python-routes --addpkg python-eventlet \
+         --addpkg python-webob --addpkg python-kombu \
+         --addpkg python-pastedeploy --addpkg python-paste \
+         --addpkg python-netaddr --addpkg python-httplib2 \
+         --addpkg python-iso8601 --addpkg python-novaclient \
+         --addpkg python-pexpect \
          --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
          --firstboot /tmp/bootstrap_init.sh -d $VM_PATH"
     echo "Running the following command:"
