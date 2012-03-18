@@ -426,7 +426,7 @@ function build_vm() {
     echo "#!/usr/bin/env bash
 
 # Copies all the reddwarf code to the guest image
-sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}
+sudo -u $USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}/reddwarf_lite
 # Starts the reddwarf guestagent
 /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample > /home/${USERNAME}/guestagent.log
 " > /tmp/bootstrap_init.sh
@@ -453,7 +453,7 @@ sudo -u $USERNAME scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=n
     #build a qemu image
     VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME --addpkg vim \
          --addpkg mysql-server --addpkg openssh-server \
-         --addpkg gcc --addpkg python-dev \
+         --addpkg gcc --addpkg python-dev --addpkg rsync \
          --addpkg libxml2-dev --addpkg libxslt-dev \
          --addpkg python-setuptools --addpkg python-pip \
          --addpkg python-sqlalchemy --addpkg python-lxml \
