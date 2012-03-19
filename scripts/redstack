@@ -427,8 +427,10 @@ function build_vm() {
 
 # Copies all the reddwarf code to the guest image
 sudo -u $USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}/reddwarf_lite
+# Adds user to the sudoers file so they can do everything w/o a pass
+echo '${USERNAME} ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 # Starts the reddwarf guestagent
-/home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample > /home/${USERNAME}/guestagent.log
+sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample > /home/${USERNAME}/guestagent.log
 " > /tmp/bootstrap_init.sh
 
     # Now put the pub key in this machines auth keys
@@ -462,7 +464,7 @@ sudo -u $USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyC
          --addpkg python-pastedeploy --addpkg python-paste \
          --addpkg python-netaddr --addpkg python-httplib2 \
          --addpkg python-iso8601 --addpkg python-novaclient \
-         --addpkg python-pexpect \
+         --addpkg python-pexpect --addpkg python-mysqldb \
          --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
          --firstboot /tmp/bootstrap_init.sh -d $VM_PATH"
     echo "Running the following command:"
