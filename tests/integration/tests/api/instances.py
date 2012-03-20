@@ -232,10 +232,11 @@ class CreateInstance(unittest.TestCase):
     """
 
     def test_instance_size_too_big(self):
-        too_big = test_config.values['reddwarf_max_accepted_volume_size']
-        assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
-                      "way_too_large", instance_info.dbaas_flavor_href,
-                      {'size': too_big + 1}, [])
+        if test_config.values['reddwarf_can_have_volume']:
+            too_big = test_config.values['reddwarf_max_accepted_volume_size']
+            assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
+                          "way_too_large", instance_info.dbaas_flavor_href,
+                          {'size': too_big + 1}, [])
 
     def test_create(self):
         databases = []
@@ -261,25 +262,33 @@ class CreateInstance(unittest.TestCase):
 
         result = instance_info.initial_result
         instance_info.id = result.id
-        instance_info.local_id = dbapi.localid_from_uuid(result.id)
+        if WHITE_BOX:
+            instance_info.local_id = dbapi.localid_from_uuid(result.id)
 
         if create_new_instance():
-            assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
+            if WHITE_BOX:
+                assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
+            print "create_new_instance should be in building state"
         else:
             report.log("Test was invoked with TESTS_USE_INSTANCE_ID=%s, so no "
                        "instance was actually created." % id)
-            report.log("Local id = %d" % instance_info.get_local_id())
+            if WHITE_BOX:
+                report.log("Local id = %d" % instance_info.get_local_id())
 
         # Check these attrs only are returned in create response
-        expected_attrs = ['created', 'flavor', 'hostname', 'id', 'links',
-                          'name', 'status', 'updated', 'volume']
+        expected_attrs = ['created', 'flavor', 'addresses', 'id', 'links',
+                          'name', 'status', 'updated']
+        if test_config.values['reddwarf_can_have_volume']:
+            expected_attrs.append('volume')
+
         if create_new_instance():
             CheckInstance(result._info).attrs_exist(
                 result._info, expected_attrs, msg="Create response")
         # Don't CheckInstance if the instance already exists.
         CheckInstance(result._info).flavor()
         CheckInstance(result._info).links(result._info['links'])
-        CheckInstance(result._info).volume()
+        if test_config.values['reddwarf_can_have_volume']:
+            CheckInstance(result._info).volume()
 
     def test_create_failure_with_empty_volume(self):
         if test_config.values['reddwarf_must_have_volume']:
@@ -291,12 +300,13 @@ class CreateInstance(unittest.TestCase):
                           volume, databases)
 
     def test_create_failure_with_no_volume_size(self):
-        instance_name = "instance-failure-with-no-volume-size"
-        databases = []
-        volume = {'size': None}
-        assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
-                      instance_name, instance_info.dbaas_flavor_href, volume,
-                      databases)
+        if test_config.values['reddwarf_can_have_volume']:
+            instance_name = "instance-failure-with-no-volume-size"
+            databases = []
+            volume = {'size': None}
+            assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
+                          instance_name, instance_info.dbaas_flavor_href, volume,
+                          databases)
 
     def test_mgmt_get_instance_on_create(self):
         if TEST_MGMT:

@@ -705,16 +705,23 @@ print_usage() {
     echo "Usage: $0 [command]"
     echo "
     Commands :
-          install         - Install all the required dependencies
+        --setup environment--
+          install         - Install all the required
+          build           - Build the packages (including the agent)
+          initialize      - Cleans nova database, sets everything up.
+          build-image     - Builds the vm image and adds it to glance (requires initialize)
+
+        --reddwarf dependency services--
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
-          build           - Build the packages (including the agent)
-          build-image     - Builds the vm image.
-          initialize      - Cleans nova database, sets everything up.
-          unit-tests      - Run the unit tests.
+
+        --reddwarf services--
           start           - Start or resume daemons Reddwarf depends on.
-          int-tests       - Runs the integration tests (requires all daemons).
           stop            - Kill daemons Reddwarf depends on.
+
+        --tests--
+          unit-tests      - Run the unit tests.dependencies
+          int-tests       - Runs the integration tests (requires all daemons).
     "
     exit 1
 }

@@ -3,3 +3,4 @@
 scripts/.screenrc
 report/
 run_tests.log
+host-syslog.log
