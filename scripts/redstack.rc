@@ -31,6 +31,10 @@ PATH_TESTS_CONF="$PATH_INTEGRATION_CONF/tests.conf"
 
 PATH_ENV_CONF="$PATH_INTEGRATION_CONF/env.rc"
 
+# Package repo directory
+PACKAGES_DIR=/var/lib/packages/debian/
+BUILD_DIR=/tmp/build/
+
 # Passwors used by devstack.
 MYSQL_PASSWORD=e1a2c042c828d3566d0a
 RABBIT_PASSWORD=f7999d1955c5014aa32c
