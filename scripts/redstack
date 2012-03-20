@@ -346,6 +346,58 @@ setup_py() {
     popd
 }
 
+create_package_repo() {
+    exclaim "Installing Apt Repo...using reprepro"
+    pkg_install reprepro apache2 bc debhelper
+
+    # install the apt repo from /var/www
+    # add distributions file to conf
+    sudo mkdir -p $PACKAGES_DIR/{conf,incoming}
+
+    echo 'Origin: Rackspace
+Label: Rackspace
+Codename: squeeze
+Architectures: i386 amd64
+Components: main
+Description: Rackspace DBaaS APT Repository' | sudo tee $PACKAGES_DIR/conf/distributions
+}
+
+munge_apache2() {
+	exclaim "Munging configs for apache2 (horizon has altered the default)"
+
+	# If the Additional Listen port is not in the conf, add it
+	is_in_portsfile=`grep 'Listen 8080' /etc/apache2/ports.conf |wc -l`
+    if [ $is_in_portsfile == 0 ]
+    then
+		echo "Listen 8080" | sudo tee -a /etc/apache2/ports.conf
+    fi
+
+    # Add the vhost for 8080 because horizon is using 80
+	echo "<VirtualHost *:8080>
+
+    DocumentRoot /var/lib/packages
+
+    ErrorLog /var/log/apache2/error.log
+    LogLevel warn
+    CustomLog /var/log/apache2/access.log combined
+</VirtualHost>
+	" | sudo tee /etc/apache2/sites-available/001-apt-repo
+	
+	sudo a2ensite 001-apt-repo
+	sudo service apache2 reload
+}
+
+add_dbass_mycnf_to_package_repo() {
+	exclaim "Building and uploading dbaasmycnf package..."
+	mkdir -p $PACKAGES_DIR
+	mkdir -p $BUILD_DIR
+	cp -R $PATH_REDDWARF/contrib/dbaas-mycnf $BUILD_DIR
+	cd $BUILD_DIR/dbaas-mycnf
+	sudo -E ./builddeb.sh
+	sudo -E reprepro -Vb $PACKAGES_DIR remove squeeze dbaas-mycnf
+	sudo -E reprepro --ignore=wrongdistribution -Vb $PACKAGES_DIR include squeeze *.changes
+}
+
 cmd_build() {
     # Run setup.py for all projects.
     exclaim "Calling setup for all dependencies..."
@@ -353,6 +405,9 @@ cmd_build() {
     setup_py $PATH_PYTHON_NOVACLIENT
     setup_py $PATH_PYTHON_REDDWARFCLIENT
     setup_py $PATH_REDDWARF
+    create_package_repo
+    munge_apache2
+    add_dbass_mycnf_to_package_repo
 }
 
 
@@ -429,8 +484,10 @@ function build_vm() {
 sudo -u $USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}/reddwarf_lite
 # Adds user to the sudoers file so they can do everything w/o a pass
 echo '${USERNAME} ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+# Do an apt-get update since its SUPER slow first time
+apt-get update
 # Starts the reddwarf guestagent
-sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample > /home/${USERNAME}/guestagent.log
+sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample
 " > /tmp/bootstrap_init.sh
 
     # Now put the pub key in this machines auth keys
@@ -451,6 +508,10 @@ sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --conf
     echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
     echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
     echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
+
+    # Also copy over the debian package repo in the copyfile
+    echo "deb http://10.0.0.1:8080/debian squeeze main" | tee /tmp/apt_repo.list
+    echo "/tmp/apt_repo.list /etc/apt/sources.list.d/apt_repo.list" >> $COPY_FILE
 
     #build a qemu image
     VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME --addpkg vim \
