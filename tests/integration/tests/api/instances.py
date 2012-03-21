@@ -41,6 +41,7 @@ from proboscis.asserts import assert_false
 from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_raises
 from proboscis.asserts import assert_true
+from proboscis.asserts import Check
 from proboscis.asserts import fail
 
 import tests
@@ -268,7 +269,7 @@ class CreateInstance(unittest.TestCase):
         if create_new_instance():
             if WHITE_BOX:
                 assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
-            print "create_new_instance should be in building state"
+            assert_equal("BUILDING", instance_info.initial_result.status)
         else:
             report.log("Test was invoked with TESTS_USE_INSTANCE_ID=%s, so no "
                        "instance was actually created." % id)
@@ -281,14 +282,15 @@ class CreateInstance(unittest.TestCase):
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
 
-        if create_new_instance():
-            CheckInstance(result._info).attrs_exist(
-                result._info, expected_attrs, msg="Create response")
-        # Don't CheckInstance if the instance already exists.
-        CheckInstance(result._info).flavor()
-        CheckInstance(result._info).links(result._info['links'])
-        if test_config.values['reddwarf_can_have_volume']:
-            CheckInstance(result._info).volume()
+        with CheckInstance(result._info) as check:
+            if create_new_instance():
+                check.attrs_exist(result._info, expected_attrs,
+                                  msg="Create response")
+            # Don't CheckInstance if the instance already exists.
+            check.flavor()
+            check.links(result._info['links'])
+            if test_config.values['reddwarf_can_have_volume']:
+                check.volume()
 
     def test_create_failure_with_empty_volume(self):
         if test_config.values['reddwarf_must_have_volume']:
@@ -316,10 +318,11 @@ class CreateInstance(unittest.TestCase):
                               'id', 'name', 'server_state_description',
                               'status', 'updated', 'users', 'volume',
                               'root_enabled_at', 'root_enabled_by']
-            CheckInstance(result._info).attrs_exist(result._info,
-                expected_attrs, msg="Mgmt get instance")
-            CheckInstance(result._info).flavor()
-            CheckInstance(result._info).guest_status()
+            with CheckInstance(result._info) as check:
+                check.attrs_exist(result._info, expected_attrs,
+                                  msg="Mgmt get instance")
+                check.flavor()
+                check.guest_status()
 
     def test_security_groups_created(self):
         if WHITE_BOX:
@@ -333,7 +336,7 @@ def assert_unprocessable(func, *args):
         # If the exception didn't get raised, but the instance is still in
         # the BUILDING state, that's a bug.
         result = dbaas.instances.get(instance_info.id)
-        if result.status == dbaas_mapping[power_state.BUILDING]:
+        if result.status == "BUILDING":
             fail("When an instance is being built, this function should "
                  "always raise UnprocessableEntity.")
     except exceptions.UnprocessableEntity:
@@ -393,6 +396,7 @@ class WaitForGuestInstallationToFinish(unittest.TestCase):
     @time_out(60 * 8)
     def test_instance_created(self):
         while True:
+
             guest_status = dbapi.guest_status_get(instance_info.local_id)
             if guest_status.state != power_state.RUNNING:
                 result = dbaas.instances.get(instance_info.id)
@@ -535,12 +539,12 @@ class TestInstanceListing(object):
         instances = dbaas.instances.details()
         for instance in instances:
             instance_dict = instance._info
-            CheckInstance(instance_dict).attrs_exist(instance_dict,
-                                                     expected_attrs,
-                                                     msg="Instance Details")
-            CheckInstance(instance_dict).flavor()
-            CheckInstance(instance_dict).links(instance_dict['links'])
-            CheckInstance(instance_dict).volume()
+            with CheckInstance(instance_dict) as check:
+                check.attrs_exist(instance_dict, expected_attrs,
+                                  msg="Instance Details")
+                check.flavor()
+                check.links(instance_dict['links'])
+                check.volume()
 
     @test
     def test_index_list(self):
@@ -548,10 +552,10 @@ class TestInstanceListing(object):
         instances = dbaas.instances.index()
         for instance in instances:
             instance_dict = instance._info
-            CheckInstance(instance_dict).attrs_exist(instance_dict,
-                                                     expected_attrs,
-                                                     msg="Instance Index")
-            CheckInstance(instance_dict).links(instance_dict['links'])
+            with CheckInstance(instance_dict) as check:
+                check.attrs_exist(instance_dict, expected_attrs,
+                                  msg="Instance Index")
+                check.links(instance_dict['links'])
 
     @test
     def test_get_instance(self):
@@ -560,13 +564,13 @@ class TestInstanceListing(object):
                           'volume']
         instance = dbaas.instances.get(instance_info.id)
         instance_dict = instance._info
-        CheckInstance(instance_dict).attrs_exist(instance_dict,
-                                                 expected_attrs,
-                                                 msg="Get Instance")
-        CheckInstance(instance_dict).flavor()
-        CheckInstance(instance_dict).links(instance_dict['links'])
-        CheckInstance(instance_dict).volume()
-        CheckInstance(instance_dict).databases()
+        with CheckInstance(instance_dict) as check:
+            check.attrs_exist(instance_dict, expected_attrs,
+                              msg="Get Instance")
+            check.flavor()
+            check.links(instance_dict['links'])
+            check.volume()
+            check.databases()
 
     @test
     def test_instance_hostname(self):
@@ -632,12 +636,13 @@ class TestInstanceListing(object):
                           'name', 'root_enabled_at', 'root_enabled_by',
                           'server_state_description', 'status',
                           'updated', 'users', 'volume']
-        CheckInstance(result._info).attrs_exist(result._info, expected_attrs,
-                                                msg="Mgmt get instance")
-        CheckInstance(result._info).flavor()
-        CheckInstance(result._info).guest_status()
-        CheckInstance(result._info).addresses()
-        CheckInstance(result._info).volume_mgmt()
+        with CheckInstance(result._info) as check:
+            check.attrs_exist(result._info, expected_attrs,
+                              msg="Mgmt get instance")
+            check.flavor()
+            check.guest_status()
+            check.addresses()
+            check.volume_mgmt()
 
 
 @test(depends_on_groups=['dbaas.api.instances.actions'], groups=[GROUP, tests.INSTANCES, "dbaas.diagnostics"])
@@ -650,7 +655,9 @@ class CheckDiagnosticsAfterTests(object):
         assert_true(diagnostics.vmPeak < 30*1024, "Fat Pete has emerged. size (%s > 30MB)" % diagnostics.vmPeak)
 
 
-@test(depends_on_groups=[GROUP_TEST, tests.INSTANCES], groups=[GROUP, GROUP_STOP])
+@test(depends_on=[CreateInstance],
+      runs_after_groups=[GROUP_START, GROUP_TEST, tests.INSTANCES],
+      groups=[GROUP, GROUP_STOP])
 class DeleteInstance(object):
     """ Delete the created instance """
 
@@ -660,9 +667,12 @@ class DeleteInstance(object):
         global dbaas
         if not hasattr(instance_info, "initial_result"):
             raise SkipTest("Instance was never created, skipping test...")
-        volumes = db.volume_get_all_by_instance(context.get_admin_context(),
-                                                instance_info.local_id)
-        instance_info.volume_id = volumes[0].id
+        if test_config.values["reddwarf_can_have_volume"]:
+            # Change this code to get the volume using the API.
+            # That way we can keep it while keeping it black box.
+            volumes = db.volume_get_all_by_instance(context.get_admin_context(),
+                                                    instance_info.local_id)
+            instance_info.volume_id = volumes[0].id
         # Update the report so the logs inside the instance will be saved.
         report.update()
         dbaas.instances.delete(instance_info.id)
@@ -674,7 +684,7 @@ class DeleteInstance(object):
             while result is not None:
                 attempts += 1
                 result = dbaas.instances.get(instance_info.id)
-                assert_equal(dbaas_mapping[power_state.SHUTDOWN], result.status)
+                assert_equal("SHUTDOWN", result.status)
         except nova_exceptions.NotFound:
             pass
         except Exception as ex:
@@ -682,7 +692,7 @@ class DeleteInstance(object):
                  "time: %s" % (str(instance_info.id), attempts, str(ex)))
 
     @time_out(30)
-    @test(enabled=WHITE_BOX)
+    @test(enabled=test_config.values["reddwarf_can_have_volume"])
     def test_volume_is_deleted(self):
         try:
             while True:
@@ -777,18 +787,22 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
 
 
 
-class CheckInstance(object):
+class CheckInstance(Check):
     """Class to check various attributes of Instance details"""
 
     def __init__(self, instance):
+        super(CheckInstance, self).__init__()
         self.instance = instance
+
+    def fail(self, msg):
+        self.true(False, msg)
 
     @staticmethod
     def attrs_exist(list, expected_attrs, msg=None):
         # Check these attrs only are returned in create response
         for attr in list:
             if attr not in expected_attrs:
-                fail("%s should not contain '%s'" % (msg, attr))
+                self.fail("%s should not contain '%s'" % (msg, attr))
 
     def links(self, links):
         expected_attrs = ['href', 'rel']
@@ -796,20 +810,31 @@ class CheckInstance(object):
             self.attrs_exist(link, expected_attrs, msg="Links")
 
     def flavor(self):
-        expected_attrs = ['id', 'links']
-        self.attrs_exist(self.instance['flavor'], expected_attrs,
-                         msg="Flavor")
-        self.links(self.instance['flavor']['links'])
+        if 'flavor' not in self.instance:
+            self.fail("'flavor' not found in instance.")
+        else:
+            expected_attrs = ['id', 'links']
+            self.attrs_exist(self.instance['flavor'], expected_attrs,
+                             msg="Flavor")
+            self.links(self.instance['flavor']['links'])
+
+    def volume_key_exists(self):
+        if 'volume' not in self.instance:
+            self.fail("'volume' not found in instance.")
+            return False
+        return True
 
     def volume(self):
-        expected_attrs = ['size']
-        self.attrs_exist(self.instance['volume'], expected_attrs,
-                         msg="Volumes")
+        if self.volume_key_exists():
+            expected_attrs = ['size']
+            self.attrs_exist(self.instance['volume'], expected_attrs,
+                             msg="Volumes")
 
     def volume_mgmt(self):
-        expected_attrs = ['description', 'id', 'name', 'size']
-        self.attrs_exist(self.instance['volume'], expected_attrs,
-                         msg="Volumes")
+        if self.volume_key_exists():
+            expected_attrs = ['description', 'id', 'name', 'size']
+            self.attrs_exist(self.instance['volume'], expected_attrs,
+                             msg="Volumes")
 
     def databases(self):
         expected_attrs = ['character_set', 'collate', 'name']
