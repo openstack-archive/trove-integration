@@ -42,7 +42,7 @@ def assert_attributes_are_equal(name, os_flavor, dbaas_flavor):
     assert_true(hasattr(os_flavor, name),
                 "open stack flavor did not have attribute %s" % name)
     assert_true(hasattr(dbaas_flavor, name),
-                "open stack flavor did not have attribute %s" % name)
+                "dbaas flavor did not have attribute %s" % name)
     expected = getattr(os_flavor, name)
     actual = getattr(dbaas_flavor, name)
     assert_equal(expected, actual,
@@ -65,12 +65,12 @@ def assert_link_list_is_equal(flavor):
             expected_href = os.path.join(test_config.dbaas.url, "flavors",
                                              str(flavor.id))
             assert_equal(href, expected_href,
-                         '"href" must be %s' % expected_href)
+                         '"href" must be %s, not %s' % (expected_href, href))
         elif "bookmark" in link['rel']:
             base_url = test_config.version_url
             expected_href = os.path.join(base_url, "flavors", str(flavor.id))
             assert_equal(href, expected_href,
-                         '"href" must be %s' % expected_href)
+                         '"href" must be %s, not %s' % (expected_href, href))
         else:
             assert_false(True, "Unexpected rel - %s" % link['rel'])
 
@@ -88,7 +88,6 @@ class Flavors(object):
         self.nova_client = create_nova_client(nova_user)
         self.rd_client = create_dbaas_client(rd_user)
 
-
     @test
     def confirm_flavors_lists_are_nearly_identical(self):
         os_flavors = self.nova_client.flavors.list()
@@ -105,7 +104,7 @@ class Flavors(object):
             for index, dbaas_flavor in enumerate(dbaas_flavors):
                 if os_flavor.id == dbaas_flavor.id:
                     assert_true(found_index is None,
-                                "Flavor ID %d appears in elements #%s and #%d." %\
+                                "Flavor ID '%s' appears in elements #%s and #%d." %\
                                 (dbaas_flavor.id, str(found_index), index))
                     assert_flavors_are_roughly_equivalent(os_flavor, dbaas_flavor)
                     found_index = index
