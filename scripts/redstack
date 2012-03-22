@@ -526,6 +526,7 @@ sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --conf
          --addpkg python-netaddr --addpkg python-httplib2 \
          --addpkg python-iso8601 --addpkg python-novaclient \
          --addpkg python-pexpect --addpkg python-mysqldb \
+         --addpkg python-migrate \
          --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
          --firstboot /tmp/bootstrap_init.sh -d $VM_PATH"
     echo "Running the following command:"
