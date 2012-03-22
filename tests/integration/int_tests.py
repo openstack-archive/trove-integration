@@ -193,6 +193,7 @@ if __name__ == '__main__':
             "services.initialize",
             "dbaas.guest.initialize", #instances.GROUP_START,
             "dbaas.preinstance",
+            "dbaas.guest.shutdown",
             versions.GROUP,
         ]
         proboscis.register(groups=["blackbox"],
