@@ -235,6 +235,14 @@ install_packages_2() {
     sudo python setup.py develop
     cd /tmp
 
+    echo "Adding to nova.conf..."
+    echo "
+logdir=/integration/report/logs/
+logfile_mode=660
+" >> /etc/nova/nova.conf
+
+
+
     # This is probably a kludge, but we turn off the error stuff here because
     # if we can't stop the screen its not important enough to kill this
     # process.
@@ -452,7 +460,9 @@ function upload_image_to_glance() {
     # This should be a reddwarf-manage function
     exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
 
+    set +e
     rdl_sqlite "INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
+    set -e
     rdl_sqlite "UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
 
     # Reminder: Check the glance database with:
@@ -692,6 +702,11 @@ cmd_int_tests() {
 # Misc. tools
 ###############################################################################
 
+function mysql_nova() {
+    echo $@
+    mysql -u root -p$MYSQL_PASSWORD nova --execute "$@"
+}
+
 function cmd_nova_client() {
     # This serves as an example of how to call the Nova client script.
     nova --auth_url=http://localhost:35357/v2.0 \
@@ -705,6 +720,22 @@ function cmd_rd_client() {
     reddwarf-cli auth login radmin radmin reddwarf \
         http://localhost:35357/v2.0
     reddwarf-cli $@
+}
+
+function cmd_delete_nova_instance() {
+    # Nova will not let you delete an instance whose state is error, but we
+    # won't let that stop us.
+    echo "Deleting instance $1..."
+    mysql_nova "UPDATE instances SET vm_state='active' WHERE vm_state='error' AND uuid='$1';"
+    cmd_nova_client delete $1
+}
+
+function cmd_wipe_logs() {
+    for file in `ls /integration/report/logs/*.log`
+    do
+        echo "Reseting log file $file..."
+        echo "Reset at `date`" > $file
+    done
 }
 
 ###############################################################################
@@ -748,6 +779,8 @@ print_usage() {
         --tools--
           nova-client     - Runs Nova client with admin user.
           rd-client       - Runs Reddwarf client with admin user.
+          wipe-logs       - Resets all log files.
+          nova-delete     - Deletes a nova instance.
     "
     exit 1
 }
@@ -770,6 +803,8 @@ case "$1" in
     "stop" ) cmd_stop;;
     "nova-client" ) shift; cmd_nova_client $@;;
     "rd-client" ) shift; cmd_rd_client $@;;
+    "nova-delete" ) shift; cmd_delete_nova_instance $@;;
+    "wipe-logs" ) cmd_wipe_logs;;
     * )
         echo "'$1' not a valid command"
         exit 1

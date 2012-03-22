@@ -26,9 +26,10 @@
 .. moduleauthor:: Tim Simpson <tim.simpson@rackspace.com>
 """
 
-
+from eventlet import event
 import re
 import subprocess
+import time
 
 from eventlet import greenthread
 
@@ -58,7 +59,6 @@ if WHITE_BOX:
     from reddwarf import dns # import for flag values
     from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
     from reddwarf import exception
-    from reddwarf.utils import poll_until
     FLAGS = flags.FLAGS
 
 
@@ -286,7 +286,6 @@ class LoopingCall(object):
                 self.stop()
                 done.send(e.retvalue)
             except Exception:
-                logging.exception('in looping call')
                 done.send_exception(*sys.exc_info())
                 return
             else:

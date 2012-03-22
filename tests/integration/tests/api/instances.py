@@ -54,6 +54,7 @@ from tests.util import create_nova_client
 from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
+from tests.util import poll_until
 from tests import TEST_MGMT
 from tests import WHITE_BOX
 
@@ -66,7 +67,7 @@ if WHITE_BOX:
     from reddwarf.api.instances import FLAGS as dbaas_FLAGS
     from nova.compute import power_state
     from reddwarf.db import api as dbapi
-    from reddwarf.utils import poll_until
+
 
 
 try:
@@ -269,7 +270,7 @@ class CreateInstance(unittest.TestCase):
         if create_new_instance():
             if WHITE_BOX:
                 assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
-            assert_equal("BUILDING", instance_info.initial_result.status)
+            assert_equal("BUILD", instance_info.initial_result.status)
         else:
             report.log("Test was invoked with TESTS_USE_INSTANCE_ID=%s, so no "
                        "instance was actually created." % id)
@@ -336,7 +337,7 @@ def assert_unprocessable(func, *args):
         # If the exception didn't get raised, but the instance is still in
         # the BUILDING state, that's a bug.
         result = dbaas.instances.get(instance_info.id)
-        if result.status == "BUILDING":
+        if result.status == "BUILD":
             fail("When an instance is being built, this function should "
                  "always raise UnprocessableEntity.")
     except exceptions.UnprocessableEntity:
@@ -385,42 +386,51 @@ class AfterInstanceCreation(unittest.TestCase):
         assert_unprocessable(dbaas.users.create, instance_info.id, users)
 
 
-@test(depends_on_classes=[CreateInstance, AfterInstanceCreation],
+@test(depends_on_classes=[CreateInstance],
+      runs_after=[AfterInstanceCreation],
       groups=[GROUP, GROUP_START],
       enabled=create_new_instance())
-class WaitForGuestInstallationToFinish(unittest.TestCase):
+class WaitForGuestInstallationToFinish(object):
     """
         Wait until the Guest is finished installing.  It takes quite a while...
     """
 
+    @test
     @time_out(60 * 8)
     def test_instance_created(self):
         while True:
-
-            guest_status = dbapi.guest_status_get(instance_info.local_id)
-            if guest_status.state != power_state.RUNNING:
-                result = dbaas.instances.get(instance_info.id)
-                # I think there's a small race condition which can occur
-                # between the time you grab "guest_status" and "result," so
-                # RUNNING is allowed in addition to BUILDING.
-                self.assertTrue(
-                    result.status == dbaas_mapping[power_state.BUILDING] or
-                    result.status == dbaas_mapping[power_state.RUNNING],
-                    "Result status was %s" % result.status)
-                time.sleep(5)
+            if WHITE_BOX:
+                guest_status = dbapi.guest_status_get(instance_info.local_id)
+                if guest_status.state != power_state.RUNNING:
+                    result = dbaas.instances.get(instance_info.id)
+                    # I think there's a small race condition which can occur
+                    # between the time you grab "guest_status" and "result," so
+                    # RUNNING is allowed in addition to BUILDING.
+                    self.assertTrue(
+                        result.status == dbaas_mapping[power_state.BUILDING] or
+                        result.status == dbaas_mapping[power_state.RUNNING],
+                        "Result status was %s" % result.status)
+                    time.sleep(5)
+                else:
+                    break
             else:
-                break
+                def result_is_active(result):
+                    if result.status == "ACTIVE":
+                        return True
+                    else:
+                        # If its not ACTIVE, anything but BUILDING must be
+                        # an error.
+                        self.assertEqual("BUILD", result.status)
+                        return False
+
+                poll_until(dbaas.instances.get(instance_info.id),
+                           lambda result: result.status )
+                result = dbaas.instances.get(instance_info.id)
+
         report.log("Created an instance, ID = %s." % instance_info.id)
         report.log("Local id = %d" % instance_info.get_local_id())
         report.log("Rerun the tests with TESTS_USE_INSTANCE_ID=%s to skip ahead "
                    "to this point." % instance_info.id)
-
-
-    def test_instance_wait_for_initialize_guest_to_exit_polling(self):
-        def compute_manager_finished():
-            return util.check_logs_for_message("INFO reddwarf.compute.manager [-] Guest is now running on instance %s"
-                                        % str(instance_info.local_id))
-        poll_until(compute_manager_finished, sleep_time=2, time_out=60)
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
@@ -489,7 +499,9 @@ class TestGuestProcess(unittest.TestCase):
         diagnostic_tests_helper(diagnostics)
 
 
-@test(depends_on_classes=[CreateInstance], groups=[GROUP, GROUP_START, "nova.volumes.instance"])
+@test(depends_on_classes=[CreateInstance],
+      groups=[GROUP, GROUP_START, GROUP_TEST, "nova.volumes.instance"],
+      enabled=WHITE_BOX)
 class TestVolume(unittest.TestCase):
     """Make sure the volume is attached to instance correctly."""
 
@@ -655,7 +667,7 @@ class CheckDiagnosticsAfterTests(object):
         assert_true(diagnostics.vmPeak < 30*1024, "Fat Pete has emerged. size (%s > 30MB)" % diagnostics.vmPeak)
 
 
-@test(depends_on=[CreateInstance],
+@test(depends_on=[WaitForGuestInstallationToFinish],
       runs_after_groups=[GROUP_START, GROUP_TEST, tests.INSTANCES],
       groups=[GROUP, GROUP_STOP])
 class DeleteInstance(object):
