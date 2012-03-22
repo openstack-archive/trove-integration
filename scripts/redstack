@@ -382,7 +382,7 @@ munge_apache2() {
     CustomLog /var/log/apache2/access.log combined
 </VirtualHost>
 	" | sudo tee /etc/apache2/sites-available/001-apt-repo
-	
+
 	sudo a2ensite 001-apt-repo
 	sudo service apache2 reload
 }
@@ -546,6 +546,8 @@ cmd_build_image() {
     if [ ! -d $VM_PATH ]
     then
         build_vm $HOMEDIR $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH
+    else
+        exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
 
     QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
