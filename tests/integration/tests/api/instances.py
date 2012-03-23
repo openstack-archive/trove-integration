@@ -123,6 +123,8 @@ class InstanceTestInfo(object):
         return self.address
 
     def get_local_id(self):
+        if not WHITE_BOX:
+            raise RuntimeError("Only available in White Box tests.")
         if self.local_id is None:
             self.local_id = dbapi.localid_from_uuid(self.id)
         return self.local_id
@@ -267,10 +269,12 @@ class CreateInstance(unittest.TestCase):
         if WHITE_BOX:
             instance_info.local_id = dbapi.localid_from_uuid(result.id)
 
+        report.log("Instance UUID = %s" % instance_info.id)
         if create_new_instance():
             if WHITE_BOX:
                 assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
             assert_equal("BUILD", instance_info.initial_result.status)
+
         else:
             report.log("Test was invoked with TESTS_USE_INSTANCE_ID=%s, so no "
                        "instance was actually created." % id)
@@ -398,8 +402,9 @@ class WaitForGuestInstallationToFinish(object):
     @test
     @time_out(60 * 8)
     def test_instance_created(self):
-        while True:
-            if WHITE_BOX:
+        if WHITE_BOX:
+            # Checks the db status as well as the REST API status.
+            while True:
                 guest_status = dbapi.guest_status_get(instance_info.local_id)
                 if guest_status.state != power_state.RUNNING:
                     result = dbaas.instances.get(instance_info.id)
@@ -413,28 +418,31 @@ class WaitForGuestInstallationToFinish(object):
                     time.sleep(5)
                 else:
                     break
-            else:
-                def result_is_active(result):
-                    if result.status == "ACTIVE":
-                        return True
-                    else:
-                        # If its not ACTIVE, anything but BUILDING must be
-                        # an error.
-                        self.assertEqual("BUILD", result.status)
-                        return False
+            report.log("Local id = %d" % instance_info.get_local_id())
+        else:
+            # This version just checks the REST API status.
+            def result_is_active():
+                instance = dbaas.instances.get(instance_info.id)
+                if instance.status == "ACTIVE":
+                    report.log("Returning ACTIVE")
+                    return True
+                else:
+                    # If its not ACTIVE, anything but BUILD must be
+                    # an error.
+                    assert_equal("BUILD", instance.status)
+                    report.log("Returning BUILD")
+                    return False
 
-                poll_until(dbaas.instances.get(instance_info.id),
-                           lambda result: result.status )
-                result = dbaas.instances.get(instance_info.id)
-
+            poll_until(result_is_active)
+            report.log("Finishing")
+            result = dbaas.instances.get(instance_info.id)
         report.log("Created an instance, ID = %s." % instance_info.id)
-        report.log("Local id = %d" % instance_info.get_local_id())
         report.log("Rerun the tests with TESTS_USE_INSTANCE_ID=%s to skip ahead "
                    "to this point." % instance_info.id)
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
-      groups=[GROUP, GROUP_START], enabled=create_new_instance())
+      groups=[GROUP, GROUP_START], enabled=WHITE_BOX and create_new_instance())
 class VerifyGuestStarted(unittest.TestCase):
     """
         Test to verify the guest instance is started and we can get the init

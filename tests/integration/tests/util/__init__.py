@@ -29,6 +29,7 @@
 from eventlet import event
 import re
 import subprocess
+import sys
 import time
 
 from eventlet import greenthread

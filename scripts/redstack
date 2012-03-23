@@ -206,10 +206,10 @@ install_packages_1() {
 
 add_to_keystone_conf() {
     echo '
-    catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v0.1/$(tenant_id)s
-    catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v0.1/$(tenant_id)s
-    catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v0.1/$(tenant_id)s
-    catalog.RegionOne.reddwarf.name = 'Reddwarf'
+catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v0.1/$(tenant_id)s
+catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v0.1/$(tenant_id)s
+catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v0.1/$(tenant_id)s
+catalog.RegionOne.reddwarf.name = 'Reddwarf'
     ' >> $PATH_KEYSTONE/etc/default_catalog.templates
 }
 
@@ -439,11 +439,6 @@ function get_glance_id () {
     echo `$@ | awk '{print $6}'`
 }
 
-function rdl_sqlite () {
-    echo sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite "$@"
-    sqlite3 /opt/stack/reddwarf_lite/reddwarf_test.sqlite "$@"
-}
-
 function upload_image_to_glance() {
     exclaim "uploading the image to glance."
 
@@ -461,9 +456,9 @@ function upload_image_to_glance() {
     exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
 
     set +e
-    rdl_sqlite "INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
+    mysql_reddwarf "INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
     set -e
-    rdl_sqlite "UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
+    mysql_reddwarf "UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
 
     # Reminder: Check the glance database with:
     # $ glance index -A {token-id}
@@ -618,6 +613,10 @@ rd_manage() {
 cmd_initialize() {
     exclaim 'Initializing...'
 
+    echo "Creating reddwarf db..."
+    mysql_nova "DROP DATABASE IF EXISTS reddwarf;"
+    mysql_nova "CREATE DATABASE reddwarf;"
+
     #run_devstack
     mkdir -p $PATH_INTEGRATION_CONF
 
@@ -710,6 +709,11 @@ function mysql_nova() {
     mysql -u root -p$MYSQL_PASSWORD nova --execute "$@"
 }
 
+function mysql_reddwarf() {
+    echo mysql reddwarf --execute "$@"
+    mysql -u root -p$MYSQL_PASSWORD reddwarf --execute "$@"
+}
+
 function cmd_nova_client() {
     # This serves as an example of how to call the Nova client script.
     nova --auth_url=http://localhost:35357/v2.0 \
@@ -739,6 +743,10 @@ function cmd_wipe_logs() {
         echo "Reseting log file $file..."
         echo "Reset at `date`" > $file
     done
+}
+
+function cmd_rd_sql() {
+    mysql -u root -p$MYSQL_PASSWORD reddwarf
 }
 
 ###############################################################################
@@ -784,6 +792,7 @@ print_usage() {
           rd-client       - Runs Reddwarf client with admin user.
           wipe-logs       - Resets all log files.
           nova-delete     - Deletes a nova instance.
+          rd-sql          - Opens the Reddwarf MySQL database.
     "
     exit 1
 }
@@ -808,6 +817,7 @@ case "$1" in
     "rd-client" ) shift; cmd_rd_client $@;;
     "nova-delete" ) shift; cmd_delete_nova_instance $@;;
     "wipe-logs" ) cmd_wipe_logs;;
+    "rd-sql" ) shift; cmd_rd_sql $@;;
     * )
         echo "'$1' not a valid command"
         exit 1

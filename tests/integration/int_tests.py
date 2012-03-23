@@ -152,6 +152,9 @@ if __name__ == '__main__':
     for path in sys.path:
         report.log("\t%s" % path)
 
+    from tests.util.client import monkey_patch_reddwarf_client
+    monkey_patch_reddwarf_client()
+
     # Now that all configurations are loaded its time to import everything.
 
     import proboscis
