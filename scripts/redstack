@@ -181,6 +181,7 @@ REDDWARF_ROLE=$REDDWARF_ROLE
     SERVICE_UUID=`keystone_manage service-list | grep reddwarf | awk '{print $2}'`
     if [ -z $SERVICE_UUID ]; then
         OS_USERNAME=reddwarf OS_PASSWORD=REDDWARF-PASS \
+        OS_AUTH_URL='http://localhost:8779/v0.1/$(tenant_id)s' \
         keystone_manage service-create --name=reddwarf \
                             --type=dbaas \
                             --description="Reddwarf"
@@ -482,22 +483,32 @@ function build_vm() {
         generate_empty_passphrase_ssh_key $HOMEDIR
     fi
 
-    # Generate the bootstrap_init file for --firstboot use in the ubuntu-vm-builder
+    # Time to create the files to copy into the VM
+    COPY_FILE=/tmp/guest-agent-files.txt
+    rm -fr $COPY_FILE
+
+    # the bootstrap_init file is used in --firstboot param of ubuntu-vm-builder
     # This file copies the current reddwarf codebase into each spawned image
-    # and executes the guestagent binfile, starting the service.
+    # and executes the guestagent as a service. New code to reddwarf does not require
+    # a new image, just a new create of an instance.
     # Please note, this is ONLY for dev and should not be considered production ready.
-    echo "#!/usr/bin/env bash
+    cp files/bootstrap_init.sh /tmp
 
-# Copies all the reddwarf code to the guest image
-sudo -u $USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' 10.0.0.1:${PATH_REDDWARF}/ ~${USERNAME}/reddwarf_lite
-# Adds user to the sudoers file so they can do everything w/o a pass
-echo '${USERNAME} ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-# Do an apt-get update since its SUPER slow first time
-apt-get update
-# Starts the reddwarf guestagent
-sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --config-file=/home/${USERNAME}/reddwarf_lite/etc/reddwarf/reddwarf-guestagent.conf.sample
-" > /tmp/bootstrap_init.sh
-
+    # PATH_REDDWARF more than likely has file separators, which sed does not like
+    # This will escape them
+    ESCAPED_PATH_REDDWARF=`echo $PATH_REDDWARF | sed 's/\//\\\\\//g'`
+    sed -i.bak "s/PATH_REDDWARF/$ESCAPED_PATH_REDDWARF/g" /tmp/bootstrap_init.sh
+    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/bootstrap_init.sh
+    
+    # Apt repo on the local machine
+    cp files/apt_repo.list /tmp
+    echo "/tmp/apt_repo.list /etc/apt/sources.list.d/apt_repo.list" >> $COPY_FILE
+    
+    # Upstart script to start the guest
+    cp files/reddwarf-guest.upstart.conf /tmp
+    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/reddwarf-guest.upstart.conf
+    echo "/tmp/reddwarf-guest.upstart.conf /etc/init/reddwarf-guest.conf" >> $COPY_FILE
+    
     # Now put the pub key in this machines auth keys
     # so the vm can log in to the host (scp from bootstrap_init.sh)
     # This will also enable us to log in to the dev instances w/o a password
@@ -508,18 +519,12 @@ sudo -u $USERNAME /home/${USERNAME}/reddwarf_lite/bin/reddwarf-guestagent --conf
         cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
     fi
 
-    COPY_FILE=/tmp/guest-agent-files.txt
-    rm -fr $COPY_FILE
     # These will be the way the firstboot script phones home to get the latest guest via scp.
     # See bootstrap_init.sh for more info on what it does
     # man ubuntu-vm-builder for more infomration on the --copy flag
     echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
     echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
     echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
-
-    # Also copy over the debian package repo in the copyfile
-    echo "deb http://10.0.0.1:8080/debian squeeze main" | tee /tmp/apt_repo.list
-    echo "/tmp/apt_repo.list /etc/apt/sources.list.d/apt_repo.list" >> $COPY_FILE
 
     #build a qemu image
     VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME --addpkg vim \
@@ -547,7 +552,7 @@ cmd_build_image() {
 
     USERNAME=`whoami`
     HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
-    VM_PATH=/tmp/oneiric_mysql_image
+    VM_PATH=/home/$USERNAME/oneiric_mysql_image
     UBUNTU_DISTRO=ubuntu_oneiric
     UBUNTU_DISTRO_NAME=oneiric
 
