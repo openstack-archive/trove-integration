@@ -471,13 +471,14 @@ class VerifyGuestStarted(unittest.TestCase):
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
       groups=[GROUP, GROUP_START], enabled=create_new_instance())
-class TestGuestProcess(unittest.TestCase):
+class TestGuestProcess(object):
     """
         Test that the guest process is started with all the right parameters
     """
 
+    @test(enabled=test_config.values['use_local_ovz'])
     @time_out(60 * 10)
-    def test_guest_process(self):
+    def check_process_alive_via_local_ovz(self):
         init_proc = re.compile("[\w\W\|\-\s\d,]*nova-guest --flagfile=/etc/nova/nova.conf nova[\W\w\s]*")
         guest_proc = re.compile("[\w\W\|\-\s]*/usr/bin/nova-guest --flagfile=/etc/nova/nova.conf[\W\w\s]*")
         apt = re.compile("[\w\W\|\-\s]*apt-get[\w\W\|\-\s]*")
@@ -493,16 +494,13 @@ class TestGuestProcess(unittest.TestCase):
                     init = init_proc.match(guest_process)
                     guest = guest_proc.match(guest_process)
                     if init and guest:
-                        self.assertTrue(True, init.group())
+                        assert_true(True, init.group())
                     else:
-                        self.assertFalse(False, guest_process)
+                        assert_false(False, guest_process)
                     break
 
-    def test_guest_status_get_instance(self):
-        result = dbaas.instances.get(instance_info.id)
-        self.assertEqual(dbaas_mapping[power_state.RUNNING], result.status)
-
-    def test_instance_diagnostics_on_before_tests(self):
+    @test(enabled=test_config.values['test_mgmt'])
+    def grab_diagnostics_before_tests(self):
         diagnostics = dbaas_admin.diagnostics.get(instance_info.id)
         diagnostic_tests_helper(diagnostics)
 
@@ -550,7 +548,7 @@ class TestInstanceListing(object):
     @before_class
     def setUp(self):
         self.daffy_user = test_config.users.find_user_by_name("daffy")
-        self.daffy_client = create_test_client(self.daffy_user)
+        self.daffy_client = create_dbaas_client(self.daffy_user)
 
     @test
     def test_detail_list(self):
@@ -727,36 +725,40 @@ class DeleteInstance(object):
 
 
 @test(depends_on_classes=[CreateInstance, VerifyGuestStarted,
-    WaitForGuestInstallationToFinish], groups=[GROUP, GROUP_START])
-def management_callback():
-    global mgmt_details
-    mgmt_details = dbaas_admin.management.show(instance_info.id)
+      WaitForGuestInstallationToFinish], groups=[GROUP, GROUP_START],
+      enabled=test_config.values['test_mgmt'])
+class VerifyInstanceMgmtInfo(object):
 
+    @before_class
+    def set_up(self):
+        self.mgmt_details = dbaas_admin.management.show(instance_info.id)
 
-@test(depends_on=[management_callback], groups=[GROUP])
-class VerifyInstanceMgmtInfo(unittest.TestCase):
 
     def _assert_key(self, k, expected):
-        v = getattr(mgmt_details, k)
+        v = getattr(self.mgmt_details, k)
         err = "Key %r does not match expected value of %r (was %r)." % (k, expected, v)
-        self.assertEqual(str(v), str(expected), err)
+        assert_equal(str(v), str(expected), err)
 
+    @test
     def test_id_matches(self):
         self._assert_key('id', instance_info.id)
 
+    @test
     def test_bogus_instance_mgmt_data(self):
         # Make sure that a management call to a bogus API 500s.
         # The client reshapes the exception into just an OpenStackException.
         assert_raises(nova_exceptions.NotFound, dbaas_admin.management.show, -1)
 
+    @test
     def test_mgmt_ips_associated(self):
         # Test that the management index properly associates an instances with
         # ONLY its IPs.
         mgmt_index = dbaas_admin.management.index()
         # Every instances has exactly one address.
         for instance in mgmt_index:
-            self.assertEqual(1, len(instance.ips))
+            assert_equal(1, len(instance.ips))
 
+    @test
     def test_mgmt_data(self):
         # Test that the management API returns all the values we expect it to.
         info = instance_info
@@ -780,8 +782,9 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
             }
 
         if WHITE_BOX:
-            volumes = db.volume_get_all_by_instance(context.get_admin_context(), instance_id)
-            self.assertEqual(len(volumes), 1)
+            volumes = db.volume_get_all_by_instance(context.get_admin_context(),
+                                                    instance_id)
+            assert_equal(len(volumes), 1)
             volume = volumes[0]
             expected['volume'] = {
                      'id': volume.id,
@@ -794,17 +797,15 @@ class VerifyInstanceMgmtInfo(unittest.TestCase):
         if expected_entry:
             expected['hostname'] = expected_entry.name
 
-        self.assertTrue(mgmt_details is not None)
+        assert_true(self.mgmt_details is not None)
         for (k,v) in expected.items():
-            self.assertTrue(hasattr(mgmt_details, k), "Attr %r is missing." % k)
-            self.assertEqual(getattr(mgmt_details, k), v,
+            assert_true(hasattr(self.mgmt_details, k), "Attr %r is missing." % k)
+            assert_equal(getattr(self.mgmt_details, k), v,
                 "Attr %r expected to be %r but was %r." %
-                (k, v, getattr(mgmt_details, k)))
-        print(mgmt_details.users)
-        for user in mgmt_details.users:
-            self.assertTrue('name' in user, "'name' not in users element.")
-
-
+                (k, v, getattr(self.mgmt_details, k)))
+        print(self.mgmt_details.users)
+        for user in self.mgmt_details.users:
+            assert_true('name' in user, "'name' not in users element.")
 
 
 class CheckInstance(Check):
