@@ -60,6 +60,9 @@ Vagrant::Config.run do |global_config|
     config.vm.host_name = "host"
 
     config.ssh.timeout  = 3600
+    config.vm.customize do |vm|
+        vm.memory_size = 2048
+    end
 
     config.vm.share_folder "integration", "/integration", "../"
 

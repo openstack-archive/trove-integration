@@ -5,3 +5,4 @@ Vagrantfile
 .bash_history
 .rnd
 host-syslog.log
+options.rc
