@@ -12,7 +12,9 @@
 REDSTACK_SCRIPTS=/integration/scripts
 
 # Load options not checked into VCS.
-. $REDSTACK_SCRIPTS/options.rc
+if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
+    . $REDSTACK_SCRIPTS/options.rc
+fi
 
 # Bail on errors.
 set -e
