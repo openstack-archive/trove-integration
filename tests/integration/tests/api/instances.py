@@ -143,6 +143,10 @@ def existing_instance():
     return os.environ.get("TESTS_USE_INSTANCE_ID", None)
 
 
+def do_not_delete_instance():
+    return os.environ.get("TESTS_DO_NOT_DELETE_INSTANCE", None) is not None
+
+
 def create_new_instance():
     return existing_instance() is None
 
@@ -424,21 +428,21 @@ class WaitForGuestInstallationToFinish(object):
             def result_is_active():
                 instance = dbaas.instances.get(instance_info.id)
                 if instance.status == "ACTIVE":
-                    report.log("Returning ACTIVE")
                     return True
                 else:
                     # If its not ACTIVE, anything but BUILD must be
                     # an error.
                     assert_equal("BUILD", instance.status)
-                    report.log("Returning BUILD")
                     return False
 
             poll_until(result_is_active)
-            report.log("Finishing")
             result = dbaas.instances.get(instance_info.id)
         report.log("Created an instance, ID = %s." % instance_info.id)
+        report.log("TIP:")
         report.log("Rerun the tests with TESTS_USE_INSTANCE_ID=%s to skip ahead "
                    "to this point." % instance_info.id)
+        report.log("Add TESTS_DO_NOT_DELETE_INSTANCE=True to avoid deleting "
+                   "the instance at the end of the tests.")
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
@@ -558,11 +562,12 @@ class TestInstanceListing(object):
         for instance in instances:
             instance_dict = instance._info
             with CheckInstance(instance_dict) as check:
+                print("Checking instance: %s" % instance_dict)
                 check.attrs_exist(instance_dict, expected_attrs,
                                   msg="Instance Details")
                 check.flavor()
-                check.links(instance_dict['links'])
                 check.volume()
+                check.links(instance_dict['links'])
 
     @test
     def test_index_list(self):
@@ -571,6 +576,7 @@ class TestInstanceListing(object):
         for instance in instances:
             instance_dict = instance._info
             with CheckInstance(instance_dict) as check:
+                print("testing instance_dict=%s" % instance_dict)
                 check.attrs_exist(instance_dict, expected_attrs,
                                   msg="Instance Index")
                 check.links(instance_dict['links'])
@@ -582,13 +588,13 @@ class TestInstanceListing(object):
                           'volume']
         instance = dbaas.instances.get(instance_info.id)
         instance_dict = instance._info
+        print("instance_dict=%s" % instance_dict)
         with CheckInstance(instance_dict) as check:
             check.attrs_exist(instance_dict, expected_attrs,
                               msg="Get Instance")
             check.flavor()
             check.links(instance_dict['links'])
             check.volume()
-            check.databases()
 
     @test
     def test_instance_hostname(self):
@@ -606,7 +612,7 @@ class TestInstanceListing(object):
     @test
     def test_get_instance_status(self):
         result = dbaas.instances.get(instance_info.id)
-        assert_equal(dbaas_mapping[power_state.RUNNING], result.status)
+        assert_equal("ACTIVE", result.status)
 
     @test
     def test_get_legacy_status(self):
@@ -617,7 +623,7 @@ class TestInstanceListing(object):
     def test_get_legacy_status_notfound(self):
         assert_raises(nova_exceptions.NotFound, dbaas.instances.get, -2)
 
-    @test
+    @test(enabled=test_config.values["reddwarf_can_have_volume"])
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
         assert_equal(instance_info.volume['size'], instance.volume['size'])
@@ -644,9 +650,11 @@ class TestInstanceListing(object):
     @test
     def test_instance_not_deleted_by_other_user(self):
         assert_raises(nova_exceptions.NotFound,
+                     self.daffy_client.instances.get, instance_info.id)
+        assert_raises(nova_exceptions.NotFound,
                       self.daffy_client.instances.delete, instance_info.id)
 
-    @test
+    @test(enabled=test_config.values['test_mgmt'])
     def test_mgmt_get_instance_after_started(self):
         result = dbaas_admin.management.show(instance_info.id)
         expected_attrs = ['account_id', 'addresses', 'created', 'databases',
@@ -682,6 +690,8 @@ class DeleteInstance(object):
     @time_out(3 * 60)
     @test
     def test_delete(self):
+        if do_not_delete_instance():
+            raise SkipTest("TESTS_DO_NOT_DELETE_INSTANCE was specified.")
         global dbaas
         if not hasattr(instance_info, "initial_result"):
             raise SkipTest("Instance was never created, skipping test...")
@@ -736,7 +746,8 @@ class VerifyInstanceMgmtInfo(object):
 
     def _assert_key(self, k, expected):
         v = getattr(self.mgmt_details, k)
-        err = "Key %r does not match expected value of %r (was %r)." % (k, expected, v)
+        err = "Key %r does not match expected value of %r (was %r)." \
+              % (k, expected, v)
         assert_equal(str(v), str(expected), err)
 
     @test
@@ -818,8 +829,7 @@ class CheckInstance(Check):
     def fail(self, msg):
         self.true(False, msg)
 
-    @staticmethod
-    def attrs_exist(list, expected_attrs, msg=None):
+    def attrs_exist(self, list, expected_attrs, msg=None):
         # Check these attrs only are returned in create response
         for attr in list:
             if attr not in expected_attrs:
@@ -846,6 +856,8 @@ class CheckInstance(Check):
         return True
 
     def volume(self):
+        if not test_config.values["reddwarf_can_have_volume"]:
+            return
         if self.volume_key_exists():
             expected_attrs = ['size']
             self.attrs_exist(self.instance['volume'], expected_attrs,
@@ -856,12 +868,6 @@ class CheckInstance(Check):
             expected_attrs = ['description', 'id', 'name', 'size']
             self.attrs_exist(self.instance['volume'], expected_attrs,
                              msg="Volumes")
-
-    def databases(self):
-        expected_attrs = ['character_set', 'collate', 'name']
-        for database in self.instance['databases']:
-            self.attrs_exist(database, expected_attrs,
-                             msg="Database")
 
     def addresses(self):
         expected_attrs = ['addr', 'version']
