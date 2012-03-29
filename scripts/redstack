@@ -776,10 +776,18 @@ function mysql_reddwarf() {
 
 function cmd_nova_client() {
     # This serves as an example of how to call the Nova client script.
-    nova --auth_url=http://localhost:35357/v2.0 \
-        --tenant_name=reddwarf --username=radmin --password=radmin \
-        --service_type=compute --region_name=RegionOne \
-        --service_name='Compute Service' --version=2 $@
+    TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
+    if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
+        nova --auth_url=http://localhost:35357/v2.0 \
+            --tenant_name=reddwarf --username=radmin --password=radmin \
+            --service_type=compute --region_name=RegionOne \
+            --service_name='Compute Service' --version=2 $@
+    else
+        nova --auth_url=http://localhost:35357/v2.0 \
+            --tenant_name=reddwarf --username=radmin --password=radmin \
+            --service_type=volume --region_name=RegionOne \
+            --service_name='Volume Service' --version=2 $@
+    fi
 }
 
 function cmd_rd_client() {
