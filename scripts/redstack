@@ -765,7 +765,7 @@ function cmd_int_tests() {
 ###############################################################################
 
 function mysql_nova() {
-    echo $@
+    echo mysql nova --execute "$@"
     mysql -u root -p$MYSQL_PASSWORD nova --execute "$@"
 }
 
@@ -836,6 +836,8 @@ function cmd_clear() {
     for i in $LIST; do sudo virsh destroy $i; done
     mysql_nova "DELETE FROM instance_info_caches;"
     mysql_nova "DELETE FROM instances;"
+    mysql_reddwarf "DELETE FROM instances;"
+    mysql_reddwarf "DELETE FROM service_statuses;"
     # Obliterate rabbit.
     for i in stop_app reset start_app "change_password guest $RABBIT_PASSWORD"; \
     do sudo rabbitmqctl $i; done
