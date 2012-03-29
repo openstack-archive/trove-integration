@@ -58,19 +58,22 @@ def assert_flavors_are_roughly_equivalent(os_flavor, dbaas_flavor):
 
 def assert_link_list_is_equal(flavor):
     assert_true(hasattr(flavor, 'links'))
+    assert_true(flavor.links)
 
     for link in flavor.links:
         href = link['href']
         if "self" in link['rel']:
             expected_href = os.path.join(test_config.dbaas.url, "flavors",
                                              str(flavor.id))
-            assert_equal(href, expected_href,
-                         '"href" must be %s, not %s' % (expected_href, href))
+            assert_true(href.startswith(test_config.dbaas_url),
+                        "REL HREF %s doesn't start with %s" % (href, test_config.dbaas_url))
+            assert_true(href.endswith(os.path.join("flavors", str(flavor.id))),
+                        "REL HREF %s doesn't end in 'flavors/id'" % href)
         elif "bookmark" in link['rel']:
             base_url = test_config.version_url
             expected_href = os.path.join(base_url, "flavors", str(flavor.id))
             assert_equal(href, expected_href,
-                         '"href" must be %s, not %s' % (expected_href, href))
+                         'bookmark "href" must be %s, not %s' % (expected_href, href))
         else:
             assert_false(True, "Unexpected rel - %s" % link['rel'])
 
