@@ -352,7 +352,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=/tmp)
 " > localrc
-    if [ -n USING_VAGRANT ]
+    if [ -n $USING_VAGRANT ]
     then
         echo "
 # This is similar to code found at
