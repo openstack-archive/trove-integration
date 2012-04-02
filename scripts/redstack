@@ -9,7 +9,7 @@
 #                                                                             #
 ###############################################################################
 
-REDSTACK_SCRIPTS=/integration/scripts
+REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-./}
 
 # Load options not checked into VCS.
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
@@ -18,12 +18,6 @@ fi
 
 # Bail on errors.
 set -e
-
-if [ ! -f $REDSTACK_SCRIPTS/redstack ]; then
-    echo "This script is meant to run in a disposable dev environment. "
-    echo "Run create_vm to create such a machine."
-    exit 1
-fi
 
 # Load global configuration variables.
 . $REDSTACK_SCRIPTS/redstack.rc
@@ -635,8 +629,9 @@ function cmd_unit_tests() {
 ###############################################################################
 
 function cmd_start_deps() {
-    cd $PATH_DEVSTACK_SRC
-    ./rejoin-stack.sh
+    if [[ -e $PATH_DEVSTACK_SRC/stack-screenrc ]]; then
+        exec screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
+    fi
 }
 
 
@@ -716,7 +711,6 @@ EOF
     sleep 1
 
     screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-server --config-file=/tmp/reddwarf.conf.sample"
-    screen -S reddwarf -x
 }
 
 function cmd_run() {
