@@ -192,7 +192,7 @@ if __name__ == '__main__':
         from tests import util
 
         black_box_groups = [
-            #flavors.GROUP,
+            flavors.GROUP,
             "services.initialize",
             "dbaas.guest.initialize", #instances.GROUP_START,
             "dbaas.preinstance",
