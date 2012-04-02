@@ -630,7 +630,7 @@ function cmd_unit_tests() {
 
 function cmd_start_deps() {
     if [[ -e $PATH_DEVSTACK_SRC/stack-screenrc ]]; then
-        exec screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
+        screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
     fi
 }
 
@@ -639,7 +639,6 @@ function cmd_start_deps() {
 function cmd_stop_deps() {
     cd $PATH_DEVSTACK_SRC
     screen -S stack -X quit
-    rm *.pid*
 }
 
 
@@ -824,12 +823,16 @@ function cmd_vagrant_ssh() {
 
 function cmd_run_ci() {
     exclaim "Running CI suite..."
+    set +e
+    cmd_stop_deps
+    cmd_stop
+    set -e
     cmd_install
+    cmd_build
+    sleep 10
     cmd_initialize
     cmd_build_image
-    cmd_stop_deps
-    cmd_start_deps &
-    cmd_start &
+    cmd_start
     cmd_int_tests
 }
 
