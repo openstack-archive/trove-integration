@@ -86,7 +86,7 @@ function set_http_proxy() {
 
 function echo_id_from_table () {
     # Given a command that returns a table, prints only the id part.
-    echo `$@ | grep id | awk '{print $4}'`
+    echo `$@ | grep ' id ' | awk '{print $4}'`
 }
 
 function get_ip_for_device() {
