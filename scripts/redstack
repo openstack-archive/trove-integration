@@ -378,6 +378,7 @@ function cmd_install() {
     run_devstack
     ensure_local_sources
     install_packages_2
+    exclaim "FINISHED INSTALL"
 }
 
 
@@ -880,6 +881,10 @@ function print_usage() {
           initialize      - Cleans nova database, sets everything up.
           build-image     - Builds the vm image and adds it to glance (requires initialize)
 
+        --helper for environment--
+          kick-start      - kick start the setup of reddwarf.
+                            (redstack build/initialize/build-image/start)
+
         --reddwarf dependency services--
           start-deps      - Start or resume daemons Reddwarf depends on.
           stop-deps       - Kill daemons Reddwarf depends on.
@@ -904,9 +909,6 @@ function print_usage() {
           set-image       - Sets the image without building it.
           clear           - Destroy instances and rabbit queues.
           run             - Starts RD but not in a screen.
-
-          kick-start      - kick start the setup of reddwarf.
-                            (redstack build/initialize/build-image/start)
     "
     exit 1
 }
