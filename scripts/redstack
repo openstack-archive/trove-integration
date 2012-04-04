@@ -388,6 +388,7 @@ function cmd_install() {
     run_devstack
     ensure_local_sources
     install_packages_2
+    exclaim "FINISHED INSTALL"
 }
 
 
@@ -582,7 +583,7 @@ function build_vm() {
 
     #build a qemu image
     VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME --addpkg vim \
-         --addpkg mysql-server --addpkg openssh-server \
+         --addpkg openssh-server \
          --addpkg gcc --addpkg python-dev --addpkg rsync \
          --addpkg libxml2-dev --addpkg libxslt-dev \
          --addpkg python-setuptools --addpkg python-pip \
@@ -856,6 +857,13 @@ function cmd_clear() {
     do sudo rabbitmqctl $i; done
 }
 
+function cmd_kick_start() {
+    cmd_build
+    cmd_initialize
+    cmd_build_image
+    cmd_start
+}
+
 
 ###############################################################################
 # Process the user provided command and run the appropriate command
@@ -882,6 +890,10 @@ function print_usage() {
           build           - Build the packages (including the agent)
           initialize      - Cleans nova database, sets everything up.
           build-image     - Builds the vm image and adds it to glance (requires initialize)
+
+        --helper for environment--
+          kick-start      - kick start the setup of reddwarf.
+                            (redstack build/initialize/build-image/start)
 
         --reddwarf dependency services--
           start-deps      - Start or resume daemons Reddwarf depends on.
@@ -940,6 +952,7 @@ function run_command() {
         "set-image" ) shift; cmd_set_image $@;;
         "clear" ) shift; cmd_clear $@;;
         "run" ) shift; cmd_run $@;;
+        "kick-start" ) shift; cmd_kick_start $@;;
         * )
             echo "'$1' not a valid command"
             exit 1
