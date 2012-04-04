@@ -153,6 +153,16 @@ function configure_keystone() {
         REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
     fi
 
+    DAFFY_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep daffy | awk '{print $2}'`
+    if [ -z $DAFFY_TENANT ]; then
+        DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=daffy`
+    fi
+
+    DAFFY_ROLE=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep daffy | awk '{print $2}'`
+    if [ -z "$DAFFY_ROLE" ]; then
+        DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=daffy`
+    fi
+
     REDDWARF_USER=`keystone_add_user reddwarf REDDWARF-PASS reddwarf@example.com`
 
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
@@ -168,7 +178,7 @@ function configure_keystone() {
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
 
     REDDWARF_USER=`keystone_add_user daffy daffy daffy@example.com`
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    keystone_add_user_role $DAFFY_TENANT $REDDWARF_USER $DAFFY_ROLE
 
     REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
