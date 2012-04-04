@@ -193,6 +193,9 @@ if __name__ == '__main__':
 
         black_box_groups = [
             flavors.GROUP,
+            users.GROUP,
+            databases.GROUP,
+            root.GROUP,
             "services.initialize",
             "dbaas.guest.initialize", #instances.GROUP_START,
             "dbaas.preinstance",

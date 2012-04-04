@@ -17,6 +17,7 @@ import sys
 import time
 import re
 
+from nose.plugins.skip import SkipTest
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
@@ -32,9 +33,11 @@ from tests.api.instances import GROUP_START
 from tests.api.instances import GROUP_TEST
 from tests.util import get_vz_ip_for_device
 from tests.util import init_engine
+from tests.util import poll_until
 from tests.util import process
 from tests.util import string_in_list
 from tests.util import assert_mysql_connection_fails
+from tests.util import test_config
 
 from tests import WHITE_BOX
 
@@ -51,8 +54,22 @@ class TestMultiNic(object):
 
     @before_class
     def setUp(self):
+        if test_config.values['openvz_disabled']:
+            raise SkipTest("OpenVZ not implemented yet")
         instance_info.user_ip = get_vz_ip_for_device(instance_info.local_id,
                                                       "eth0")
+
+    @test
+    def test_get_ip(self):
+        # wait for a few seconds for the IP to sync up
+        # is there a better way to do this?
+        def get_ip_for_instance():
+            result = instance_info.dbaas.instances.get(instance_info.id)
+            if hasattr(result, 'ip'):
+                instance_info.user_ip = result.ip
+                return True
+            return False
+        poll_until(get_ip_for_instance, sleep_time=5, time_out=20)
 
     @test
     def test_multi_nic(self):
@@ -60,6 +77,8 @@ class TestMultiNic(object):
         Multinic - Verify that nics as specified in the database are created
         in the guest
         """
+        if test_config.values['openvz_disabled']:
+            raise SkipTest("OpenVZ not implemented yet")
         vifs = db.virtual_interface_get_by_instance(context.get_admin_context(),
                                                     instance_info.local_id)
         for vif in vifs:
@@ -91,5 +110,7 @@ class TestMysqlAccess(object):
 
     @test
     def test_zfirst_db(self):
+        if test_config.values['openvz_disabled']:
+            raise SkipTest("Initial db creation not working yet")
         if not instance_info.check_database("firstdb"):
             fail("Database 'firstdb' was not created")

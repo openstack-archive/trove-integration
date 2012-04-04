@@ -24,7 +24,9 @@ GROUP="dbaas.guest"
 GROUP_START="dbaas.guest.initialize"
 GROUP_TEST="dbaas.guest.test"
 GROUP_STOP="dbaas.guest.shutdown"
-
+GROUP_USERS="dbaas.api.users"
+GROUP_ROOT="dbaas.api.root"
+GROUP_DATABASES="dbaas.api.databases"
 
 from datetime import datetime
 from nose.plugins.skip import SkipTest
@@ -106,7 +108,7 @@ class InstanceTestInfo(object):
         self.users = None # The users created on the instance.
 
     def check_database(self, dbname):
-        return check_database(self.get_local_id(), dbname)
+        return check_database(self.id, dbname)
 
     def expected_dns_entry(self):
         """Returns expected DNS entry for this instance.
@@ -557,7 +559,7 @@ class TestInstanceListing(object):
     @test
     def test_detail_list(self):
         expected_attrs = ['created', 'flavor', 'hostname', 'id', 'links',
-                          'name', 'status', 'updated', 'volume']
+                          'name', 'status', 'updated', 'volume', 'ip']
         instances = dbaas.instances.details()
         for instance in instances:
             instance_dict = instance._info
@@ -571,7 +573,7 @@ class TestInstanceListing(object):
 
     @test
     def test_index_list(self):
-        expected_attrs = ['id', 'links', 'name', 'status']
+        expected_attrs = ['id', 'links', 'name', 'status', 'ip']
         instances = dbaas.instances.index()
         for instance in instances:
             instance_dict = instance._info
@@ -584,8 +586,7 @@ class TestInstanceListing(object):
     @test
     def test_get_instance(self):
         expected_attrs = ['created', 'databases', 'flavor', 'hostname', 'id',
-                          'links', 'name', 'rootEnabled', 'status', 'updated',
-                          'volume']
+                          'links', 'name', 'status', 'updated', 'volume', 'ip']
         instance = dbaas.instances.get(instance_info.id)
         instance_dict = instance._info
         print("instance_dict=%s" % instance_dict)
@@ -598,7 +599,8 @@ class TestInstanceListing(object):
 
     @test
     def test_instance_hostname(self):
-        raise SkipTest("We havent implemented hostname yet")
+        if test_config.values['hostname_not_implemented']:
+            raise SkipTest("We havent implemented hostname yet")
         instance = dbaas.instances.get(instance_info.id)
         dns_entry = instance_info.expected_dns_entry()
         if dns_entry:
@@ -683,6 +685,7 @@ class CheckDiagnosticsAfterTests(object):
 
 
 @test(depends_on=[WaitForGuestInstallationToFinish],
+      depends_on_groups=[GROUP_USERS, GROUP_DATABASES, GROUP_ROOT],
       runs_after_groups=[GROUP_START, GROUP_TEST, tests.INSTANCES],
       groups=[GROUP, GROUP_STOP])
 class DeleteInstance(object):
