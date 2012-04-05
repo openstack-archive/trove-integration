@@ -22,6 +22,14 @@ Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a vi
 
     ubuntu  ALL=(ALL:ALL) ALL
 
+    **OR use this if you dont want to type your password to sudo a command**
+
+    ubuntu  ALL=(ALL:NOPASSWD) ALL
+
+  if /dev/pts/0 does not have read/write for your user
+
+    chmod 660 /dev/pts/0
+
 #### Login with ubuntu:
 
     $ su ubuntu
