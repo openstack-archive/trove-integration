@@ -12,6 +12,8 @@
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
+USERHOME="/home/"`whoami`
+
 # Load options not checked into VCS.
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
@@ -24,6 +26,11 @@ set -e
 . $REDSTACK_SCRIPTS/redstack.rc
 . $REDSTACK_SCRIPTS/reviews.rc
 
+# PATH_REDDWARF more than likely has file separators, which sed does not like
+# This will escape them
+ESCAPED_PATH_REDDWARF=`echo $PATH_REDDWARF | sed 's/\//\\\\\//g'`
+ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
+
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
 
@@ -31,7 +38,7 @@ if [ -f $PATH_ENV_CONF ]; then
     source $PATH_ENV_CONF
 fi
 
-TEST_HOME="/integration/tests"
+TEST_HOME="$REDSTACK_SCRIPTS/../tests"
 
 INTEGRATION_CONF="/tmp/integration"
 TESTS_CONF="$INTEGRATION_CONF/tests.conf"
@@ -266,7 +273,7 @@ function install_packages_2() {
 
     echo "Adding to nova.conf..."
     echo "
-logdir=/integration/report/logs/
+logdir=$REDSTACK_SCRIPTS/../report/logs/
 logfile_mode=660
 ##lock_path=/tmp
 " >> /etc/nova/nova.conf
@@ -549,9 +556,6 @@ function build_vm() {
     # Please note, this is ONLY for dev and should not be considered production ready.
     cp $REDSTACK_SCRIPTS/files/bootstrap_init.sh /tmp
 
-    # PATH_REDDWARF more than likely has file separators, which sed does not like
-    # This will escape them
-    ESCAPED_PATH_REDDWARF=`echo $PATH_REDDWARF | sed 's/\//\\\\\//g'`
     sed -i.bak "s/PATH_REDDWARF/$ESCAPED_PATH_REDDWARF/g" /tmp/bootstrap_init.sh
     sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/bootstrap_init.sh
 
@@ -672,8 +676,17 @@ function rd_manage() {
     bin/reddwarf-manage --config-file=/tmp/reddwarf.conf.sample $@
 }
 
+function mod_test_conf() {
+
+    cp $REDSTACK_SCRIPTS/conf/test.conf $USERHOME
+    sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $USERHOME/test.conf
+}
+
 function cmd_initialize() {
     exclaim 'Initializing...'
+
+    echo "Modifying test.conf with appropriate values"
+    mod_test_conf
 
     echo "Creating reddwarf db..."
     mysql_nova "DROP DATABASE IF EXISTS reddwarf;"
@@ -761,7 +774,7 @@ function cmd_stop() {
 function cmd_int_tests() {
     exclaim "Running Reddwarf Integration Tests..."
     cd $REDSTACK_SCRIPTS
-    export TEST_CONF=$REDSTACK_SCRIPTS/conf/test.conf
+    export TEST_CONF=$USERHOME/test.conf
     if [ $# -lt 1 ]; then
         args="--group=blackbox"
     else
@@ -823,7 +836,7 @@ function cmd_delete_nova_instance() {
 }
 
 function cmd_wipe_logs() {
-    for file in `ls /integration/report/logs/*.log`
+    for file in `ls $REDSTACK_SCRIPTS/../report/logs/*.log`
     do
         echo "Reseting log file $file..."
         echo "Reset at `date`" > $file
