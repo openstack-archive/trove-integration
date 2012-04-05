@@ -33,6 +33,8 @@ import sys
 import time
 
 from eventlet import greenthread
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 
 from novaclient.v1_1.client import Client
 
@@ -55,8 +57,6 @@ WHITE_BOX = test_config.white_box
 if WHITE_BOX:
     from nova import flags
     from nova import utils
-    from sqlalchemy import create_engine
-    from sqlalchemy.exc import OperationalError
     from reddwarf import dns # import for flag values
     from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
     from reddwarf import exception

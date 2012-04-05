@@ -14,7 +14,7 @@
 
 import time
 
-
+from nose.plugins.skip import SkipTest
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
@@ -31,6 +31,7 @@ from tests.api.users import TestUsers
 from tests.api.instances import instance_info
 from tests.util import init_engine
 from tests import util
+from tests.util import test_config
 from tests import WHITE_BOX
 
 if WHITE_BOX:
@@ -71,6 +72,7 @@ class TestRoot(object):
         host = "%"
         user, password = self.dbaas.root.create(instance_info.id)
 
+    def _root_local_sql(self):
         engine = init_engine(user, password, instance_info.user_ip)
         client = LocalSqlClient(engine)
         with client:
@@ -89,7 +91,8 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_false(enabled, "Root SHOULD NOT be enabled.")
 
-    @test(depends_on=[test_root_initially_disabled])
+    @test(depends_on=[test_root_initially_disabled],
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_initially_disabled_details(self):
         """Use instance details to test that root is disabled."""
         instance = self.dbaas.instances.get(instance_info.id)
@@ -97,11 +100,22 @@ class TestRoot(object):
                     "Instance has no rootEnabled property.")
         assert_false(instance.rootEnabled, "Root SHOULD NOT be enabled.")
         assert_equal(self.root_enabled_timestamp, 'Never')
+
+    @test(depends_on=[test_root_initially_disabled_details])
+    def test_root_disabeld_in_mgmt_api(self):
+        """Verifies in the management api that the timestamp exists"""
+        if test_config.values['management_api_disabled']:
+            raise SkipTest("Management api not enabled yet")
         self._verify_root_timestamp(instance_info.id)
 
     @test(depends_on=[test_root_initially_disabled_details])
     def test_enable_root(self):
         self._root()
+
+    @test(depends_on=[test_enable_root])
+    def test_enabled_timestamp(self):
+        if test_config.values['root_timestamp_disabled']:
+            raise SkipTest("Enabled timestamp not enabled yet")
         assert_not_equal(self.root_enabled_timestamp, 'Never')
 
     @test(depends_on=[test_enable_root])
@@ -110,7 +124,8 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_true(enabled, "Root SHOULD be enabled.")
 
-    @test(depends_on=[test_root_now_enabled])
+    @test(depends_on=[test_root_now_enabled],
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_now_enabled_details(self):
         """Use instance details to test that root is now enabled."""
         instance = self.dbaas.instances.get(instance_info.id)
@@ -122,6 +137,8 @@ class TestRoot(object):
 
     @test(depends_on=[test_root_now_enabled_details])
     def test_reset_root(self):
+        if test_config.values['root_timestamp_disabled']:
+            raise SkipTest("Enabled timestamp not enabled yet")
         old_ts = self.root_enabled_timestamp
         self._root()
         assert_not_equal(self.root_enabled_timestamp, 'Never')
@@ -133,7 +150,8 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_true(enabled, "Root SHOULD still be enabled.")
 
-    @test(depends_on=[test_root_still_enabled])
+    @test(depends_on=[test_root_still_enabled], 
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_still_enabled_details(self):
         """Use instance details to test that after root was reset it's still enabled."""
         instance = self.dbaas.instances.get(instance_info.id)
@@ -145,6 +163,8 @@ class TestRoot(object):
 
     @test(depends_on=[test_root_still_enabled_details])
     def test_reset_root_user_enabled(self):
+        if test_config.values['root_timestamp_disabled']:
+            raise SkipTest("Enabled timestamp not enabled yet")
         created_users= ['root']
         self.system_users.remove('root')
         users = self.dbaas.users.list(instance_info.id)

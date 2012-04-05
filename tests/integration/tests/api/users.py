@@ -65,7 +65,7 @@ class TestUsers(object):
     def test_create_users(self):
         users = []
         users.append({"name": self.username, "password": self.password,
-                      "database": self.db1})
+                      "databases": [{"name": self.db1}]})
         users.append({"name": self.username1, "password": self.password1,
                      "databases": [{"name": self.db1}, {"name": self.db2}]})
         self.dbaas.users.create(instance_info.id, users)

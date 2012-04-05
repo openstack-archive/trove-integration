@@ -102,9 +102,10 @@ class TestDatabases(object):
     def test_delete_database(self):
         self.dbaas.databases.delete(instance_info.id, self.dbname_urlencoded)
         time.sleep(5)
-
-        if instance_info.check_database(self.dbname):
-           fail("Database %s did not get deleted" % self.dbname)
+        dbs = self.dbaas.databases.list(instance_info.id)
+        found = any(result.name == self.dbname_urlencoded for result in dbs)
+        assert_false(found, "Database '%s' SHOULD NOT be found in result" %
+                     self.dbname_urlencoded)
 
     @test
     def test_database_name_too_long(self):
