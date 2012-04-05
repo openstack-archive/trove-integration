@@ -695,6 +695,8 @@ class DeleteInstance(object):
     @test
     def test_delete(self):
         if do_not_delete_instance():
+            report.log("TESTS_DO_NOT_DELETE_INSTANCE=True was specified, "
+                       "skipping delete...")
             raise SkipTest("TESTS_DO_NOT_DELETE_INSTANCE was specified.")
         global dbaas
         if not hasattr(instance_info, "initial_result"):

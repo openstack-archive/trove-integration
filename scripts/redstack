@@ -725,7 +725,22 @@ EOF
 }
 
 function cmd_run() {
-    cd $PATH_REDDWARF; bin/reddwarf-server --config-file=/tmp/reddwarf.conf.sample
+    cd $PATH_REDDWARF; bin/reddwarf-server \
+        --config-file=/tmp/reddwarf.conf.sample $@
+}
+
+function cmd_run_fake() {
+    CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
+    cd $PATH_REDDWARF
+    set -e
+    rm reddwarf_test.sqlite
+    set +e
+    bin/reddwarf-manage --config-file=$CONF_FILE db_sync \
+        repo_path=reddwarf_test.sqlite
+    sqlite3 reddwarf_test.sqlite \
+        "INSERT INTO service_images VALUES('1','database','fake');"
+    bin/reddwarf-server --config-file=$CONF_FILE $@ \
+        repo_path=reddwarf_test.sqlite
 }
 
 ###############################################################################
@@ -919,6 +934,7 @@ function print_usage() {
           set-image       - Sets the image without building it.
           clear           - Destroy instances and rabbit queues.
           run             - Starts RD but not in a screen.
+          run-fake        - Runs the server in fake mode.
     "
     exit 1
 }
@@ -953,6 +969,7 @@ function run_command() {
         "clear" ) shift; cmd_clear $@;;
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
+        "run-fake" ) shift; cmd_run_fake $@;;
         * )
             echo "'$1' not a valid command"
             exit 1
