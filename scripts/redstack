@@ -499,14 +499,15 @@ function get_glance_id () {
 
 function cmd_set_image() {
     GLANCE_IMAGEID=$1
+    SERVICE_TYPE=$2
     #TODO(hub-cap): Upload this sucker to our database.
     # This should be a reddwarf-manage function
     exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
 
     set +e
-    mysql_reddwarf "INSERT INTO service_images VALUES('1','database','$GLANCE_IMAGEID');"
+    mysql_reddwarf "INSERT INTO service_images VALUES('1','$SERVICE_TYPE','$GLANCE_IMAGEID');"
     set -e
-    mysql_reddwarf "UPDATE service_images SET image_id = '$GLANCE_IMAGEID';"
+    mysql_reddwarf "UPDATE service_images SET image_id = '$GLANCE_IMAGEID' where service_name = '$SERVICE_TYPE';"
 
     # Reminder: Check the glance database with:
     # $ glance index -A {token-id}
@@ -519,12 +520,13 @@ function upload_image_to_glance() {
     REDDWARF_TOKEN=$2
     IMAGE_LOC=$3
     UBUNTU_DISTRO=$4
+    SERVICE_TYPE=$5
 
     GLANCE_IMAGEID=`get_glance_id glance add --silent-upload name="$IMAGE_NAME" is_public=true \
        container_format=ovf disk_format=qcow2 \
        distro="$UBUNTU_DISTRO" -A $REDDWARF_TOKEN < $IMAGE_LOC`
 
-    cmd_set_image $GLANCE_IMAGEID
+    cmd_set_image $GLANCE_IMAGEID $SERVICE_TYPE
 }
 
 function build_vm() {
@@ -627,6 +629,7 @@ function cmd_build_image() {
 
     USERNAME=`whoami`
     HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
+    mkdir -p /home/$USERNAME/images
     VM_PATH=/home/$USERNAME/images/oneiric_${SERVICE_TYPE}_image
     UBUNTU_DISTRO=ubuntu_oneiric
     UBUNTU_DISTRO_NAME=oneiric
@@ -643,7 +646,7 @@ function cmd_build_image() {
     REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
 
     # Now upload it
-    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO
+    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO $SERVICE_TYPE
 }
 
 
