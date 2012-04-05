@@ -28,7 +28,9 @@ Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a vi
 
   if /dev/pts/0 does not have read/write for your user
 
-    chmod 660 /dev/pts/0
+    $ chmod 660 /dev/pts/0
+
+  *Note that this number can change and if you can not connect to the screen session then the /dev/pts/# needs modding like above.*
 
 #### Login with ubuntu:
 
@@ -51,6 +53,25 @@ Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a vi
 #### Install all the dependencies
 
     $ ./redstack install
+
+***
+
+#### Connecting to the screen session
+
+    $ screen -x stack
+
+*If that command fails with the error*
+
+    Cannot open your terminal '/dev/pts/1'
+
+*If that command fails with the error chmod the corresponding /dev/pts/#*
+
+    $ chmod 660 /dev/pts/1
+
+#### Detach from the screen session
+Allows the services to continue running in the background
+
+    ctrl+a then d
 
 ***
 
