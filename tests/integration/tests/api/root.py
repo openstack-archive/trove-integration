@@ -91,11 +91,10 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_false(enabled, "Root SHOULD NOT be enabled.")
 
-    @test(depends_on=[test_root_initially_disabled])
+    @test(depends_on=[test_root_initially_disabled],
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_initially_disabled_details(self):
         """Use instance details to test that root is disabled."""
-        if test_config.values['root_removed_from_instance_api']:
-            raise SkipTest("Root is no longer in the instances api")
         instance = self.dbaas.instances.get(instance_info.id)
         assert_true(hasattr(instance, 'rootEnabled'),
                     "Instance has no rootEnabled property.")
@@ -125,11 +124,10 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_true(enabled, "Root SHOULD be enabled.")
 
-    @test(depends_on=[test_root_now_enabled])
+    @test(depends_on=[test_root_now_enabled],
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_now_enabled_details(self):
         """Use instance details to test that root is now enabled."""
-        if test_config.values['root_removed_from_instance_api']:
-            raise SkipTest("Root is no longer in the instances api")
         instance = self.dbaas.instances.get(instance_info.id)
         assert_true(hasattr(instance, 'rootEnabled'),
                     "Instance has no rootEnabled property.")
@@ -152,11 +150,10 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_true(enabled, "Root SHOULD still be enabled.")
 
-    @test(depends_on=[test_root_still_enabled])
+    @test(depends_on=[test_root_still_enabled], 
+          enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_still_enabled_details(self):
         """Use instance details to test that after root was reset it's still enabled."""
-        if test_config.values['root_removed_from_instance_api']:
-            raise SkipTest("Root is no longer in the instances api")
         instance = self.dbaas.instances.get(instance_info.id)
         assert_true(hasattr(instance, 'rootEnabled'),
                     "Instance has no rootEnabled property.")

@@ -66,19 +66,17 @@ class TestMultiNic(object):
         def get_ip_for_instance():
             result = instance_info.dbaas.instances.get(instance_info.id)
             if hasattr(result, 'ip'):
-                instance_info.user_ip = result.ip
+                instance_info.user_ip = result.ip[0]
                 return True
             return False
         poll_until(get_ip_for_instance, sleep_time=5, time_out=20)
 
-    @test
+    @test(enabled=WHITE_BOX)
     def test_multi_nic(self):
         """
         Multinic - Verify that nics as specified in the database are created
         in the guest
         """
-        if test_config.values['openvz_disabled']:
-            raise SkipTest("OpenVZ not implemented yet")
         vifs = db.virtual_interface_get_by_instance(context.get_admin_context(),
                                                     instance_info.local_id)
         for vif in vifs:
@@ -108,9 +106,7 @@ class TestMysqlAccess(object):
         assert_mysql_connection_fails("root", "dsfgnear",
                                       instance_info.user_ip)
 
-    @test
+    @test(enabled=WHITE_BOX)
     def test_zfirst_db(self):
-        if test_config.values['openvz_disabled']:
-            raise SkipTest("Initial db creation not working yet")
         if not instance_info.check_database("firstdb"):
             fail("Database 'firstdb' was not created")
