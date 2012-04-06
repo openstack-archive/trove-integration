@@ -32,9 +32,10 @@ import tests
 from tests import util
 from tests.api.instances import instance_info
 from tests.openvz.dbaas_ovz import TestMysqlAccess
+from tests.util import test_config
 
 GROUP="dbaas.api.databases"
-
+FAKE = test_config.values['fake_mode']
 
 @test(depends_on_classes=[TestMysqlAccess], groups=[tests.DBAAS_API, GROUP,
                                                     tests.INSTANCES])
@@ -63,7 +64,8 @@ class TestDatabases(object):
         databases.append({"name": self.dbname2})
 
         self.dbaas.databases.create(instance_info.id, databases)
-        time.sleep(5)
+        if not FAKE:
+            time.sleep(5)
 
     @test
     def test_create_database_list(self):
@@ -101,7 +103,8 @@ class TestDatabases(object):
     @test
     def test_delete_database(self):
         self.dbaas.databases.delete(instance_info.id, self.dbname_urlencoded)
-        time.sleep(5)
+        if not FAKE:
+            time.sleep(5)
         dbs = self.dbaas.databases.list(instance_info.id)
         found = any(result.name == self.dbname_urlencoded for result in dbs)
         assert_false(found, "Database '%s' SHOULD NOT be found in result" %

@@ -620,12 +620,12 @@ function build_vm() {
 function cmd_build_image() {
     exclaim "Building a image for use with development and integration tests."
     if [ -z "$1" ]
-    then 
+    then
         echo "You must pass an image type to build, like mysql"
         exit 1
     fi
     SERVICE_TYPE=$1
-    
+
 
     USERNAME=`whoami`
     HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
@@ -770,7 +770,7 @@ function cmd_run_fake() {
     bin/reddwarf-manage --config-file=$CONF_FILE db_sync \
         repo_path=reddwarf_test.sqlite
     sqlite3 reddwarf_test.sqlite \
-        "INSERT INTO service_images VALUES('1','database','fake');"
+        "INSERT INTO service_images VALUES('1','mysql','fake');"
     bin/reddwarf-server --config-file=$CONF_FILE $@ \
         repo_path=reddwarf_test.sqlite
 }
