@@ -17,6 +17,7 @@ import re
 
 from novaclient import exceptions as nova_exceptions
 
+from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
@@ -62,6 +63,18 @@ class TestUsers(object):
     def setUp(self):
         self.dbaas = util.create_dbaas_client(instance_info.user)
         self.dbaas_admin = util.create_dbaas_client(instance_info.admin_user)
+        databases = [{"name": self.db1, "charset": "latin2",
+                      "collate": "latin2_general_ci"},
+                     {"name": self.db2}]
+        self.dbaas.databases.create(instance_info.id, databases)
+        if not FAKE:
+            time.sleep(5)
+
+    @after_class
+    def tearDown(self):
+        self.dbaas.databases.delete(instance_info.id, self.db1)
+        self.dbaas.databases.delete(instance_info.id, self.db2)
+
 
     @test()
     def test_create_users(self):
@@ -185,5 +198,5 @@ class TestUsers(object):
         # Also determine the db is gone via API.
         result = self.dbaas.users.list(instance_info.id)
         for item in result:
-            if item.name == user:
+            if item.name == username:
                 fail("User %s was not deleted." % user)
