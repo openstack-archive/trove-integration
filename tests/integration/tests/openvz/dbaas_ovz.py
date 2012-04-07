@@ -59,7 +59,7 @@ class TestMultiNic(object):
         instance_info.user_ip = get_vz_ip_for_device(instance_info.local_id,
                                                       "eth0")
 
-    @test
+    @test(enabled=not test_config.values['fake_mode'])
     def test_get_ip(self):
         # wait for a few seconds for the IP to sync up
         # is there a better way to do this?
@@ -87,7 +87,8 @@ class TestMultiNic(object):
             assert_equal(vz_ip, fixed_ip[0]['address'])
 
 
-@test(depends_on_classes=[TestMultiNic], groups=[GROUP_TEST, "dbaas.guest.mysql"])
+@test(depends_on_classes=[TestMultiNic], groups=[GROUP_TEST, "dbaas.guest.mysql"],
+      enabled=not test_config.values['fake_mode'])
 class TestMysqlAccess(object):
     """
         Make sure that MySQL server was secured.

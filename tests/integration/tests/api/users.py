@@ -33,8 +33,10 @@ from tests.api.databases import TestDatabases
 from tests.api.instances import instance_info
 from tests.util import process
 from tests import util
+from tests.util import test_config
 
 GROUP="dbaas.api.users"
+FAKE = test_config.values['fake_mode']
 
 
 @test(depends_on_classes=[TestDatabases], groups=[tests.DBAAS_API, GROUP,
@@ -70,7 +72,8 @@ class TestUsers(object):
                      "databases": [{"name": self.db1}, {"name": self.db2}]})
         self.dbaas.users.create(instance_info.id, users)
         # Do we need this?
-        time.sleep(5)
+        if not FAKE:
+            time.sleep(5)
 
         self.check_database_for_user(self.username, self.password,
                                     [self.db1])
@@ -103,7 +106,8 @@ class TestUsers(object):
     def test_delete_users(self):
         self.dbaas.users.delete(instance_info.id, self.username_urlencoded)
         self.dbaas.users.delete(instance_info.id, self.username1_urlendcoded)
-        time.sleep(5)
+        if not FAKE:
+            time.sleep(5)
 
         self._check_connection(self.username, self.password)
         self._check_connection(self.username1, self.password1)
@@ -119,11 +123,20 @@ class TestUsers(object):
         return dblist
 
     def check_database_for_user(self, user, password, dbs):
-        dblist = self.show_databases(user, password)
-        for db in dbs:
-            default_db = re.compile("[\w\n]*%s[\w\n]*" % db)
-            if not default_db.match(dblist):
-                fail("No match for db %s in dblist. %s :(" % (db, dblist))
+        if not FAKE:
+            # Make the real call to the database to check things.
+            dblist = self.show_databases(user, password)
+            for db in dbs:
+                default_db = re.compile("[\w\n]*%s[\w\n]*" % db)
+                if not default_db.match(dblist):
+                    fail("No match for db %s in dblist. %s :(" % (db, dblist))
+        # Confirm via API.
+        result = self.dbaas.users.list(instance_info.id)
+        for item in result:
+            if item.name == user:
+                break
+        else:
+            fail("User %s not added to collection." % user)
 
     @test
     def test_username_too_long(self):
@@ -150,7 +163,8 @@ class TestUsers(object):
         users.append({"name": username_with_period, "password": self.password,
                       "databases": [{"name": self.db1}]})
         self.dbaas.users.create(instance_info.id, users)
-        time.sleep(5)
+        if not FAKE:
+            time.sleep(5)
 
         self.check_database_for_user(username_with_period, self.password,
                                      [self.db1])
@@ -165,5 +179,11 @@ class TestUsers(object):
                       instance_info.id, users)
 
     def _check_connection(self, username, password):
-        util.assert_mysql_connection_fails(username, password,
-                                           instance_info.user_ip)
+        if not FAKE:
+            util.assert_mysql_connection_fails(username, password,
+                                               instance_info.user_ip)
+        # Also determine the db is gone via API.
+        result = self.dbaas.users.list(instance_info.id)
+        for item in result:
+            if item.name == user:
+                fail("User %s was not deleted." % user)

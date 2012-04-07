@@ -130,6 +130,8 @@ def _setup():
     global test_mgmt
     clean_slate = os.environ.get("CLEAN_SLATE", "False") == "True"
     values = load_configuration()
+    if os.environ.get("FAKE_MODE", "False") == "True":
+        values["fake_mode"] = True
     use_venv = values.get("use_venv", True)
     nova_auth_url = str(values.get("nova_auth_url", "http://localhost:5000/v2.0"))
     reddwarf_auth_url = str(values.get("reddwarf_auth_url", "http://localhost:5000/v1.1"))

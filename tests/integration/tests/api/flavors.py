@@ -105,7 +105,7 @@ class Flavors(object):
         for os_flavor in os_flavors:
             found_index = None
             for index, dbaas_flavor in enumerate(dbaas_flavors):
-                if os_flavor.id == dbaas_flavor.id:
+                if os_flavor.name == dbaas_flavor.name:
                     assert_true(found_index is None,
                                 "Flavor ID '%s' appears in elements #%s and #%d." %\
                                 (dbaas_flavor.id, str(found_index), index))

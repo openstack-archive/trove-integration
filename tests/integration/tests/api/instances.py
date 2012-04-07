@@ -653,7 +653,7 @@ class TestInstanceListing(object):
     @test
     def test_instance_not_deleted_by_other_user(self):
         assert_raises(nova_exceptions.NotFound,
-                     self.daffy_client.instances.get, instance_info.id)
+                      self.daffy_client.instances.get, instance_info.id)
         assert_raises(nova_exceptions.NotFound,
                       self.daffy_client.instances.delete, instance_info.id)
 

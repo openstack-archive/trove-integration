@@ -50,6 +50,8 @@ if WHITE_BOX:
 
 
 GROUP = "dbaas.api.instances.actions"
+GROUP_REBOOT = "dbaas.api.instances.actions.reboot"
+GROUP_RESTART = "dbaas.api.instances.actions.restart"
 MYSQL_USERNAME = "test_user"
 MYSQL_PASSWORD = "abcde"
 
@@ -194,7 +196,7 @@ class RebootTestBase(object):
         self.test_successful_restart()
 
 
-@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP],
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP_RESTART],
       depends_on_groups=[GROUP_START])
 class RestartTests(RebootTestBase):
     """Tests restarting MySQL."""
@@ -223,7 +225,7 @@ class RestartTests(RebootTestBase):
         self.successful_restart()
 
 
-@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP],
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP_REBOOT],
       depends_on_groups=[GROUP_START], depends_on=[RestartTests])
 class RebootTests(RebootTestBase):
     """Tests restarting instance."""
