@@ -119,10 +119,8 @@ class InstanceTestInfo(object):
         return create_dns_entry(instance_info.local_id, instance_info.id)
 
     def get_address(self):
-        if self.address is None:
-            self.address = db.instance_get_fixed_addresses(
-                context.get_admin_context(), self.get_local_id())
-        return self.address
+        result = self.dbaas.instances.get(self.id)
+        return result.ip[0]
 
     def get_local_id(self):
         if not WHITE_BOX:
@@ -406,7 +404,7 @@ class WaitForGuestInstallationToFinish(object):
     """
 
     @test
-    @time_out(60 * 8)
+    @time_out(60 * 16)
     def test_instance_created(self):
         if WHITE_BOX:
             # Checks the db status as well as the REST API status.

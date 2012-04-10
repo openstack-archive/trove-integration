@@ -91,7 +91,8 @@ def assert_mysql_connection_fails(user_name, password, ip):
     engine = init_engine(user_name, password, ip)
     try:
         engine.connect()
-        fail("Should have failed to connect.")
+        fail("Should have failed to connect: mysql --host %s -u %s -p%s"
+             % (ip, user_name, password))
     except OperationalError as oe:
         assert_mysql_failure_msg_was_permissions_issue(oe.message)
 
@@ -327,3 +328,33 @@ def poll_until(retriever, condition=lambda value: value,
     lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
     return lc.wait()
 
+
+class LocalSqlClient(object):
+    """A sqlalchemy wrapper to manage transactions"""
+
+    def __init__(self, engine, use_flush=True):
+        self.engine = engine
+        self.use_flush = use_flush
+
+    def __enter__(self):
+        self.conn = self.engine.connect()
+        self.trans = self.conn.begin()
+        return self.conn
+
+    def __exit__(self, type, value, traceback):
+        if self.trans:
+            if type is not None:  # An error occurred
+                self.trans.rollback()
+            else:
+                if self.use_flush:
+                    self.conn.execute(FLUSH)
+                self.trans.commit()
+        self.conn.close()
+
+    def execute(self, t, **kwargs):
+        try:
+            return self.conn.execute(t, kwargs)
+        except:
+            self.trans.rollback()
+            self.trans = None
+            raise

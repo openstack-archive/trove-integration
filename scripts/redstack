@@ -893,6 +893,7 @@ function cmd_run_ci() {
 }
 
 function cmd_clear() {
+    cmd_int_tests --group=dbaas.api.instances.delete
     LIST=`virsh -q list|awk '{print $1}'`
     for i in $LIST; do sudo virsh destroy $i; done
     mysql_nova "DELETE FROM instance_info_caches;"

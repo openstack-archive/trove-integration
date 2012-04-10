@@ -167,6 +167,7 @@ if __name__ == '__main__':
     ADD_DOMAINS = os.environ.get("ADD_DOMAINS", "False") == 'True'
     if not ADD_DOMAINS:
         from tests import initialize
+        from tests.api import delete_all
         from tests.api import flavors
         from tests.api import versions
         from tests.api import instances
@@ -199,6 +200,7 @@ if __name__ == '__main__':
             "services.initialize",
             "dbaas.guest.initialize", #instances.GROUP_START,
             "dbaas.preinstance",
+            "dbaas.api.instances.actions.restart",
             "dbaas.guest.shutdown",
             versions.GROUP,
         ]
