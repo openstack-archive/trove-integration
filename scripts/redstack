@@ -236,12 +236,13 @@ function install_packages_1() {
 
 
 function add_to_keystone_conf() {
+    exclaim 'adding reddwarf to keystone catalog templates'
     echo '
 catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v0.1/$(tenant_id)s
 catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v0.1/$(tenant_id)s
 catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v0.1/$(tenant_id)s
-catalog.RegionOne.reddwarf.name = 'Reddwarf'
-    ' >> $PATH_KEYSTONE/etc/default_catalog.templates
+catalog.RegionOne.reddwarf.name = Reddwarf
+    ' >> /etc/keystone/default_catalog.templates
 }
 
 function install_packages_2() {
