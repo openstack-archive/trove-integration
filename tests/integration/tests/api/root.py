@@ -57,20 +57,16 @@ class TestRoot(object):
         self.dbaas_admin = util.create_dbaas_client(instance_info.admin_user)
 
     def _verify_root_timestamp(self, id):
-        mgmt_instance = self.dbaas_admin.management.show(id)
+        mgmt_instance = self.dbaas.instances.get(id)
         assert_true(mgmt_instance is not None)
         timestamp = mgmt_instance.root_enabled_at
         assert_equal(self.root_enabled_timestamp, timestamp)
-        reh = self.dbaas_admin.management.root_enabled_history(id)
-        print "Root_enabled_history is %s" % reh
-        timestamp = reh.root_enabled_at
-        assert_equal(self.root_enabled_timestamp, timestamp)
-        assert_equal(id, reh.id)
 
     def _root(self):
         global root_password
         host = "%"
         user, password = self.dbaas.root.create(instance_info.id)
+        self.root_enabled_timestamp = self.dbaas.instances.get(instance_info.id).root_enabled_at
 
     def _root_local_sql(self):
         engine = init_engine(user, password, instance_info.user_ip)
@@ -82,7 +78,7 @@ class TestRoot(object):
                 assert_equal(user, row['User'])
                 assert_equal(host, row['Host'])
         root_password = password
-        self.root_enabled_timestamp = self.dbaas_admin.management.show(instance_info.id).root_enabled_at
+        self.root_enabled_timestamp = self.dbaas.instances.get(instance_info.id).root_enabled_at
         assert_not_equal(self.root_enabled_timestamp, 'Never')
 
     @test
@@ -102,7 +98,7 @@ class TestRoot(object):
         assert_equal(self.root_enabled_timestamp, 'Never')
 
     @test(depends_on=[test_root_initially_disabled_details])
-    def test_root_disabeld_in_mgmt_api(self):
+    def test_root_disabled_in_mgmt_api(self):
         """Verifies in the management api that the timestamp exists"""
         if test_config.values['management_api_disabled']:
             raise SkipTest("Management api not enabled yet")
