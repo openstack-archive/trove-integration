@@ -146,7 +146,7 @@ class TestRoot(object):
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_true(enabled, "Root SHOULD still be enabled.")
 
-    @test(depends_on=[test_root_still_enabled], 
+    @test(depends_on=[test_root_still_enabled],
           enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_still_enabled_details(self):
         """Use instance details to test that after root was reset it's still enabled."""
