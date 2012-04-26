@@ -21,7 +21,7 @@ from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
-GROUP="dbaas.api.versions"
+GROUP = "dbaas.api.versions"
 
 
 @test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES, 'DBAAS_VERSIONS'],
@@ -48,7 +48,8 @@ class Versions(object):
     def _request(self, url, method='GET', response='200'):
         resp, body = None, None
         try:
-            resp, body = self.client.client.request('http://localhost:8775' + url, method)
+            full_url = 'http://localhost:8775' + url
+            resp, body = self.client.client.request(full_url, method)
             assert_equal(resp.get('status', ''), response)
         except Exception:
             pass

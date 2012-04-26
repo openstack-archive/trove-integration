@@ -30,7 +30,7 @@ from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
-GROUP="dbaas.api.mgmt.accounts"
+GROUP = "dbaas.api.mgmt.accounts"
 
 
 @test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES],

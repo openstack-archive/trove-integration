@@ -40,7 +40,6 @@ def _is_web_service_alive(url):
 _running_services = []
 
 
-
 def get_running_services():
     """ Returns the list of services which this program has started."""
     return _running_services
@@ -98,9 +97,11 @@ class Service(object):
         if not self.cmd:
             return False
         # The cmd[1] signifies the executable python script. It gets invoked
-        # as python /path/to/executable args, so the entry is /path/to/executable
+        # as python /path/to/executable args, so the entry is
+        # /path/to/executable
         actual_command = self.cmd[1].split("/")[-1]
-        proc = start_proc(["/usr/bin/pgrep", "-f", actual_command], shell=False)
+        proc_command = ["/usr/bin/pgrep", "-f", actual_command]
+        proc = start_proc(proc_command, shell=False)
         # this is to make sure there is only one pid returned from the pgrep
         has_two_lines = False
         pid = None
@@ -148,11 +149,13 @@ class Service(object):
             return False
         time.sleep(1)
         # The cmd[1] signifies the executable python script. It gets invoked
-        # as python /path/to/executable args, so the entry is /path/to/executable
+        # as python /path/to/executable args, so the entry is
+        # /path/to/executable
         actual_command = self.cmd[1].split("/")[-1]
         print actual_command
-        print ["/usr/bin/pgrep", "-f", actual_command]
-        proc = start_proc(["/usr/bin/pgrep", "-f", actual_command], shell=False)
+        proc_command = ["/usr/bin/pgrep", "-f", actual_command]
+        print proc_command
+        proc = start_proc(proc_command, shell=False)
         line = proc.stdout.readline()
         print line
         # pgrep only returns a pid. if there is no pid, it'll return nothing

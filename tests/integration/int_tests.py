@@ -49,9 +49,6 @@ import unittest
 import sys
 
 
-
-
-
 if os.environ.get("PYDEV_DEBUG", "False") == 'True':
     from pydev import pydevd
     pydevd.settrace('10.0.2.2', port=7864, stdoutToServer=True,
@@ -75,6 +72,7 @@ def add_support_for_localization():
 
 
 MAIN_RUNNER = None
+
 
 def _clean_up():
     """Shuts down any services this program has started and shows results."""
@@ -198,7 +196,7 @@ if __name__ == '__main__':
             databases.GROUP,
             root.GROUP,
             "services.initialize",
-            "dbaas.guest.initialize", #instances.GROUP_START,
+            "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
             "dbaas.api.instances.actions.restart",
             "dbaas.guest.shutdown",
@@ -285,7 +283,6 @@ if __name__ == '__main__':
                     '    %s' % str(test_name).ljust(60))
                 self.stream.flush()
 
-
     class IntegrationTestRunner(NovaTestRunner):
 
         def init(self):
@@ -305,7 +302,8 @@ if __name__ == '__main__':
                 print("Exiting before tests even started.")
             else:
                 if not self.__finished:
-                    print("Tests aborted, trying to print available results...")
+                    msg = "Tests aborted, trying to print available results..."
+                    print(msg)
                     stop_time = time.time()
                     self.__result.printErrors()
                     self.__result.printSummary(self.__start_time, stop_time)
@@ -330,9 +328,9 @@ if __name__ == '__main__':
     MAIN_RUNNER = runner
 
     if repl:
-        # Turn off the following "feature" of the unittest module in case we want
-        # to start a REPL.
-        sys.exit = lambda x : None
+        # Turn off the following "feature" of the unittest module in case
+        # we want to start a REPL.
+        sys.exit = lambda x: None
 
     proboscis.TestProgram(argv=nose_args, groups=groups,
                           testRunner=runner).run_and_exit()

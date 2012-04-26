@@ -49,6 +49,7 @@ if WHITE_BOX:
 
 GROUP = 'reddwarf.reaper'
 
+
 @test(groups=[GROUP, GROUP + ".volume"],
       depends_on_groups=["services.initialize"])
 class ReaperShouldKillOlderUnattachedVolumes(InstanceTest):
@@ -88,7 +89,7 @@ class ReaperShouldKillOlderUnattachedVolumes(InstanceTest):
         expiration_time = FLAGS.reddwarf_reaper_orphan_volume_expiration_time
         updated_at = utils.utcnow() - timedelta(seconds=expiration_time * 2)
         db_api.volume_update(context.get_admin_context(), self.volume_id,
-                            {"updated_at":updated_at})
+                            {"updated_at": updated_at})
 
     @test(depends_on=[make_volume_look_old])
     def reaper_should_delete_volume(self):
@@ -103,4 +104,3 @@ class ReaperShouldKillOlderUnattachedVolumes(InstanceTest):
         time_out = FLAGS.reddwarf_volume_time_out + 30
         assert_raises(NotFound, self.dbaas.instances.get, self.id)
         #TODO: Make sure quotas aren't affected.
-

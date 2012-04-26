@@ -54,6 +54,7 @@ flavor_href = None
 initial_instance = None
 original_notification_count = None
 
+
 def out_of_instance_memory_nofication_count():
     """Counts the times an OutOfInstanceMemory notification has been raised."""
     return count_notifications(notifier.ERROR, "out.of.instance.memory")
@@ -74,7 +75,7 @@ def setUp():
     original_notification_count = out_of_instance_memory_nofication_count()
 
 
-@test(groups=[GROUP, GROUP+".create"], depends_on=[setUp])
+@test(groups=[GROUP, GROUP + ".create"], depends_on=[setUp])
 def create_instance():
     """Create the instance. Expect the scheduler to fail the request."""
     #TODO(tim.simpson): Try to get this to work using a direct instance
@@ -89,7 +90,7 @@ def create_instance():
     initial_instance = client.instances.create(
         "sch_test_" + str(now),
         flavor_href,
-        {"size":1},
+        {"size": 1},
         [{"name": "firstdb", "charset": "latin2",
           "collate": "latin2_general_ci"}])
 
@@ -104,8 +105,8 @@ def confirm_instance_is_dead(self):
 def find_evidence_scheduler_failed_in_logs():
     """Eavesdrop on the logs until we see the scheduler failed, or time-out."""
     evidence = "Error scheduling " + initial_instance.name
-    poll_until(lambda : file(FLAGS.logfile, 'r').read(),
-               lambda log : evidence in log, sleep_time=3, time_out=60)
+    poll_until(lambda: file(FLAGS.logfile, 'r').read(),
+               lambda log: evidence in log, sleep_time=3, time_out=60)
 
 
 @test(groups=[GROUP], depends_on=[find_evidence_scheduler_failed_in_logs])
@@ -115,7 +116,7 @@ class AfterSchedulingHasFailed(unittest.TestCase):
         current_count = out_of_instance_memory_nofication_count()
         # Additional ops notifications should have been added.
         poll_until(out_of_instance_memory_nofication_count,
-                   lambda count : original_notification_count < count,
+                   lambda count: original_notification_count < count,
                    sleep_time=1, time_out=60)
 
     def test_confirm_instance_is_in_error_state(self):
@@ -124,14 +125,14 @@ class AfterSchedulingHasFailed(unittest.TestCase):
         assert_equal("ERROR", instance.status)
 
 
-@test(groups=[GROUP, GROUP + ".end"], depends_on_groups=[GROUP+".create"])
+@test(groups=[GROUP, GROUP + ".end"], depends_on_groups=[GROUP + ".create"])
 @time_out(30)
 def destroy_instance():
     """Delete the instance we tried to create for this test."""
     client.instances.delete(initial_instance)
     id = initial_instance.id
     try:
-        lc = LoopingCall(f=lambda : client.instances.get(id)).start(2, True)
+        lc = LoopingCall(f=lambda: client.instances.get(id)).start(2, True)
         lc.wait()
         self.fail("Expected exception.NotFound.")
     except exceptions.NotFound:

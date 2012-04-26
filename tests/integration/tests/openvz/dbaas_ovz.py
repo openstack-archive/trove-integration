@@ -45,6 +45,7 @@ if WHITE_BOX:
     from nova import context
     from nova import db
 
+
 @test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, "dbaas.guest.ovz"])
 class TestMultiNic(object):
     """
@@ -77,17 +78,19 @@ class TestMultiNic(object):
         Multinic - Verify that nics as specified in the database are created
         in the guest
         """
-        vifs = db.virtual_interface_get_by_instance(context.get_admin_context(),
+        admin_context = context.get_admin_context()
+        vifs = db.virtual_interface_get_by_instance(admin_context(),
                                                     instance_info.local_id)
         for vif in vifs:
-            fixed_ip = db.fixed_ip_get_by_virtual_interface(context.get_admin_context(),
+            fixed_ip = db.fixed_ip_get_by_virtual_interface(admin_context(),
                                                             vif['id'])
             vz_ip = get_vz_ip_for_device(instance_info.local_id,
                                          vif['network']['bridge_interface'])
             assert_equal(vz_ip, fixed_ip[0]['address'])
 
 
-@test(depends_on_classes=[TestMultiNic], groups=[GROUP_TEST, "dbaas.guest.mysql"],
+@test(depends_on_classes=[TestMultiNic],
+      groups=[GROUP_TEST, "dbaas.guest.mysql"],
       enabled=not test_config.values['fake_mode'])
 class TestMysqlAccess(object):
     """

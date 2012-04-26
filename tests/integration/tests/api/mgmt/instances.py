@@ -32,7 +32,7 @@ if WHITE_BOX:
     from nova import context
 
 
-GROUP="dbaas.api.mgmt.instances"
+GROUP = "dbaas.api.mgmt.instances"
 
 
 @test(depends_on_classes=[CreateInstance], groups=[GROUP])
@@ -41,13 +41,17 @@ class MgmtInstancesIndex(object):
 
     @before_class
     def setUp(self):
-        self.admin_user = test_config.users.find_user(Requirements(is_admin=True))
+        reqs = Requirements(is_admin=True)
+        self.admin_user = test_config.users.find_user(reqs)
         self.admin_client = create_dbaas_client(self.admin_user)
-        self.admin_context = context.RequestContext(self.admin_user.auth_user, self.admin_user.tenant)
+        self.admin_context = context.RequestContext(self.admin_user.auth_user,
+                                                    self.admin_user.tenant)
 
-        self.user = test_config.users.find_user(Requirements(is_admin=False))
+        reqs = Requirements(is_admin=False)
+        self.user = test_config.users.find_user(reqs)
         self.client = create_dbaas_client(self.user)
-        self.context = context.RequestContext(self.user.auth_user, self.user.tenant)
+        self.context = context.RequestContext(self.user.auth_user,
+                                              self.user.tenant)
 
     @test
     def test_mgmt_instance_index_as_user_fails(self):
@@ -56,7 +60,9 @@ class MgmtInstancesIndex(object):
 
     @test
     def test_mgmt_instance_index_fields_present(self):
-        """ Verify that all the expected fields are returned by the index method. """
+        """
+        Verify that all the expected fields are returned by the index method.
+        """
         expected_fields = [
                 'account_id',
                 'id',
@@ -76,13 +82,18 @@ class MgmtInstancesIndex(object):
 
     @test
     def test_mgmt_instance_index_check_filter(self):
-        """ Make sure that the deleted= filter works as expected, and no instances are excluded. """
+        """
+        Make sure that the deleted= filter works as expected, and no instances
+        are excluded.
+        """
         instance_counts = []
         for deleted_filter in (True, False):
-            filtered_index = self.admin_client.management.index(deleted=deleted_filter)
+            filtered_index = self.admin_client.management.index(
+                deleted=deleted_filter)
             instance_counts.append(len(filtered_index))
             for instance in filtered_index:
-                # Every instance listed here should have the proper value for 'deleted'.
+                # Every instance listed here should have the proper value
+                # for 'deleted'.
                 assert_equal(deleted_filter, instance.deleted)
         full_index = self.admin_client.management.index()
         # There should be no instances that are neither deleted or not-deleted.

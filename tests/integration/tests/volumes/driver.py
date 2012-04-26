@@ -51,7 +51,8 @@ if WHITE_BOX:
 UUID_PATTERN = re.compile('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-'
                           '[0-9a-f]{4}-[0-9a-f]{12}$')
 
-HUGE_VOLUME=5000
+HUGE_VOLUME = 5000
+
 
 def is_uuid(text):
     return UUID_PATTERN.search(text) is not None
@@ -140,27 +141,32 @@ class SetUp(VolumeTest):
     @time_out(60)
     def test_30_mgmt_volume_check(self):
         """Get the volume information from the mgmt API"""
-        device_info = self.story.api.get_storage_device_info(self.story.context)
+        story_context = self.story.context
+        device_info = self.story.api.get_storage_device_info(story_context)
         print("device_info : %r" % device_info)
-        self.assertNotEqual(device_info, None, "the storage device information should exist")
+        self.assertNotEqual(device_info, None,
+            "the storage device information should exist")
         self.story.original_device_info = device_info
 
     @time_out(60)
     def test_31_mgmt_volume_info(self):
         """Check the available space against the mgmt API info."""
-        device_info = self.story.api.get_storage_device_info(self.story.context)
+        story_context = self.story.context
+        device_info = self.story.api.get_storage_device_info(story_context)
         print("device_info : %r" % device_info)
         info = {'spaceTotal': device_info['raw_total'],
                 'spaceAvail': device_info['raw_avail']}
         self._assert_avilable_space(info)
 
     def _assert_avilable_space(self, device_info, fail=False):
-        """Give the SAN device_info(fake or not) and get the asserts for free"""
+        """
+        Give the SAN device_info(fake or not) and get the asserts for free
+        """
         print("DEVICE_INFO on SAN : %r" % device_info)
-        # Calculate the gbs and divide by 2 for the FLAGS.san_network_raid_factor
-        gbs = 1.0/1024/1024/1024/2
-        total = int(device_info['spaceTotal'])*gbs
-        free = int(device_info['spaceAvail'])*gbs
+        # Calculate the GBs; Divide by 2 for the FLAGS.san_network_raid_factor
+        gbs = 1.0 / 1024 / 1024 / 1024 / 2
+        total = int(device_info['spaceTotal']) * gbs
+        free = int(device_info['spaceAvail']) * gbs
         used = total - free
         usable = total * (FLAGS.san_max_provision_percent * 0.01)
         real_free = float(int(usable - used))
@@ -171,17 +177,18 @@ class SetUp(VolumeTest):
         print("usable : %r" % usable)
         print("real_free : %r" % real_free)
 
-        self.assertFalse(self.story.api.check_for_available_space(self.story.context, HUGE_VOLUME))
-        self.assertFalse(self.story.api.check_for_available_space(self.story.context, real_free+1))
+        check_space = self.story.api.check_for_available_space
+        self.assertFalse(check_space(self.story.context, HUGE_VOLUME))
+        self.assertFalse(check_space(self.story.context, real_free + 1))
 
         if fail:
-            self.assertFalse(self.story.api.check_for_available_space(self.story.context, real_free))
-            self.assertFalse(self.story.api.check_for_available_space(self.story.context, real_free-1))
-            self.assertFalse(self.story.api.check_for_available_space(self.story.context, 1))
+            self.assertFalse(check_space(self.story.context, real_free))
+            self.assertFalse(check_space(self.story.context, real_free - 1))
+            self.assertFalse(check_space(self.story.context, 1))
         else:
-            self.assertTrue(self.story.api.check_for_available_space(self.story.context, real_free))
-            self.assertTrue(self.story.api.check_for_available_space(self.story.context, real_free-1))
-            self.assertTrue(self.story.api.check_for_available_space(self.story.context, 1))
+            self.assertTrue(check_space(self.story.context, real_free))
+            self.assertTrue(check_space(self.story.context, real_free - 1))
+            self.assertTrue(check_space(self.story.context, 1))
 
 
 @test(groups=[VOLUMES_DRIVER], depends_on_classes=[SetUp])
@@ -189,7 +196,10 @@ class AddVolumeFailure(VolumeTest):
 
     @time_out(60)
     def test_add(self):
-        """Make call to FAIL a prov. volume and assert the return value is a FAILURE."""
+        """
+        Make call to FAIL a prov. volume and assert the return value is a
+        FAILURE.
+        """
         self.assertEqual(None, self.storyFail.volume_id)
         name = "TestVolume"
         desc = "A volume that was created for testing."
@@ -217,8 +227,8 @@ class AfterVolumeFailureIsAdded(VolumeTest):
     @time_out(120)
     def test_api_get(self):
         """Wait until the volume is a FAILURE."""
-        volume = poll_until(lambda : self.storyFail.get_volume(),
-                            lambda volume : volume["status"] != "creating")
+        volume = poll_until(lambda: self.storyFail.get_volume(),
+                            lambda volume: volume["status"] != "creating")
         self.assertEqual(volume["status"], "error")
         self.assertTrue(volume["attach_status"], "detached")
 
@@ -227,9 +237,12 @@ class AfterVolumeFailureIsAdded(VolumeTest):
         """Get the volume information from the mgmt API"""
         info = self.story.api.get_storage_device_info(self.story.context)
         print("device_info : %r" % info)
-        self.assertNotEqual(info, None, "the storage device information should exist")
-        self.assertEqual(self.story.original_device_info['raw_total'], info['raw_total'])
-        self.assertEqual(self.story.original_device_info['raw_avail'], info['raw_avail'])
+        self.assertNotEqual(info, None,
+                            "the storage device information should exist")
+        self.assertEqual(self.story.original_device_info['raw_total'],
+                         info['raw_total'])
+        self.assertEqual(self.story.original_device_info['raw_avail'],
+                         info['raw_avail'])
 
 
 @test(groups=[VOLUMES_DRIVER], depends_on_classes=[SetUp])
@@ -264,8 +277,8 @@ class AfterVolumeIsAdded(VolumeTest):
     @time_out(120)
     def test_api_get(self):
         """Wait until the volume is finished provisioning."""
-        volume = poll_until(lambda : self.story.get_volume(),
-                            lambda volume : volume["status"] != "creating")
+        volume = poll_until(lambda: self.story.get_volume(),
+                            lambda volume: volume["status"] != "creating")
         self.assertEqual(volume["status"], "available")
         self.assert_volume_as_expected(volume)
         self.assertTrue(volume["attach_status"], "detached")
@@ -273,12 +286,15 @@ class AfterVolumeIsAdded(VolumeTest):
     @time_out(60)
     def test_mgmt_volume_check(self):
         """Get the volume information from the mgmt API"""
-        print("self.story.original_device_info : %r" % self.story.original_device_info)
+        print("self.story.original_device_info : %r" %
+              self.story.original_device_info)
         info = self.story.api.get_storage_device_info(self.story.context)
         print("device_info : %r" % info)
-        self.assertNotEqual(info, None, "the storage device information should exist")
-        self.assertEqual(self.story.original_device_info['raw_total'], info['raw_total'])
-        volume_size = int(self.story.volume['size']) * (1024**3) * 2
+        self.assertNotEqual(info, None,
+                            "the storage device information should exist")
+        self.assertEqual(self.story.original_device_info['raw_total'],
+                         info['raw_total'])
+        volume_size = int(self.story.volume['size']) * (1024 ** 3) * 2
         print("volume_size: %r" % volume_size)
         print("self.story.volume['size']: %r" % self.story.volume['size'])
         avail = int(self.story.original_device_info['raw_avail']) - volume_size
@@ -296,7 +312,8 @@ class SetupVolume(VolumeTest):
         #                  make sure some kind of exception is thrown if it
         #                  isn't added to certain drivers?
         self.assertNotEqual(None, self.story.volume_id)
-        self.story.api.assign_to_compute(self.story.context, self.story.volume_id,
+        self.story.api.assign_to_compute(self.story.context,
+                                         self.story.volume_id,
                                          self.story.host)
 
     @time_out(60)
@@ -327,6 +344,7 @@ class FormatVolume(VolumeTest):
         """
 
         volume_driver_cls = utils.import_class(FLAGS.volume_driver)
+
         class BadFormatter(volume_driver_cls):
 
             def _format(self, device_path):
@@ -341,10 +359,11 @@ class FormatVolume(VolumeTest):
         self.story.client._format(self.story.device_path)
 
     def test_30_check_options(self):
-        cmd = "sudo dumpe2fs -h %s 2> /dev/null | " \
-              "awk -F ':' '{ if($1 == \"Reserved block count\") { rescnt=$2 } }" \
-              " { if($1 == \"Block count\") { blkcnt=$2 } } END " \
-              "{ print (rescnt/blkcnt)*100 }'" % self.story.device_path
+        cmd = ("sudo dumpe2fs -h %s 2> /dev/null | "
+               "awk -F ':' '{ if($1 == \"Reserved block count\") "
+               "{ rescnt=$2 } } { if($1 == \"Block count\") "
+               "{ blkcnt=$2 } } END { print (rescnt/blkcnt)*100 }'")
+        cmd = cmd % self.story.device_path
         out, err = util.process(cmd)
         self.assertEqual(float(5), round(float(out)), msg=out)
 
@@ -354,14 +373,15 @@ class MountVolume(VolumeTest):
 
     @time_out(60)
     def test_mount(self):
-        self.story.client._mount(self.story.device_path, self.story.mount_point)
+        self.story.client._mount(self.story.device_path,
+                                 self.story.mount_point)
         with open(self.story.test_mount_file_path, 'w') as file:
             file.write("Yep, it's mounted alright.")
         self.assertTrue(os.path.exists(self.story.test_mount_file_path))
 
     def test_mount_options(self):
         cmd = "mount -l | awk '/%s.*noatime/ { print $1 }'"
-        cmd %= LOCAL_MOUNT_PATH.replace('/','')
+        cmd %= LOCAL_MOUNT_PATH.replace('/', '')
         out, err = util.process(cmd)
         self.assertEqual(os.path.realpath(self.story.device_path), out.strip(),
                          msg=out)
@@ -375,8 +395,8 @@ class ResizeVolume(VolumeTest):
         self.story.api.resize(self.story.context, self.story.volume_id,
                               self.story.resize_volume_size)
 
-        volume = poll_until(lambda : self.story.get_volume(),
-                            lambda volume : volume["status"] == "resized")
+        volume = poll_until(lambda: self.story.get_volume(),
+                            lambda volume: volume["status"] == "resized")
         self.assertEqual(volume["status"], "resized")
         self.assertTrue(volume["attach_status"], "attached")
         self.assertTrue(volume['size'], self.story.resize_volume_size)
@@ -385,7 +405,8 @@ class ResizeVolume(VolumeTest):
     def test_resizefs_rescan(self):
         self.story.client.resize_fs(self.story.context,
                                     self.story.volume_id)
-        if FLAGS.volume_driver is "reddwarf.tests.volume.driver.ISCSITestDriver":
+        expected = "reddwarf.tests.volume.driver.ISCSITestDriver"
+        if FLAGS.volume_driver is expected:
             size = self.story.resize_volume_size * \
                    test_driver.TESTS_VOLUME_SIZE_MULTIPLIER * 1024 * 1024
         else:
@@ -416,8 +437,8 @@ class GrabUuid(VolumeTest):
     @time_out(60)
     def test_uuid_must_match_pattern(self):
         """UUID must be hex chars in the form 8-4-4-4-12."""
-        client = self.story.client # volume.Client()
-        device_path = self.story.device_path # '/dev/sda5'
+        client = self.story.client  # volume.Client()
+        device_path = self.story.device_path  # '/dev/sda5'
         uuid = client.get_uuid(device_path)
         self.story.original_uuid = uuid
         self.assertTrue(is_uuid(uuid), "uuid must match regex")
@@ -427,8 +448,8 @@ class GrabUuid(VolumeTest):
         """DevicePathInvalidForUuid is raised if device_path is wrong."""
         client = self.story.client
         device_path = "gdfjghsfjkhggrsyiyerreygghdsghsdfjhf"
-        self.assertRaises(reddwarf_exception.DevicePathInvalidForUuid, client.get_uuid,
-                          device_path)
+        self.assertRaises(reddwarf_exception.DevicePathInvalidForUuid,
+                          client.get_uuid, device_path)
 
 
 @test(groups=[VOLUMES_DRIVER], depends_on_classes=[GrabUuid])
@@ -508,13 +529,12 @@ class ConfirmMissing(VolumeTest):
         except reddwarf_exception.ISCSITargetNotDiscoverable:
             pass
 
-
     @time_out(60)
     def test_get_missing_volume(self):
         try:
-            volume = poll_until(lambda : self.story.api.get(self.story.context,
+            volume = poll_until(lambda: self.story.api.get(self.story.context,
                                                         self.story.volume_id),
-                                lambda volume : volume["status"] != "deleted")
+                                lambda volume: volume["status"] != "deleted")
             self.assertEqual(volume["deleted"], False)
         except exception.VolumeNotFound:
             pass

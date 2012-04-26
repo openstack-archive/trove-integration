@@ -38,7 +38,7 @@ if WHITE_BOX:
     from sqlalchemy.sql.expression import text
     from reddwarf.guest.dbaas import LocalSqlClient
 
-GROUP="dbaas.api.root"
+GROUP = "dbaas.api.root"
 
 
 @test(depends_on_classes=[TestUsers], groups=[tests.DBAAS_API, GROUP,
@@ -66,19 +66,22 @@ class TestRoot(object):
         global root_password
         host = "%"
         user, password = self.dbaas.root.create(instance_info.id)
-        self.root_enabled_timestamp = self.dbaas.instances.get(instance_info.id).root_enabled_at
+        instance = self.dbaas.instances.get(instance_info.id)
+        self.root_enabled_timestamp = instance.root_enabled_at
 
     def _root_local_sql(self):
         engine = init_engine(user, password, instance_info.user_ip)
         client = LocalSqlClient(engine)
         with client:
-            t = text("""SELECT User, Host FROM mysql.user WHERE User=:user AND Host=:host;""")
+            t = text("""SELECT User, Host FROM mysql.user """
+                     """WHERE User=:user AND Host=:host;""")
             result = client.execute(t, user=user, host=host)
             for row in result:
                 assert_equal(user, row['User'])
                 assert_equal(host, row['Host'])
         root_password = password
-        self.root_enabled_timestamp = self.dbaas.instances.get(instance_info.id).root_enabled_at
+        instance = self.dbaas.instances.get(instance_info.id)
+        self.root_enabled_timestamp = instance.root_enabled_at
         assert_not_equal(self.root_enabled_timestamp, 'Never')
 
     @test
@@ -149,7 +152,8 @@ class TestRoot(object):
     @test(depends_on=[test_root_still_enabled],
           enabled=not test_config.values['root_removed_from_instance_api'])
     def test_root_still_enabled_details(self):
-        """Use instance details to test that after root was reset it's still enabled."""
+        """Use instance details to test that after root was reset,
+        it's still enabled."""
         instance = self.dbaas.instances.get(instance_info.id)
         assert_true(hasattr(instance, 'rootEnabled'),
                     "Instance has no rootEnabled property.")
@@ -161,7 +165,7 @@ class TestRoot(object):
     def test_reset_root_user_enabled(self):
         if test_config.values['root_timestamp_disabled']:
             raise SkipTest("Enabled timestamp not enabled yet")
-        created_users= ['root']
+        created_users = ['root']
         self.system_users.remove('root')
         users = self.dbaas.users.list(instance_info.id)
         found = False
@@ -173,7 +177,8 @@ class TestRoot(object):
         found = False
         for user in self.system_users:
             found = any(result.name == user for result in users)
-            assert_false(found, "User '%s' SHOULD NOT BE found in result" % user)
+            msg = "User '%s' SHOULD NOT BE found in result" % user
+            assert_false(found, msg)
             found = False
         assert_not_equal(self.root_enabled_timestamp, 'Never')
         self._verify_root_timestamp(instance_info.id)

@@ -59,6 +59,7 @@ if WHITE_BOX:
 def topic_name():
     return "guest.%s" % test_config.values['host_name']
 
+
 class Rabbit(object):
 
     def declare_queue(self, topic):
@@ -120,6 +121,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
 
     def _send(self):
         original_queue_count = self.rabbit.get_queue_items()
+
         @time_out(5)
         def send_msg_with_timeout():
             self.rabbit.declare_queue(topic_name())
@@ -128,7 +130,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
                     {"method": "version",
                      "args": {"package_name": "dpkg"}
                 })
-            return { "status":"good", "version": version }
+            return {"status": "good", "version": version}
         try:
             return send_msg_with_timeout()
         except Exception as e:
@@ -146,12 +148,13 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
             # tolerate one such bug but no more.
             if not isinstance(e, TimeoutError):
                 self.send_after_reconnect_errors += 1
-                if self.send_after_reconnect_errors > self.tolerated_send_errors:
+                errors = self.send_after_reconnect_errors
+                if errors > self.tolerated_send_errors:
                     fail("Exception while making RPC call: %s" % e)
             if self.rabbit.get_queue_items() > original_queue_count:
-                return { "status":"bad", "blame":"agent"}
+                return {"status": "bad", "blame": "agent"}
             else:
-                return { "status":"bad", "blame":"host"}
+                return {"status": "bad", "blame": "host"}
 
     def _send_allow_for_host_bug(self):
         while True:
@@ -297,7 +300,3 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
     def send_message_again_2b(self):
         """The agent should be able to receive messages after reconnecting."""
         self.send_message()
-
-
-
-

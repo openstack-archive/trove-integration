@@ -36,7 +36,7 @@ from tests.util import process
 from tests import util
 from tests.util import test_config
 
-GROUP="dbaas.api.users"
+GROUP = "dbaas.api.users"
 FAKE = test_config.values['fake_mode']
 
 
@@ -75,7 +75,6 @@ class TestUsers(object):
         self.dbaas.databases.delete(instance_info.id, self.db1)
         self.dbaas.databases.delete(instance_info.id, self.db2)
 
-
     @test()
     def test_create_users(self):
         users = []
@@ -112,7 +111,8 @@ class TestUsers(object):
         found = False
         for user in self.system_users:
             found = any(result.name == user for result in users)
-            assert_false(found, "User '%s' SHOULD NOT BE found in result" % user)
+            msg = "User '%s' SHOULD NOT BE found in result" % user
+            assert_false(found, msg)
             found = False
 
     @test(depends_on=[test_create_users_list])
@@ -168,7 +168,7 @@ class TestUsers(object):
                       instance_info.id, users)
 
     @test(enabled=False)
-    #TODO(hub_cap): Make this test work once python-routes is updated, if ever...
+    #TODO(hub_cap): Make this test work once python-routes is updated, if ever.
     def test_delete_user_with_period_in_name(self):
         """Attempt to create/destroy a user with a period in its name"""
         users = []

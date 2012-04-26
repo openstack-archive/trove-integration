@@ -23,8 +23,6 @@ from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_true
 
 
-
-
 def get_stack_trace_of_caller(level_up):
     """Gets the stack trace at the point of the caller."""
     level_up += 1
@@ -34,6 +32,7 @@ def get_stack_trace_of_caller(level_up):
         caller_index = 0
     new_st = st[0:caller_index]
     return new_st
+
 
 def raise_blame_caller(level_up, ex):
     """Raises an exception, changing the stack trace to point to the caller."""

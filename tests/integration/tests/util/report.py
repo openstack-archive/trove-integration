@@ -43,6 +43,7 @@ class Reporter(object):
 
     def _update_instance(self, id):
         root = "%s/%s" % (self.root_path, id)
+
         def save_file(path, short_name):
             if USE_LOCAL_OVZ:
                 try:
@@ -73,6 +74,7 @@ REPORTER = Reporter(test_config.values["report_directory"])
 
 def log(msg):
     REPORTER.log(msg)
+
 
 def update():
     REPORTER.update()

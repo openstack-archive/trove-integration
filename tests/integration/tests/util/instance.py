@@ -54,13 +54,13 @@ class InstanceTest(object):
         self.db = utils.import_object(FLAGS.db_driver)
         self.user = None  # The user instance who owns the instance.
         self.dbaas = None  # The rich client instance used by these tests.
-        self.dbaas_flavor = None # The flavor object of the instance.
+        self.dbaas_flavor = None  # The flavor object of the instance.
         self.dbaas_flavor_href = None  # The flavor of the instance.
         self.id = None  # The ID of the instance in the database.
         self.local_id = None  # The local ID of the instance in the database.
         self.name = None  # Test name, generated each test run.
-        self.volume = {'size': volume_size} # The volume the instance will have.
-        self.initial_result = None # The initial result from the create call.
+        self.volume = {'size': volume_size}  # The volume the instance will ha
+        self.initial_result = None  # The initial result from the create call.
         self.volume_id = None  # Set by _get_instance_volume.
 
     def init(self, name_prefix, user_requirements=None):
@@ -103,7 +103,7 @@ class InstanceTest(object):
             assert_equal(result[1].status, dbaas_mapping[power_state.FAILED])
             return True
 
-    def _assert_volume_is_eventually_deleted(self, time_out=3*60):
+    def _assert_volume_is_eventually_deleted(self, time_out=(3 * 60)):
         """Polls until some time_out to see if the volume is deleted.
 
         This test is according to the database, not the REST API.
@@ -180,8 +180,9 @@ class InstanceTest(object):
 
     def _check_vifs_cleaned(self):
         for network_id in [1, 2]:
+            admin_context = context.get_admin_context()
             vif = self.db.virtual_interface_get_by_instance_and_network(
-                                                    context.get_admin_context(),
+                                                    admin_context,
                                                     self.id,
                                                     network_id)
             assert_equal(vif, None)
@@ -199,12 +200,13 @@ class InstanceTest(object):
     def wait_for_compute_instance_to_suspend(self):
         """Polls until the compute instance is known to be suspended."""
         poll_until(self._get_compute_instance_state,
-                         lambda state : state in VALID_ABORT_STATES,
+                         lambda state: state in VALID_ABORT_STATES,
                          sleep_time=1,
                          time_out=FLAGS.reddwarf_instance_suspend_time_out)
 
     def _check_volume_detached(self):
-        result = self.db.volume_get(context.get_admin_context(), self.volume_id)
+        result = self.db.volume_get(context.get_admin_context(),
+                                    self.volume_id)
         if result['attach_status'] == "detached" and \
            result['status'] == "available":
             return True

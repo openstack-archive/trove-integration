@@ -42,9 +42,9 @@ if WHITE_BOX:
     from reddwarf.dns.rsdns.driver import RsDnsZone
     from reddwarf.utils import poll_until
     FLAGS = flags.FLAGS
-    TEST_CONTENT="126.1.1.1"
-    TEST_NAME="hiwassup.%s" % FLAGS.dns_domain_name
-    DNS_DOMAIN_ID=None
+    TEST_CONTENT = "126.1.1.1"
+    TEST_NAME = "hiwassup.%s" % FLAGS.dns_domain_name
+    DNS_DOMAIN_ID = None
 
 
 @wb_test(groups=["rsdns.domains", "rsdns.show_entries"])
@@ -91,6 +91,7 @@ class RsDnsDriverTests(object):
         """Make sure the domain in the FLAGS exists."""
         self.driver = RsDnsDriver(raise_if_zone_missing=False)
         assert_not_equal(None, self.driver.default_dns_zone)
+
         def zone_found():
             zones = self.driver.get_dns_zones()
             print("Retrieving zones.")
@@ -125,9 +126,9 @@ class RsDnsDriverTests(object):
                 self.driver.delete_entry(name=entry.name, type=entry.type,
                                          dns_zone=entry.dns_zone)
         # It takes awhile for them to be deleted.
-        poll_until(lambda : self.driver.get_entries_by_name(TEST_NAME),
-                         lambda list : len(list) == 0,
-                         sleep_time=4, time_out=60)
+        poll_until(lambda: self.driver.get_entries_by_name(TEST_NAME),
+                   lambda list: len(list) == 0,
+                   sleep_time=4, time_out=60)
 
     @test(depends_on=[delete_all_entries])
     def create_test_entry(self):
@@ -165,6 +166,6 @@ class RsDnsDriverTests(object):
         fullname = TEST_NAME
         self.driver.delete_entry(fullname, "A")
         # It takes awhile for them to be deleted.
-        poll_until(lambda : self.driver.get_entries_by_name(TEST_NAME),
-                         lambda list : len(list) == 0,
-                         sleep_time=2, time_out=60)
+        poll_until(lambda: self.driver.get_entries_by_name(TEST_NAME),
+                   lambda list: len(list) == 0,
+                   sleep_time=2, time_out=60)

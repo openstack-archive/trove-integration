@@ -12,13 +12,14 @@ class ExampleGenerator(object):
 
     def __init__(self, config_file):
         if not os.path.exists(config_file):
-            raise RuntimeError("Could not find Example CONF at " + config_file + ".")
+            raise RuntimeError("Could not find Example CONF at %s." %
+                               config_file)
         file_contents = open(config_file, "r").read()
         try:
             config = json.loads(file_contents)
         except Exception as exception:
-            raise RuntimeError("Error loading config file \"" + config_file + "\".",
-                exception)
+            msg = 'Error loading config file "%s".' % config_file
+            raise RuntimeError(msg, exception)
 
         self.directory = config.get("directory", None)
         if not self.directory.endswith('/'):
@@ -58,17 +59,24 @@ class ExampleGenerator(object):
         request_body = json.get('body', None)
         url = json.get('url')
         if output:
-            with open("%sdb-%s-request.%s" % (self.directory, name, content_type), "w") as file:
-                output = self.output_request(url, req_headers, request_body, content_type, method)
+            filename = "%sdb-%s-request.%s" % (self.directory, name,
+                                               content_type)
+            with open(filename, "w") as file:
+                output = self.output_request(url, req_headers, request_body,
+                                             content_type, method)
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
-        json_resp = resp, resp_content = http.request(url, method, body=request_body, headers=req_headers)
+        resp, resp_content = http.request(url, method, body=request_body,
+                                          headers=req_headers)
+        json_resp = resp, resp_content
         if output:
-            with open("%sdb-%s-response.%s" % (self.directory, name, content_type), "w") as file:
+            filename = "%sdb-%s-response.%s" % (self.directory, name,
+                                                content_type)
+            with open(filename, "w") as file:
                 output = self.output_response(resp, resp_content, content_type)
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
@@ -83,17 +91,24 @@ class ExampleGenerator(object):
         request_body = xml.get('body', None)
         url = xml.get('url')
         if output:
-            with open("%sdb-%s-request.%s" % (self.directory, name, content_type), "w") as file:
-                output = self.output_request(url, req_headers, request_body, content_type, method)
+            filename = "%sdb-%s-request.%s" % (self.directory, name,
+                                               content_type)
+            with open(filename, "w") as file:
+                output = self.output_request(url, req_headers, request_body,
+                                             content_type, method)
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
-        xml_resp = resp, resp_content = http.request(url, method, body=request_body, headers=req_headers)
+        resp, resp_content = http.request(url, method, body=request_body,
+                                          headers=req_headers)
+        xml_resp = resp, resp_content
         if output:
-            with open("%sdb-%s-response.%s" % (self.directory, name, content_type), "w") as file:
+            filename = "%sdb-%s-response.%s" % (self.directory, name,
+                                                content_type)
+            with open(filename, "w") as file:
                 output = self.output_response(resp, resp_content, content_type)
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
@@ -105,14 +120,16 @@ class ExampleGenerator(object):
         return json_resp, xml_resp
 
     def _indent_xml(self, my_string):
-        my_string = my_string.encode("utf-8") 
+        my_string = my_string.encode("utf-8")
         # convert to plain string without indents and spaces
-        my_string = re.compile('>\s+([^\s])', re.DOTALL).sub('>\g<1>', my_string)
+        my_re = re.compile('>\s+([^\s])', re.DOTALL)
+        my_string = myre.sub('>\g<1>', my_string)
         my_string = xml.dom.minidom.parseString(my_string).toprettyxml()
         # remove line breaks
-        my_string = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL).sub('>\g<1></', my_string)
+        my_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
+        my_string = my_re.sub('>\g<1></', my_string)
         return my_string
-    
+
     def output_request(self, url, output_headers, body, content_type, method):
         output_list = []
         parsed = urlparse(url)
@@ -131,10 +148,13 @@ class ExampleGenerator(object):
     def output_response(self, resp, body, content_type):
         output_list = []
         version = "1.1" if resp.version == 11 else "1.0"
-        output_list.append("HTTP/%s %s %s" % (version, resp.status, resp.reason))
-        output_list.append("Content-Type: %s" % resp['content-type'])
-        output_list.append("Content-Length: %s" % resp['content-length'])
-        output_list.append("Date: %s" % resp['date'])
+        lines = [
+            ["HTTP/%s %s %s" % (version, resp.status, resp.reason)],
+            ["Content-Type: %s" % resp['content-type']],
+            ["Content-Length: %s" % resp['content-length']],
+            ["Date: %s" % resp['date']]]
+        for line in lines:
+            output_list.append(line)
         if body:
             output_list.append("")
             pretty_body = self.format_body(body, content_type)
@@ -146,9 +166,9 @@ class ExampleGenerator(object):
         if content_type == 'json':
             try:
                 if self.replace_dns_hostname:
-                    body = re.sub(r'\"hostname\": \"[a-zA-Z0-9-_\.]*\"',
-                                  '\"hostname\": \"%s\"' % self.replace_dns_hostname,
-                                  body)
+                    before = r'\"hostname\": \"[a-zA-Z0-9-_\.]*\"'
+                    after = '\"hostname\": \"%s\"' % self.replace_dns_hostname
+                    body = re.sub(before, after, body)
                 return json.dumps(json.loads(body), sort_keys=True, indent=4)
             except Exception:
                 return body if body else ''
@@ -156,15 +176,17 @@ class ExampleGenerator(object):
             # expected type of body is xml
             try:
                 if self.replace_dns_hostname:
+                    hostname = 'hostname=\"%s\"' % self.replace_dns_hostname,
                     body = re.sub(r'hostname=\"[a-zA-Z0-9-_\.]*\"',
-                                  'hostname=\"%s\"' % self.replace_dns_hostname,
-                                  body)
+                                  hostname, body)
                 return self._indent_xml(body)
             except Exception as ex:
                 return body if body else ''
 
     def get_auth_token_id(self, url, username, password):
-        body = '{"passwordCredentials": {"username": "%s", "password": "%s", "tenantId": "%s"}}' % (username, password, self.tenant)
+        body = ('{"passwordCredentials": {"username": "%s", "password": "%s",'
+                ' "tenantId": "%s"}}')
+        body = body % (username, password, self.tenant)
         http = httplib2.Http()
         req_headers = {'User-Agent': "python-example-client",
                        'Content-Type': "application/json",
@@ -181,15 +203,17 @@ class ExampleGenerator(object):
         while True:
             req_json = {"url": "%s/instances" % self.dbaas_url}
             req_xml = {"url": "%s/instances" % self.dbaas_url}
-            resp_json, resp_xml = self.http_call("get_instances", 'GET',
-                                                 req_json, req_xml, output=False)
+            resp = self.http_call("get_instances", 'GET', req_json, req_xml,
+                                  output=False)
+            resp_json, resp_xml = resp
             resp_content = json.loads(resp_json[1])
             instances = resp_content['instances']
-            print_list = [(instance['id'], instance['status']) for instance in instances]
+            print_list = [(instance['id'], instance['status']) for instance
+                          in instances]
             print "checking  for : %s\n" % print_list
             bad_status = ['ACTIVE', 'ERROR', 'FAILED', 'SHUTDOWN']
-            list_id_status = [(instance['id'], instance['status']) for instance in instances if
-                                                                   instance['status'] in bad_status]
+            list_id_status = [(instance['id'], instance['status']) for instance
+                              in instances if instance['status'] in bad_status]
             if len(list_id_status) == 2:
                 statuses = [item[1] for item in list_id_status]
                 if statuses.count('ACTIVE') != 2:
@@ -210,7 +234,8 @@ class ExampleGenerator(object):
         resp_content = json.loads(resp_json[1])
         instances = resp_content['instances']
         if len(instances) > 0:
-            raise Exception("Environment must be clean to run the example generator.")
+            msg = "Environment must be clean to run the example generator."
+            raise Exception(msg)
         print "\n\nClean environment building examples...\n\n"
 
     def get_versions(self):
@@ -231,7 +256,7 @@ class ExampleGenerator(object):
 
     def get_flavor_details(self):
         req_json = {"url": "%s/flavors/detail" % self.dbaas_url}
-        req_xml = {"url":"%s/flavors/detail" % self.dbaas_url}
+        req_xml = {"url": "%s/flavors/detail" % self.dbaas_url}
         self.http_call("flavors_detail", 'GET', req_json, req_xml)
 
     def get_flavor_by_id(self):
@@ -263,9 +288,12 @@ class ExampleGenerator(object):
             }
         }
         XML_DATA = ('<?xml version="1.0" ?>'
-                    '<instance xmlns="http://docs.openstack.org/database/api/v1.0" name="xml_rack_instance" flavorRef="%s/flavors/1">'
+                    '<instance xmlns='
+                    '"http://docs.openstack.org/database/api/v1.0"'
+                    ' name="xml_rack_instance" flavorRef="%s/flavors/1">'
                     '<databases>'
-                    '<database name="sampledb" character_set="utf8" collate="utf8_general_ci" />'
+                    '<database name="sampledb" character_set="utf8" '
+                    'collate="utf8_general_ci" />'
                     '<database name="nextround" />'
                     '</databases>'
                     '<volume size="2" />'
@@ -293,8 +321,10 @@ class ExampleGenerator(object):
             ]
         }
         XML_DATA = ('<?xml version="1.0" ?>'
-                    '<Databases xmlns="http://docs.openstack.org/database/api/v1.0">'
-                    '<Database name="%s" character_set="utf8" collate="utf8_general_ci" />'
+                    '<Databases xmlns="'
+                    'http://docs.openstack.org/database/api/v1.0">'
+                    '<Database name="%s" character_set="utf8" collate='
+                    '"utf8_general_ci" />'
                     '<Database name="anotherexampledb" />'
                     '</Databases>') % database_name
         req_json['body'] = json.dumps(JSON_DATA)
@@ -344,8 +374,10 @@ class ExampleGenerator(object):
             ]
         }
         XML_DATA = ('<?xml version="1.0" ?>'
-                    '<users xmlns="http://docs.openstack.org/database/api/v1.0">'
-                    '<user name="%s" password="password" database="databaseC"/>'
+                    '<users xmlns='
+                    '"http://docs.openstack.org/database/api/v1.0">'
+                    '<user name="%s" password="password" '
+                    'database="databaseC"/>'
                     '<user name="userwith2dbs" password="password">'
                     '<databases>'
                     '<database name="databaseA"/>'
@@ -389,7 +421,7 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['json'])}
         req_xml = {"url": "%s/instances/%s/action"
                             % (self.dbaas_url, instance_ids['xml'])}
-        json_data = {'resize': {'flavorRef': '%s/flavors/3' % self.dbaas_url,}}
+        json_data = {'resize': {'flavorRef': '%s/flavors/3' % self.dbaas_url}}
         xml_data = """<?xml version="1.0" encoding="UTF-8"?>
                 <resize xmlns="http://docs.openstack.org/database/api/v1.0"
                 flavorRef="%s/flavors/3"></resize>""" % self.dbaas_url
@@ -407,9 +439,9 @@ class ExampleGenerator(object):
 
     def delete_users(self, instance_ids, user_name):
         req_json = {"url": "%s/instances/%s/users/%s"
-                            % (self.dbaas_url, instance_ids['json'], user_name)}
+                    % (self.dbaas_url, instance_ids['json'], user_name)}
         req_xml = {"url": "%s/instances/%s/users/%s"
-                            % (self.dbaas_url, instance_ids['xml'], user_name)}
+                   % (self.dbaas_url, instance_ids['xml'], user_name)}
         self.http_call("delete_users", 'DELETE', req_json, req_xml)
 
     def post_enable_root_access(self, instance_ids):
@@ -454,7 +486,8 @@ class ExampleGenerator(object):
         req_json = {"url": "%s/mgmt/configs/%s" % (self.dbaas_url, config_id)}
         req_xml = {"url": "%s/mgmt/configs/%s" % (self.dbaas_url, config_id)}
         self.http_call("mgmt_delete_config", 'DELETE', req_json, req_xml)
-        req_json = {"url": "%s/mgmt/configs/%s" % (self.dbaas_url, "xmlconfig")}
+        req_json = {"url": "%s/mgmt/configs/%s" %
+                    (self.dbaas_url, "xmlconfig")}
         req_xml = {"url": "%s/mgmt/configs/%s" % (self.dbaas_url, "xmlconfig")}
         self.http_call("mgmt_delete_config", 'DELETE', req_json, req_xml,
                        output=False)
@@ -480,7 +513,8 @@ class ExampleGenerator(object):
             }
         }
         XML_DATA = ('<?xml version="1.0" ?>'
-                    '<config key="xmlconfig" value="XML" description="updated config value set with xml"/>')
+                    '<config key="xmlconfig" value="XML" description='
+                    '"updated config value set with xml"/>')
         req_json['body'] = json.dumps(JSON_DATA)
         req_xml['body'] = XML_DATA
         self.http_call("mgmt_update_config", 'PUT', req_json, req_xml)
@@ -499,7 +533,8 @@ class ExampleGenerator(object):
         }
         XML_DATA = ('<?xml version="1.0" ?>'
                     '<configs>'
-                    '<config key="xmlconfig" value="xml" description="config value set with xml"/>'
+                    '<config key="xmlconfig" value="xml" description='
+                    '"config value set with xml"/>'
                     '</configs>')
         req_json['body'] = json.dumps(JSON_DATA)
         req_xml['body'] = XML_DATA
@@ -565,7 +600,7 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['xml'])}
         JSON_DATA = {'reboot': {}}
         XML_DATA = """<?xml version="1.0" encoding="UTF-8"?>
-                <reboot xmlns="http://docs.openstack.org/database/api/v1.0"/>"""
+            <reboot xmlns="http://docs.openstack.org/database/api/v1.0"/>"""
         req_json['body'] = json.dumps(JSON_DATA)
         req_xml['body'] = XML_DATA
         self.http_call('instance_reboot', 'POST', req_json, req_xml)
@@ -590,11 +625,12 @@ class ExampleGenerator(object):
         # this will be used later to make instance related calls
         example_instances = self.wait_for_instances()
         if len(example_instances) != 2:
-            print("------------------------------------------------------------")
-            print("------------------------------------------------------------")
-            print("SOMETHING WENT WRONG CREATING THE INSTANCES FOR THE EXAMPLES")
-            print("------------------------------------------------------------")
-            print("------------------------------------------------------------")
+            print("-" * 60)
+            print("-" * 60)
+            print("SOMETHING WENT WRONG CREATING THE INSTANCES FOR THE "
+                  "EXAMPLES")
+            print("-" * 60)
+            print("-" * 60)
             return 1
 
         instance_ids = {"json": example_instances[0],

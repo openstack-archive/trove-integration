@@ -25,7 +25,8 @@ WHITE_BOX = test_config.white_box
 if WHITE_BOX:
     from nova import flags
     from nova import utils
-    from nova.scheduler import manager  # Do this to create flag "scheduler_driver"
+    # importing nova.scheduler.manager creates the flag "scheduler_driver"
+    from nova.scheduler import manager
     FLAGS = flags.FLAGS
 
 

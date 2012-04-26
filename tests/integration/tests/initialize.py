@@ -50,26 +50,34 @@ success_statuses = ["build", "active"]
 def dbaas_url():
     return str(test_config.values.get("dbaas_url"))
 
+
 def glance_api_conf():
     return str(test_config.values.get("glance_api_conf"))
+
 
 def glance_reg_conf():
     return str(test_config.values.get("glance_reg_conf"))
 
+
 def keystone_conf():
     return str(test_config.values.get("keystone_conf"))
+
 
 def nova_conf():
     return str(test_config.values.get("nova_conf"))
 
+
 def nova_url():
     return str(test_config.values.get("nova_url"))
+
 
 def either_web_service_is_up():
     return test_config.dbaas.is_service_alive() or \
            test_config.nova.is_service_alive()
 
+
 install_image = False
+
 
 @test(groups=["services.initialize", "services.initialize.glance"])
 class GlanceRegistry(unittest.TestCase):
@@ -81,11 +89,12 @@ class GlanceRegistry(unittest.TestCase):
         else:
             reg_path = "/usr/bin/glance-registry"
         self.service = Service(python_cmd_list() +
-                               [reg_path, glance_reg_conf() ])
+                               [reg_path, glance_reg_conf()])
 
     def test_start(self):
         if not either_web_service_is_up():
             self.service.start()
+
 
 @test(groups=["services.initialize", "services.initialize.glance"],
       depends_on_classes=[GlanceRegistry])
@@ -98,11 +107,12 @@ class GlanceApi(unittest.TestCase):
         else:
             reg_path = "/usr/bin/glance-api"
         self.service = Service(python_cmd_list() +
-                               [reg_path, glance_api_conf() ])
+                               [reg_path, glance_api_conf()])
 
     def test_start(self):
         if not either_web_service_is_up():
             self.service.start()
+
 
 @test(groups=["services.initialize", "services.initialize.glance"],
       depends_on_classes=[GlanceApi])
@@ -133,7 +143,7 @@ class Network(unittest.TestCase):
     def setUp(self):
         self.service = Service(python_cmd_list() +
                                ["%s/bin/nova-network" % nova_code_root(),
-                                "--flagfile=%s" % nova_conf() ])
+                                "--flagfile=%s" % nova_conf()])
 
     def test_start(self):
         if not either_web_service_is_up():
@@ -147,7 +157,7 @@ class Dns(unittest.TestCase):
     def setUp(self):
         self.service = Service(python_cmd_list() +
                                ["%s/bin/nova-dns" % nova_code_root(),
-                                "--flagfile=%s" % nova_conf() ])
+                                "--flagfile=%s" % nova_conf()])
 
     def test_start(self):
         if not either_web_service_is_up():
@@ -161,7 +171,7 @@ class Scheduler(unittest.TestCase):
     def setUp(self):
         self.service = Service(python_cmd_list() +
                                ["%s/bin/nova-scheduler" % nova_code_root(),
-                                "--flagfile=%s" % nova_conf() ])
+                                "--flagfile=%s" % nova_conf()])
 
     def test_start(self):
         if not either_web_service_is_up():
@@ -221,6 +231,7 @@ class KeystoneAdmin(unittest.TestCase):
         if not self.service.is_service_alive():
             self.service.start()
 
+
 @test(groups=["services.initialize"],
       depends_on_classes=[KeystoneAPI], enabled=KEYSTONE_ALL)
 class KeystoneAll(unittest.TestCase):
@@ -245,7 +256,7 @@ class Reaper(unittest.TestCase):
     def setUp(self):
         self.service = Service(python_cmd_list() +
                                ["%s/bin/nova-reaper" % nova_code_root(),
-                                "--flagfile=%s" % nova_conf() ])
+                                "--flagfile=%s" % nova_conf()])
 
     def test_start(self):
         if not self.service.is_service_alive():
@@ -309,8 +320,9 @@ class ServicesTestable(unittest.TestCase):
         ServicesUp - Check that default networks have a host assigned
         """
         while(True):
-            networks = dbapi.network_get_all_by_host(context.get_admin_context(),
-                                                     socket.gethostname())
+            get_all = dbaapi.network_get_all_by_host
+            hostname = socket.gethostname()
+            networks = get_all(context.get_admin_context(), hostname)
             if len(networks) == 1:
                 return
             time.sleep(5)
@@ -325,4 +337,3 @@ class StartAndWait(unittest.TestCase):
         import time
         while(True):
             time.sleep(2)
-

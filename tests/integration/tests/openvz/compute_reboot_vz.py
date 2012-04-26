@@ -16,7 +16,7 @@
 import time
 from tests import util
 
-GROUP='dbaas.compute.reboot.vz'
+GROUP = 'dbaas.compute.reboot.vz'
 
 from novaclient.exceptions import NotFound
 
@@ -62,10 +62,11 @@ if WHITE_BOX:
     from reddwarf.api.common import dbaas_mapping
     from reddwarf.db import api as dbapi
     from reddwarf.utils import poll_until
-    from reddwarf.scheduler import simple # import used for FLAG values
+    from reddwarf.scheduler import simple  # import used for FLAG values
     from reddwarf.compute.manager import ReddwarfInstanceMetaData
 
     FLAGS = flags.FLAGS
+
 
 @test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, GROUP])
 class VerifyRebootRestartsTheVZ(InstanceTest):
@@ -82,7 +83,7 @@ class VerifyRebootRestartsTheVZ(InstanceTest):
     def ensure_vz_power_state(self, power_state):
         """Ensures the database has the correct state"""
         poll_until(self._get_compute_instance_state,
-                   lambda state : state == power_state,
+                   lambda state: state == power_state,
                    sleep_time=2, time_out=60)
 
     def ensure_vz_actual_state(self, power_state):
@@ -90,7 +91,7 @@ class VerifyRebootRestartsTheVZ(InstanceTest):
         def get_info_from_conn():
             return self.conn.get_info(self.name)['state']
         poll_until(get_info_from_conn,
-                   lambda state : state == power_state,
+                   lambda state: state == power_state,
                    sleep_time=2, time_out=60)
 
     def stop_vz(self):

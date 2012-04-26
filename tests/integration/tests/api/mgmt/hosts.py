@@ -30,7 +30,7 @@ from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
-GROUP="dbaas.api.mgmt.hosts"
+GROUP = "dbaas.api.mgmt.hosts"
 
 
 @test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES],
@@ -52,9 +52,10 @@ class HostsBeforeInstanceCreation(object):
         assert_equal(len(host_index_result), 1,
                     "list hosts length should be one: %r" %
                     host_index_result[0])
-        assert_equal(int(host_index_result[0].instanceCount), 0,
-                     "'host' instance count should have 0 running instances: %r"
-                     % host_index_result[0].instanceCount)
+
+        msg = ("'host' instance count should have 0 running instances: %r" %
+               host_index_result[0].instanceCount)
+        assert_equal(int(host_index_result[0].instanceCount), 0, msg)
         for host in list(enumerate(host_index_result, start=1)):
             print("%r host: %r" % (host[0], host[1]))
             self.host = host[1]
@@ -80,7 +81,8 @@ class HostsBeforeInstanceCreation(object):
 
     @test(enabled=create_new_instance())
     def test_host_not_found(self):
-        assert_raises(exceptions.NotFound, self.client.hosts.get, "host@$%3dne")
+        hostname = "host@$%3dne"
+        assert_raises(exceptions.NotFound, self.client.hosts.get, hostname)
 
 
 @test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"],
@@ -98,9 +100,9 @@ class HostsAfterInstanceCreation(object):
         myresult = self.client.hosts.index()
         assert_true(len(myresult) > 0,
                         "list hosts should not be empty: %s" % str(myresult))
-        assert_equal(myresult[0].instanceCount, 1,
-                     "instance count of 'host' should have 1 running instances: %r"
-                     % myresult[0].instanceCount)
+        msg = ("instance count of 'host' should have 1 running instances: %r" %
+               myresult[0].instanceCount)
+        assert_equal(myresult[0].instanceCount, 1, msg)
         for index, host in enumerate(myresult, start=1):
             print("%d host: %s" % (index, host))
             self.host = host

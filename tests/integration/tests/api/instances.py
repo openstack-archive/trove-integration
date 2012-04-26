@@ -20,13 +20,14 @@ import time
 import unittest
 from tests import util
 
-GROUP="dbaas.guest"
-GROUP_START="dbaas.guest.initialize"
-GROUP_TEST="dbaas.guest.test"
-GROUP_STOP="dbaas.guest.shutdown"
-GROUP_USERS="dbaas.api.users"
-GROUP_ROOT="dbaas.api.root"
-GROUP_DATABASES="dbaas.api.databases"
+
+GROUP = "dbaas.guest"
+GROUP_START = "dbaas.guest.initialize"
+GROUP_TEST = "dbaas.guest.test"
+GROUP_STOP = "dbaas.guest.shutdown"
+GROUP_USERS = "dbaas.api.users"
+GROUP_ROOT = "dbaas.api.root"
+GROUP_DATABASES = "dbaas.api.databases"
 
 from datetime import datetime
 from nose.plugins.skip import SkipTest
@@ -71,7 +72,6 @@ if WHITE_BOX:
     from reddwarf.db import api as dbapi
 
 
-
 try:
     import rsdns
 except Exception:
@@ -83,29 +83,29 @@ class InstanceTestInfo(object):
 
     def __init__(self):
         self.dbaas = None  # The rich client instance used by these tests.
-        self.dbaas_admin = None # The rich client with admin access.
-        self.dbaas_flavor = None # The flavor object of the instance.
+        self.dbaas_admin = None  # The rich client with admin access.
+        self.dbaas_flavor = None  # The flavor object of the instance.
         self.dbaas_flavor_href = None  # The flavor of the instance.
         self.dbaas_image = None  # The image used to create the instance.
         self.dbaas_image_href = None  # The link of the image.
         self.id = None  # The ID of the instance in the database.
         self.local_id = None
         self.address = None
-        self.initial_result = None # The initial result from the create call.
+        self.initial_result = None  # The initial result from the create call.
         self.user_ip = None  # The IP address of the instance, given to user.
-        self.infra_ip = None # The infrastructure network IP address.
+        self.infra_ip = None  # The infrastructure network IP address.
         self.result = None  # The instance info returned by the API
         self.name = None  # Test name, generated each test run.
-        self.pid = None # The process ID of the instance.
+        self.pid = None  # The process ID of the instance.
         self.user = None  # The user instance who owns the instance.
-        self.admin_user = None  # The admin user who will use the management interfaces.
-        self.volume = None # The volume the instance will have.
-        self.volume_id = None # Id for the attached volume
-        self.storage = None # The storage device info for the volumes.
-        self.databases = None # The databases created on the instance.
-        self.host_info = None # Host Info before creating instances
-        self.user_context = None # A regular user context
-        self.users = None # The users created on the instance.
+        self.admin_user = None  # The admin user for the management interfaces.
+        self.volume = None  # The volume the instance will have.
+        self.volume_id = None  # Id for the attached volume
+        self.storage = None  # The storage device info for the volumes.
+        self.databases = None  # The databases created on the instance.
+        self.host_info = None  # Host Info before creating instances
+        self.user_context = None  # A regular user context
+        self.users = None  # The users created on the instance.
 
     def check_database(self, dbname):
         return check_database(self.id, dbname)
@@ -134,7 +134,7 @@ class InstanceTestInfo(object):
 # existing.
 instance_info = InstanceTestInfo()
 dbaas = None  # Rich client used throughout this test.
-dbaas_admin = None # Same as above, with admin privs.
+dbaas_admin = None  # Same as above, with admin privs.
 
 
 # This is like a cheat code which allows the tests to skip creating a new
@@ -167,7 +167,8 @@ class InstanceSetup(object):
         global dbaas_admin
         # TODO(rnirmal): We need to better split out the regular client and
         # the admin client
-        instance_info.user = test_config.users.find_user(Requirements(is_admin=False))
+        reqs = Requirements(is_admin=False)
+        instance_info.user = test_config.users.find_user(reqs)
         instance_info.dbaas = create_dbaas_client(instance_info.user)
 
         nova_user = test_config.users.find_user(
@@ -176,13 +177,16 @@ class InstanceSetup(object):
 
         dbaas = instance_info.dbaas
 
-        instance_info.admin_user = test_config.users.find_user(Requirements(is_admin=True))
-        instance_info.dbaas_admin = create_dbaas_client(instance_info.admin_user)
+        reqs = Requirements(is_admin=True)
+        instance_info.admin_user = test_config.users.find_user(reqs)
+        instance_info.dbaas_admin = create_dbaas_client(
+                                        instance_info.admin_user)
         dbaas_admin = instance_info.dbaas_admin
 
         if WHITE_BOX:
-            instance_info.user_context = context.RequestContext(instance_info.user.auth_user,
-                                                                instance_info.user.tenant)
+            user = instance_info.user.auth_user
+            tenant = instance_info.user.tenant
+            instance_info.user_context = context.RequestContext(user, tenant)
 
     @test(enabled=WHITE_BOX)
     def find_image(self):
@@ -197,8 +201,8 @@ class InstanceSetup(object):
     @test(enabled=WHITE_BOX)
     def test_add_imageref_config(self):
         #TODO(tim.simpson): I'm not sure why this is here. The default image
-        # setup should be in initialization test code that lives somewhere else,
-        # probably with the code that uploads the image.
+        # setup should be in initialization test code that lives somewhere
+        # else, probably with the code that uploads the image.
         key = "reddwarf_imageref"
         value = 1
         description = "Default Image for Reddwarf"
@@ -206,8 +210,9 @@ class InstanceSetup(object):
         try:
             dbaas_admin.configs.create([config])
         except nova_exceptions.ClientException as e:
-            # configs.create will throw an exception if the config already exists
-            # we will check the value after to make sure it is correct and set
+            # configs.create will throw an exception if the config already
+            # exists we will check the value after to make sure it is correct
+            # and set
             pass
         result = dbaas_admin.configs.get(key)
         assert_equal(result.value, str(value))
@@ -276,7 +281,8 @@ class CreateInstance(unittest.TestCase):
         report.log("Instance UUID = %s" % instance_info.id)
         if create_new_instance():
             if WHITE_BOX:
-                assert_equal(result.status, dbaas_mapping[power_state.BUILDING])
+                building = dbaas_mapping[power_state.BUILDING]
+                assert_equal(result.status, building)
             assert_equal("BUILD", instance_info.initial_result.status)
 
         else:
@@ -316,17 +322,18 @@ class CreateInstance(unittest.TestCase):
             databases = []
             volume = {'size': None}
             assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
-                          instance_name, instance_info.dbaas_flavor_href, volume,
-                          databases)
+                          instance_name, instance_info.dbaas_flavor_href,
+                          volume, databases)
 
     def test_mgmt_get_instance_on_create(self):
         if TEST_MGMT:
             result = dbaas_admin.management.show(instance_info.id)
-            expected_attrs = ['account_id', 'addresses', 'created', 'databases',
-                              'flavor', 'guest_status', 'host', 'hostname',
-                              'id', 'name', 'server_state_description',
-                              'status', 'updated', 'users', 'volume',
-                              'root_enabled_at', 'root_enabled_by']
+            expected_attrs = ['account_id', 'addresses', 'created',
+                              'databases', 'flavor', 'guest_status', 'host',
+                              'hostname', 'id', 'name',
+                              'server_state_description', 'status', 'updated',
+                              'users', 'volume', 'root_enabled_at',
+                              'root_enabled_by']
             with CheckInstance(result._info) as check:
                 check.attrs_exist(result._info, expected_attrs,
                                   msg="Mgmt get instance")
@@ -339,6 +346,7 @@ class CreateInstance(unittest.TestCase):
                 instance_info.user.tenant, "tcp_3306"):
                 assert_false(True, "Security groups did not get created")
 
+
 def assert_unprocessable(func, *args):
     try:
         func(*args)
@@ -349,7 +357,8 @@ def assert_unprocessable(func, *args):
             fail("When an instance is being built, this function should "
                  "always raise UnprocessableEntity.")
     except exceptions.UnprocessableEntity:
-        pass # Good
+        pass  # Good
+
 
 @test(depends_on_classes=[CreateInstance],
       groups=[GROUP, GROUP_START, 'dbaas.mgmt.hosts_post_install'],
@@ -439,8 +448,8 @@ class WaitForGuestInstallationToFinish(object):
             result = dbaas.instances.get(instance_info.id)
         report.log("Created an instance, ID = %s." % instance_info.id)
         report.log("TIP:")
-        report.log("Rerun the tests with TESTS_USE_INSTANCE_ID=%s to skip ahead "
-                   "to this point." % instance_info.id)
+        report.log("Rerun the tests with TESTS_USE_INSTANCE_ID=%s to skip "
+                   "ahead to this point." % instance_info.id)
         report.log("Add TESTS_DO_NOT_DELETE_INSTANCE=True to avoid deleting "
                    "the instance at the end of the tests.")
 
@@ -462,7 +471,7 @@ class VerifyGuestStarted(unittest.TestCase):
                 return True
             else:
                 return False
-        poll_until(check_status_of_instance, sleep_time=5, time_out=60*8)
+        poll_until(check_status_of_instance, sleep_time=5, time_out=(60 * 8))
 
     def test_get_init_pid(self):
         def get_the_pid():
@@ -470,7 +479,7 @@ class VerifyGuestStarted(unittest.TestCase):
                                 % str(instance_info.local_id))
             instance_info.pid = out.strip()
             return len(instance_info.pid) > 0
-        poll_until(get_the_pid, sleep_time=10, time_out=60*10)
+        poll_until(get_the_pid, sleep_time=10, time_out=(60 * 10))
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
@@ -483,8 +492,12 @@ class TestGuestProcess(object):
     @test(enabled=test_config.values['use_local_ovz'])
     @time_out(60 * 10)
     def check_process_alive_via_local_ovz(self):
-        init_proc = re.compile("[\w\W\|\-\s\d,]*nova-guest --flagfile=/etc/nova/nova.conf nova[\W\w\s]*")
-        guest_proc = re.compile("[\w\W\|\-\s]*/usr/bin/nova-guest --flagfile=/etc/nova/nova.conf[\W\w\s]*")
+        init_re = ("[\w\W\|\-\s\d,]*nova-guest "
+                   "--flagfile=/etc/nova/nova.conf nova[\W\w\s]*")
+        init_proc = re.compile(init_re)
+        guest_re = ("[\w\W\|\-\s]*/usr/bin/nova-guest "
+                    "--flagfile=/etc/nova/nova.conf[\W\w\s]*")
+        guest_proc = re.compile(guest_re)
         apt = re.compile("[\w\W\|\-\s]*apt-get[\w\W\|\-\s]*")
         while True:
             guest_process, err = process("pstree -ap %s | grep nova-guest"
@@ -607,7 +620,8 @@ class TestInstanceListing(object):
             table = string.maketrans("_ ", "--")
             deletions = ":."
             name = instance_info.name.translate(table, deletions).lower()
-            expected_hostname = "%s-instance-%s" % (name, instance_info.local_id)
+            expected_hostname = "%s-instance-%s" % (name,
+                                                    instance_info.local_id)
             assert_equal(expected_hostname, instance.hostname)
 
     @test
@@ -639,12 +653,13 @@ class TestInstanceListing(object):
 
     @test
     def test_instance_not_shown_to_other_user(self):
-        daffy_ids = [instance.id for instance in self.daffy_client.instances.list()]
+        daffy_ids = [instance.id for instance in
+                     self.daffy_client.instances.list()]
         admin_ids = [instance.id for instance in dbaas.instances.list()]
         assert_equal(len(daffy_ids), 0)
         assert_not_equal(sorted(admin_ids), sorted(daffy_ids))
-        assert_raises(nova_exceptions.NotFound, self.daffy_client.instances.get,
-                      instance_info.id)
+        assert_raises(nova_exceptions.NotFound,
+                      self.daffy_client.instances.get, instance_info.id)
         for id in admin_ids:
             assert_equal(daffy_ids.count(id), 0)
 
@@ -672,14 +687,16 @@ class TestInstanceListing(object):
             check.volume_mgmt()
 
 
-@test(depends_on_groups=['dbaas.api.instances.actions'], groups=[GROUP, tests.INSTANCES, "dbaas.diagnostics"])
+@test(depends_on_groups=['dbaas.api.instances.actions'],
+      groups=[GROUP, tests.INSTANCES, "dbaas.diagnostics"])
 class CheckDiagnosticsAfterTests(object):
     """ Check the diagnostics after running api commands on an instance. """
     @test
     def test_check_diagnostics_on_instance_after_tests(self):
         diagnostics = dbaas_admin.diagnostics.get(instance_info.id)
         diagnostic_tests_helper(diagnostics)
-        assert_true(diagnostics.vmPeak < 30*1024, "Fat Pete has emerged. size (%s > 30MB)" % diagnostics.vmPeak)
+        msg = "Fat Pete has emerged. size (%s > 30MB)" % diagnostics.vmPeak
+        assert_true(diagnostics.vmPeak < (30 * 1024), msg)
 
 
 @test(depends_on=[WaitForGuestInstallationToFinish],
@@ -702,7 +719,8 @@ class DeleteInstance(object):
         if test_config.values["reddwarf_can_have_volume"]:
             # Change this code to get the volume using the API.
             # That way we can keep it while keeping it black box.
-            volumes = db.volume_get_all_by_instance(context.get_admin_context(),
+            admin_context = context.get_admin_context()
+            volumes = db.volume_get_all_by_instance(admin_context(),
                                                     instance_info.local_id)
             instance_info.volume_id = volumes[0].id
         # Update the report so the logs inside the instance will be saved.
@@ -747,7 +765,6 @@ class VerifyInstanceMgmtInfo(object):
     def set_up(self):
         self.mgmt_details = dbaas_admin.management.show(instance_info.id)
 
-
     def _assert_key(self, k, expected):
         v = getattr(self.mgmt_details, k)
         err = "Key %r does not match expected value of %r (was %r)." \
@@ -762,7 +779,8 @@ class VerifyInstanceMgmtInfo(object):
     def test_bogus_instance_mgmt_data(self):
         # Make sure that a management call to a bogus API 500s.
         # The client reshapes the exception into just an OpenStackException.
-        assert_raises(nova_exceptions.NotFound, dbaas_admin.management.show, -1)
+        assert_raises(nova_exceptions.NotFound,
+                      dbaas_admin.management.show, -1)
 
     @test
     def test_mgmt_ips_associated(self):
@@ -786,18 +804,22 @@ class VerifyInstanceMgmtInfo(object):
             'account_id': info.user.auth_user,
             # TODO(hub-cap): fix this since its a flavor object now
             #'flavorRef': info.dbaas_flavor_href,
-            'databases': [{
-                'name': 'db2',
-                'character_set': 'utf8',
-                'collate': 'utf8_general_ci',},{
-                'name': 'firstdb',
-                'character_set': 'latin2',
-                'collate': 'latin2_general_ci',
+            'databases': [
+                {
+                    'name': 'db2',
+                    'character_set': 'utf8',
+                    'collate': 'utf8_general_ci',
+                },
+                {
+                    'name': 'firstdb',
+                    'character_set': 'latin2',
+                    'collate': 'latin2_general_ci',
                 }],
             }
 
         if WHITE_BOX:
-            volumes = db.volume_get_all_by_instance(context.get_admin_context(),
+            admin_context = context.get_admin_context()
+            volumes = db.volume_get_all_by_instance(admin_context(),
                                                     instance_id)
             assert_equal(len(volumes), 1)
             volume = volumes[0]
@@ -813,11 +835,12 @@ class VerifyInstanceMgmtInfo(object):
             expected['hostname'] = expected_entry.name
 
         assert_true(self.mgmt_details is not None)
-        for (k,v) in expected.items():
-            assert_true(hasattr(self.mgmt_details, k), "Attr %r is missing." % k)
-            assert_equal(getattr(self.mgmt_details, k), v,
-                "Attr %r expected to be %r but was %r." %
-                (k, v, getattr(self.mgmt_details, k)))
+        for (k, v) in expected.items():
+            msg = "Attr %r is missing." % k
+            assert_true(hasattr(self.mgmt_details, k), msg)
+            msg = ("Attr %r expected to be %r but was %r." %
+                   (k, v, getattr(self.mgmt_details, k)))
+            assert_equal(getattr(self.mgmt_details, k), v, msg)
         print(self.mgmt_details.users)
         for user in self.mgmt_details.users:
             assert_true('name' in user, "'name' not in users element.")
@@ -893,10 +916,11 @@ class CheckInstance(Check):
         self.attrs_exist(self.instance['volume'], expected_attrs,
                          msg="Volume")
 
+
 def diagnostic_tests_helper(diagnostics):
     print("diagnostics : %r" % diagnostics._info)
-    expected_attrs = ['version', 'fdSize', 'vmSize', 'vmHwm', 'vmRss', 'vmPeak',
-                      'threads']
+    expected_attrs = ['version', 'fdSize', 'vmSize', 'vmHwm', 'vmRss',
+                      'vmPeak', 'threads']
     CheckInstance(None).attrs_exist(diagnostics._info, expected_attrs,
                                     msg="Diagnostics")
     actual_version = diagnostics.version
