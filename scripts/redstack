@@ -494,8 +494,23 @@ send \n
 expect eof"
 }
 
+# Grab a numbered field from python prettytable output
+# Fields are numbered starting with 1
+# Reverse syntax is supported: -1 is the last field, -2 is second to last, etc.
+# get_field field-number
+function get_field() {
+    while read data; do
+        if [ "$1" -lt 0 ]; then
+            field="(\$(NF$1))"
+        else
+            field="\$$(($1 + 1))"
+        fi
+        echo "$data" | awk -F'[ \t]*\\|[ \t]*' "{print $field}"
+    done
+}
+
 function get_glance_id () {
-    echo `$@ | awk '{print $6}'`
+    echo `$@ | grep ' id ' | get_field 2`
 }
 
 function cmd_set_image() {
@@ -522,10 +537,11 @@ function upload_image_to_glance() {
     IMAGE_LOC=$3
     UBUNTU_DISTRO=$4
     SERVICE_TYPE=$5
+    REDDWARF_TENANT=$6
 
-    GLANCE_IMAGEID=`get_glance_id glance add --silent-upload name="$IMAGE_NAME" is_public=true \
-       container_format=ovf disk_format=qcow2 \
-       distro="$UBUNTU_DISTRO" -A $REDDWARF_TOKEN < $IMAGE_LOC`
+    GLANCE_IMAGEID=`get_glance_id glance image-create --name="$IMAGE_NAME" --public \
+        --container-format=ovf --disk-format=qcow2 \
+        --owner=$REDDWARF_TENANT < $IMAGE_LOC`
 
     cmd_set_image $GLANCE_IMAGEID $SERVICE_TYPE
 }
@@ -647,7 +663,7 @@ function cmd_build_image() {
     REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
 
     # Now upload it
-    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO $SERVICE_TYPE
+    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO $SERVICE_TYPE $REDDWARF_TOKEN
 }
 
 
