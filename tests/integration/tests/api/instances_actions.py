@@ -38,6 +38,7 @@ from tests.api.instances import assert_unprocessable
 from tests import util
 from tests import WHITE_BOX
 from tests.util import poll_until
+from tests.util import report
 from tests.util import test_config
 from tests.util import LocalSqlClient
 from sqlalchemy import create_engine
@@ -93,14 +94,23 @@ class MySqlConnection(object):
             raise ex
 
 
-TIME_OUT_TIME = 4 * 60
+TIME_OUT_TIME = 10 * 60
+USER_WAS_DELETED = False
 
 
-class RebootTestBase(object):
-    """Tests restarting MySQL."""
+class ActionTestBase(object):
+    """Has some helpful functions for testing actions.
 
-    def call_reboot(self):
-        raise NotImplementedError()
+    The test user must be created for some of these functions to work.
+
+    """
+
+    def set_up(self):
+        """If you're using this as a base class, call this method first."""
+        if USE_IP:
+            address = instance_info.get_address()
+            self.connection = MySqlConnection(address)
+        self.dbaas = instance_info.dbaas
 
     @property
     def instance(self):
@@ -113,15 +123,6 @@ class RebootTestBase(object):
     @property
     def instance_id(self):
         return instance_info.id
-
-    def find_mysql_proc_on_instance(self):
-        return util.find_mysql_procid_on_instance(self.instance_local_id)
-
-    def set_up(self):
-        if USE_IP:
-            address = instance_info.get_address()
-            self.connection = MySqlConnection(address)
-        self.dbaas = instance_info.dbaas
 
     def create_user(self):
         """Create a MySQL user we can use for this test."""
@@ -146,6 +147,33 @@ class RebootTestBase(object):
             instance = self.instance
             check.false(instance is None)
             check.equal(instance.status, "ACTIVE")
+
+    def find_mysql_proc_on_instance(self):
+        return util.find_mysql_procid_on_instance(self.instance_local_id)
+
+    def log_current_users(self):
+        users = self.dbaas.users.list(self.instance_id)
+        report.log("Current user count = %d" % len(users))
+        for user in users:
+            report.log("\t" + str(user))
+
+
+@test(depends_on_groups=[GROUP_START])
+def create_user():
+    """Create a test user so that subsequent tests can log in."""
+    helper = ActionTestBase()
+    helper.set_up()
+    helper.create_user()
+    helper.connection.connect()
+    assert_true(helper.connection.is_connected(),
+                "Test user must be able to connect to MySQL.")
+
+
+class RebootTestBase(ActionTestBase):
+    """Tests restarting MySQL."""
+
+    def call_reboot(self):
+        raise NotImplementedError()
 
     def wait_for_broken_connection(self):
         """Wait until our connection breaks."""
@@ -223,7 +251,7 @@ class RebootTestBase(object):
 
 
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP_RESTART],
-      depends_on_groups=[GROUP_START])
+      depends_on_groups=[GROUP_START], depends_on=[create_user])
 class RestartTests(RebootTestBase):
     """Tests restarting MySQL."""
 
@@ -233,7 +261,6 @@ class RestartTests(RebootTestBase):
     @before_class
     def test_set_up(self):
         self.set_up()
-        self.create_user()
 
     @test
     def test_ensure_mysql_is_running(self):
@@ -263,7 +290,7 @@ class RestartTests(RebootTestBase):
 
 
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP_REBOOT],
-      depends_on_groups=[GROUP_START], depends_on=[RestartTests])
+      depends_on_groups=[GROUP_START], depends_on=[RestartTests, create_user])
 class RebootTests(RebootTestBase):
     """Tests restarting instance."""
 
@@ -292,8 +319,10 @@ class RebootTests(RebootTestBase):
 
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP,
               GROUP + ".resize.instance"],
-      depends_on_groups=[GROUP_START], depends_on=[RebootTests])
-class ResizeInstanceTest(RebootTestBase):
+      depends_on_groups=[GROUP_START], depends_on=[create_user],
+      runs_after=[RebootTests])
+class ResizeInstanceTest(ActionTestBase):
+
     """
     Integration Test cases for resize instance
     """
@@ -319,6 +348,9 @@ class ResizeInstanceTest(RebootTestBase):
     def setup(self):
         self.set_up()
         self.connection.connect()
+        assert_true(self.connection.is_connected(),
+                    "Should be able to connect before resize.")
+        self.user_was_deleted = False
 
     @test
     def test_instance_resize_same_size_should_fail(self):
@@ -327,6 +359,7 @@ class ResizeInstanceTest(RebootTestBase):
 
     @test(depends_on=[test_instance_resize_same_size_should_fail])
     def test_status_changed_to_resize(self):
+        self.log_current_users()
         self.dbaas.instances.resize_instance(self.instance_id,
                                              self.get_flavor_id(flavor_id=2))
         #(WARNING) IF THE RESIZE IS WAY TOO FAST THIS WILL FAIL
@@ -339,6 +372,23 @@ class ResizeInstanceTest(RebootTestBase):
         self.wait_for_resize()
 
     @test(depends_on=[test_instance_returns_to_active_after_resize])
+    def resize_should_not_delete_users(self):
+        """Resize should not delete users."""
+        # Resize has an incredibly weird bug where users are deleted after
+        # a resize. The code below is an attempt to catch this while proceeding
+        # with the rest of the test (note the use of runs_after).
+        self.connection.connect()
+        if not self.connection.is_connected():
+            # Ok, this is def. a failure, but before we toss up an error
+            # lets recreate to see how far we can get.
+            report.log("Having to recreate the test_user! Resizing somehow "
+                       "killed it!")
+            self.log_current_users()
+            self.create_user()
+            fail("Somehow, the resize made the test user disappear.")
+
+    @test(depends_on=[test_instance_returns_to_active_after_resize],
+          runs_after=[resize_should_not_delete_users])
     def test_make_sure_mysql_is_running_after_resize(self):
         self.ensure_mysql_is_running()
         assert_equal(self.get_flavor_id(self.instance.flavor['id']),
@@ -350,11 +400,19 @@ class ResizeInstanceTest(RebootTestBase):
         self.dbaas.instances.resize_instance(self.instance_id,
                                              self.get_flavor_id(flavor_id=1))
         self.wait_for_resize()
-        assert_equal(self.get_flavor_id(self.instance.flavor['id']),
-                     self.flavor_id)
+        assert_equal(str(self.instance.flavor['id']), "1")
 
 
-@test(depends_on_classes=[ResizeInstanceTest], groups=[GROUP, tests.INSTANCES])
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP + ".resize.instance"],
+      depends_on_groups=[GROUP_START], depends_on=[create_user],
+      runs_after=[RebootTests, ResizeInstanceTest])
+def resize_should_not_delete_users():
+    if USER_WAS_DELETED:
+        fail("Somehow, the resize made the test user disappear.")
+
+
+@test(depends_on_classes=[ResizeInstanceTest], depends_on=[create_user],
+      groups=[GROUP, tests.INSTANCES])
 class ResizeInstanceVolume(object):
     """ Resize the volume of the instance """
 
@@ -421,6 +479,7 @@ UPDATE_GUEST_CONF = util.test_config.values.get("guest-update-test", None)
 
 
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP + ".update_guest"],
+      depends_on=[create_user],
       depends_on_groups=[GROUP_START])
 class UpdateGuest(object):
 

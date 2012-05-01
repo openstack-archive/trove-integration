@@ -198,6 +198,7 @@ if __name__ == '__main__':
             "services.initialize",
             "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
+            "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
             "dbaas.guest.shutdown",
             versions.GROUP,
