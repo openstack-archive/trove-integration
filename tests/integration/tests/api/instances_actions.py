@@ -130,6 +130,13 @@ class ActionTestBase(object):
         users = [{"name": MYSQL_USERNAME, "password": MYSQL_PASSWORD,
                   "database": MYSQL_USERNAME}]
         self.dbaas.users.create(instance_info.id, users)
+        def has_user():
+            users = self.dbaas.users.list(instance_info.id)
+            for user in users:
+                if user.name == MYSQL_USERNAME:
+                    return True
+            return
+        poll_until(has_user, time_out = 30)
         if not FAKE_MODE:
             time.sleep(5)
 
@@ -163,10 +170,11 @@ def create_user():
     """Create a test user so that subsequent tests can log in."""
     helper = ActionTestBase()
     helper.set_up()
-    helper.create_user()
-    helper.connection.connect()
-    assert_true(helper.connection.is_connected(),
-                "Test user must be able to connect to MySQL.")
+    if USE_IP:
+        helper.create_user()
+        helper.connection.connect()
+        assert_true(helper.connection.is_connected(),
+                    "Test user must be able to connect to MySQL.")
 
 
 class RebootTestBase(ActionTestBase):
@@ -347,9 +355,10 @@ class ResizeInstanceTest(ActionTestBase):
     @before_class
     def setup(self):
         self.set_up()
-        self.connection.connect()
-        assert_true(self.connection.is_connected(),
-                    "Should be able to connect before resize.")
+        if USE_IP:
+            self.connection.connect()
+            assert_true(self.connection.is_connected(),
+                        "Should be able to connect before resize.")
         self.user_was_deleted = False
 
     @test
@@ -377,15 +386,16 @@ class ResizeInstanceTest(ActionTestBase):
         # Resize has an incredibly weird bug where users are deleted after
         # a resize. The code below is an attempt to catch this while proceeding
         # with the rest of the test (note the use of runs_after).
-        self.connection.connect()
-        if not self.connection.is_connected():
-            # Ok, this is def. a failure, but before we toss up an error
-            # lets recreate to see how far we can get.
-            report.log("Having to recreate the test_user! Resizing somehow "
-                       "killed it!")
-            self.log_current_users()
-            self.create_user()
-            fail("Somehow, the resize made the test user disappear.")
+        if USE_IP:
+            self.connection.connect()
+            if not self.connection.is_connected():
+                # Ok, this is def. a failure, but before we toss up an error
+                # lets recreate to see how far we can get.
+                report.log("Having to recreate the test_user! Resizing "
+                           "somehow killed it!")
+                self.log_current_users()
+                self.create_user()
+                fail("Somehow, the resize made the test user disappear.")
 
     @test(depends_on=[test_instance_returns_to_active_after_resize],
           runs_after=[resize_should_not_delete_users])
