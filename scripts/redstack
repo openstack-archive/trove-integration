@@ -929,6 +929,20 @@ function cmd_kick_start() {
     cmd_start
 }
 
+function cmd_update_projects() {
+  for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
+     if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
+          echo "Creating a new clone of $project..."
+          git_clone https://github.com/openstack/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
+      else
+          echo "$project was already cloned or exists pulling changes"
+          cd $PATH_DEVSTACK_OUTPUT/$project
+          git pull
+      fi
+  done
+}
+
+
 
 ###############################################################################
 # Process the user provided command and run the appropriate command
@@ -985,6 +999,7 @@ function print_usage() {
           clear           - Destroy instances and rabbit queues.
           run             - Starts RD but not in a screen.
           run-fake        - Runs the server in fake mode.
+          update-projects - Git pull on all the daemons reddwarf dependencies.
     "
     exit 1
 }
@@ -1020,6 +1035,7 @@ function run_command() {
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
+        "update-projects" ) cmd_update_projects;;
         * )
             echo "'$1' not a valid command"
             exit 1

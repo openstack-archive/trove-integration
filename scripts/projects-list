@@ -1,0 +1,10 @@
+glance
+horizon
+keystone
+nova
+noVNC
+python-keystoneclient
+python-novaclient
+python-proboscis
+python-quantumclient
+python-reddwarfclient
