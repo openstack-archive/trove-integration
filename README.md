@@ -75,10 +75,18 @@ Allows the services to continue running in the background
 
 ***
 
-#### Kick start the build/initialize/build-image/start commands
+#### Kick start the build/initialize/build-image commands
 *Add mysql as a parameter to set build and add the mysql guest image*
 
     $ ./redstack kick-start mysql
+
+#### Start up the reddwarf services in a screen session
+
+    $ ./redstack start
+
+ or, to run outside of a screen:
+
+    $ ./redstack run
 
 ***
 
@@ -95,10 +103,6 @@ Allows the services to continue running in the background
 #### Build the image and add it to glance
 
     $ ./redstack build-image mysql
-
-#### Start up the reddwarf services in a screen session
-
-    $ ./redstack start
 
 ***
 
@@ -122,6 +126,7 @@ Allows the services to continue running in the background
 
     $ RECLONE=yes ./redstack install
     $ ./redstack kick-start mysql
+    $ ./redstack start
 
  or
 

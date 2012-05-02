@@ -132,10 +132,7 @@ class ActionTestBase(object):
         self.dbaas.users.create(instance_info.id, users)
         def has_user():
             users = self.dbaas.users.list(instance_info.id)
-            for user in users:
-                if user.name == MYSQL_USERNAME:
-                    return True
-            return
+            return any([user.name == MYSQL_USERNAME for user in users])
         poll_until(has_user, time_out = 30)
         if not FAKE_MODE:
             time.sleep(5)

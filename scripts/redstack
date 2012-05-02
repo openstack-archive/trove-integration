@@ -12,7 +12,7 @@
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
-USERHOME="/home/"`whoami`
+USERHOME=$HOME
 
 # Load options not checked into VCS.
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
@@ -355,7 +355,7 @@ function run_devstack() {
     cd $PATH_DEVSTACK_SRC
 
     # Creating this lock directory seems sure-fire.
-    mkdir -p /home/$USERNAME/nova_locks
+    mkdir -p $USERHOME/nova_locks
 
     echo "
 # Set some arguments for devstack.
@@ -368,7 +368,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=/home/$USERNAME/nova_locks)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks)
 " > localrc
     if [ -n "$USING_VAGRANT" ]
     then
@@ -659,16 +659,15 @@ function cmd_build_image() {
 
 
     USERNAME=`whoami`
-    HOMEDIR=`getent passwd $USERNAME | cut -d: -f6`
-    mkdir -p /home/$USERNAME/images
-    VM_PATH=/home/$USERNAME/images/oneiric_${SERVICE_TYPE}_image
+    mkdir -p $USERHOME/images
+    VM_PATH=$USERHOME/images/oneiric_${SERVICE_TYPE}_image
     UBUNTU_DISTRO=ubuntu_oneiric
     UBUNTU_DISTRO_NAME=oneiric
 
     # If the path doesnt exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ]
     then
-        build_vm $HOMEDIR $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE
+        build_vm $USERHOME $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE
     else
         exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
@@ -953,7 +952,6 @@ function cmd_kick_start() {
     cmd_build
     cmd_initialize
     cmd_build_image $1
-    #cmd_start
 }
 
 function cmd_reset_task() {
@@ -1078,4 +1076,5 @@ function run_command() {
 }
 
 run_command $@
+
 
