@@ -139,9 +139,12 @@ function keystone_add_user_role() {
         --role $ROLE_UUID
 }
 
-
 function keystone_manage () {
     keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 $@
+}
+
+function reddwarf_tenant_id() {
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'
 }
 
 function configure_keystone() {
@@ -150,7 +153,7 @@ function configure_keystone() {
 
     # Create the tenant "reddwarf".
     # First we should check if these exist
-    REDDWARF_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'`
+    REDDWARF_TENANT=`reddwarf_tenant_id`
     if [ -z $REDDWARF_TENANT ]; then
         REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
     fi
@@ -539,9 +542,18 @@ function upload_image_to_glance() {
     SERVICE_TYPE=$5
     REDDWARF_TENANT=$6
 
-    GLANCE_IMAGEID=`get_glance_id glance image-create --name="$IMAGE_NAME" --public \
+    GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
+        --name="$IMAGE_NAME" --public \
         --container-format=ovf --disk-format=qcow2 \
         --owner=$REDDWARF_TENANT < $IMAGE_LOC`
+
+    echo "IMAGE ID?"
+    echo $GLANCE_IMAGEID
+    if [ -z "$GLANCE_IMAGEID" ];
+    then
+        echo "Glance upload failed!"
+        exit 1
+    fi
 
     cmd_set_image $GLANCE_IMAGEID $SERVICE_TYPE
 }
@@ -635,7 +647,7 @@ function build_vm() {
 }
 
 function cmd_build_image() {
-    exclaim "Building a image for use with development and integration tests."
+    exclaim "Building an image for use with development and integration tests."
     if [ -z "$1" ]
     then
         echo "You must pass an image type to build, like mysql"
@@ -856,6 +868,13 @@ function cmd_nova_client() {
     fi
 }
 
+function cmd_glance_client() {
+    REDDWARF_TENANT=`reddwarf_tenant_id`
+    glance --os-auth-url=http://localhost:35357/v2.0 \
+        --os-username=radmin --os-password=radmin \
+        --os-tenant-id $REDDWARF_TENANT $@
+}
+
 function cmd_rd_client() {
     # This serves as an example of how to call the Reddwarf client script.
     reddwarf-cli auth login radmin radmin reddwarf \
@@ -988,6 +1007,7 @@ function print_usage() {
 
         --tools--
           debug           - Debug this script (shows all commands).
+          glance-client   - Runs glance client with admin user.
           nova-client     - Runs Nova client with admin user.
           rd-client       - Runs Reddwarf client with admin user.
                             * Shows a valid token.
@@ -1021,6 +1041,7 @@ function run_command() {
         "start" ) cmd_start;;
         "int-tests" ) shift; cmd_int_tests $@;;
         "stop" ) cmd_stop;;
+        "glance-client" ) shift; cmd_glance_client;;
         "nova-client" ) shift; cmd_nova_client $@;;
         "rd-client" ) shift; cmd_rd_client $@;;
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
