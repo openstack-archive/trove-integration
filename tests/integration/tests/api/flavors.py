@@ -29,16 +29,17 @@ from tests.util import test_config
 from tests.util.users import Requirements
 
 
-GROUP="dbaas.api.flavors"
+GROUP = "dbaas.api.flavors"
 
 
-servers_flavors=None
-dbaas_flavors=None
-user=None
+servers_flavors = None
+dbaas_flavors = None
+user = None
 
 
-def assert_attributes_are_equal(name, os_flavor, dbaas_flavor):
-    """Given an attribute name and two objects ensures the attribute is equal."""
+def assert_attributes_equal(name, os_flavor, dbaas_flavor):
+    """Given an attribute name and two objects,
+    ensures the attribute is equal."""
     assert_true(hasattr(os_flavor, name),
                 "open stack flavor did not have attribute %s" % name)
     assert_true(hasattr(dbaas_flavor, name),
@@ -49,9 +50,9 @@ def assert_attributes_are_equal(name, os_flavor, dbaas_flavor):
                  'DBaas flavor differs from Open Stack on attribute ' + name)
 
 
-def assert_flavors_are_roughly_equivalent(os_flavor, dbaas_flavor):
-    assert_attributes_are_equal('name', os_flavor, dbaas_flavor)
-    assert_attributes_are_equal('ram', os_flavor, dbaas_flavor)
+def assert_flavors_roughly_equivalent(os_flavor, dbaas_flavor):
+    assert_attributes_equal('name', os_flavor, dbaas_flavor)
+    assert_attributes_equal('ram', os_flavor, dbaas_flavor)
     assert_false(hasattr(dbaas_flavor, 'disk'),
                  "The attribute 'disk' s/b absent from the dbaas API.")
 
@@ -65,15 +66,18 @@ def assert_link_list_is_equal(flavor):
         if "self" in link['rel']:
             expected_href = os.path.join(test_config.dbaas.url, "flavors",
                                              str(flavor.id))
-            assert_true(href.startswith(test_config.dbaas_url.replace('http:', 'https:', 1)),
-                        "REL HREF %s doesn't start with %s" % (href, test_config.dbaas_url))
-            assert_true(href.endswith(os.path.join("flavors", str(flavor.id))),
-                        "REL HREF %s doesn't end in 'flavors/id'" % href)
+            url = test_config.dbaas_url.replace('http:', 'https:', 1)
+            msg = ("REL HREF %s doesn't start with %s" %
+                        (href, test_config.dbaas_url))
+            assert_true(href.startswith(url), msg)
+            url = os.path.join("flavors", str(flavor.id))
+            msg = "REL HREF %s doesn't end in 'flavors/id'" % href
+            assert_true(href.endswith(url), msg)
         elif "bookmark" in link['rel']:
             base_url = test_config.version_url.replace('http:', 'https:', 1)
             expected_href = os.path.join(base_url, "flavors", str(flavor.id))
-            assert_equal(href, expected_href,
-                         'bookmark "href" must be %s, not %s' % (expected_href, href))
+            msg = 'bookmark "href" must be %s, not %s' % (expected_href, href)
+            assert_equal(href, expected_href, msg)
         else:
             assert_false(True, "Unexpected rel - %s" % link['rel'])
 
@@ -92,7 +96,7 @@ class Flavors(object):
         self.rd_client = create_dbaas_client(rd_user)
 
     @test
-    def confirm_flavors_lists_are_nearly_identical(self):
+    def confirm_flavors_lists_nearly_identical(self):
         os_flavors = self.nova_client.flavors.list()
         dbaas_flavors = self.rd_client.flavors.list()
 
@@ -106,12 +110,12 @@ class Flavors(object):
             found_index = None
             for index, dbaas_flavor in enumerate(dbaas_flavors):
                 if os_flavor.name == dbaas_flavor.name:
-                    assert_true(found_index is None,
-                                "Flavor ID '%s' appears in elements #%s and #%d." %\
-                                (dbaas_flavor.id, str(found_index), index))
-                    assert_flavors_are_roughly_equivalent(os_flavor, dbaas_flavor)
+                    msg = ("Flavor ID '%s' appears in elements #%s and #%d." %
+                           (dbaas_flavor.id, str(found_index), index))
+                    assert_true(found_index is None, msg)
+                    assert_flavors_roughly_equivalent(os_flavor, dbaas_flavor)
                     found_index = index
-            assert_false(found_index is None,
-                         "Some flavors from OS list were missing in DBAAS list.")
+            msg = "Some flavors from OS list were missing in DBAAS list."
+            assert_false(found_index is None, msg)
         for flavor in dbaas_flavors:
             assert_link_list_is_equal(flavor)

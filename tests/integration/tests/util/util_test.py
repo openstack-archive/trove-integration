@@ -100,6 +100,3 @@ class TestUsers(unittest.TestCase):
         for user in normals:
             self.assertFalse(user.requirements.is_admin)
             self.assertEqual(expected_test_count, user.test_count)
-
-
-

@@ -57,7 +57,7 @@ WHITE_BOX = test_config.white_box
 if WHITE_BOX:
     from nova import flags
     from nova import utils
-    from reddwarf import dns # import for flag values
+    from reddwarf import dns  # import for flag values
     from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
     from reddwarf import exception
     FLAGS = flags.FLAGS
@@ -81,6 +81,7 @@ def assert_mysql_failure_msg_was_permissions_issue_is_passed():
     assert_mysql_failure_msg_was_permissions_issue(
         """(1045, "Access denied for user 'anous*&^er'@'10.0.2.15'""")
 
+
 @test(groups="unit")
 def assert_mysql_failure_msg_was_permissions_issue_is_failed():
     assert_raises(ASSERTION_ERROR,
@@ -98,6 +99,8 @@ def assert_mysql_connection_fails(user_name, password, ip):
 
 
 _dns_entry_factory = None
+
+
 def get_dns_entry_factory():
     """Returns a DNS entry factory."""
     global _dns_entry_factory
@@ -105,6 +108,7 @@ def get_dns_entry_factory():
         class_name = FLAGS.dns_instance_entry_factory
         _dns_entry_factory = utils.import_object(class_name)
     return _dns_entry_factory
+
 
 def check_database(instance_id, dbname):
     """Checks if the name appears in an instance's list of databases."""
@@ -193,6 +197,7 @@ def find_mysql_procid_on_instance(local_id):
     except ValueError:
         return None
 
+
 def init_engine(user, password, host):
     return create_engine("mysql://%s:%s@%s:3306" %
                                (user, password, host),
@@ -226,6 +231,7 @@ def wait_for_compute_service():
     except exception.PollTimeOut:
         raise RuntimeError("Could not find the line %s in the logs." % line)
 
+
 def should_run_rsdns_tests():
     """If true, then the RS DNS tests should also be run."""
     return FLAGS.dns_driver == "reddwarf.dns.rsdns.driver.RsDnsDriver"
@@ -233,7 +239,7 @@ def should_run_rsdns_tests():
 
 def string_in_list(str, substr_list):
     """Returns True if the string appears in the list."""
-    return any([str.find(x) >=0 for x in substr_list])
+    return any([str.find(x) >= 0 for x in substr_list])
 
 
 def get_vz_ip_for_device(instance_id, device):

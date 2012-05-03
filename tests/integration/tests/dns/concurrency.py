@@ -19,7 +19,8 @@ string:
 Second simultaneous read on fileno 5 detected.  Unless you really know what
 you're doing, make sure that only one greenthread can read any particular
 socket.  Consider using a pools.Pool. If you do know what you're doing and want
-to disable this error, call eventlet.debug.hub_multiple_reader_prevention(False)
+to disable this error, call
+eventlet.debug.hub_multiple_reader_prevention(False)
 
 It is perhaps the most helpful error message ever created.
 
@@ -47,12 +48,14 @@ if WHITE_BOX:
     from nova import utils
     FLAGS = flags.FLAGS
 
+
 @test(groups=["rsdns.eventlet"])
 class RsdnsEventletTests(object):
     """Makes sure the RSDNS client can be used from multiple green threads."""
 
     def assert_record_created(self, index):
-        assert_true(index in self.new_records, "Record %d wasn't created!" % index)
+        msg = "Record %d wasn't created!" % index
+        assert_true(index in self.new_records, msg)
 
     @before_class(enabled=WHITE_BOX and should_run_rsdns_tests())
     def create_driver(self):
@@ -65,7 +68,7 @@ class RsdnsEventletTests(object):
     def make_record(self, index):
         """Creates a record with the form 'eventlet-%s-%d'."""
         uuid = "eventlet-%s-%d" % (self.test_uuid, index)
-        instance = { 'uuid':uuid }
+        instance = {'uuid': uuid}
         entry = self.entry_factory.create_entry(instance)
         entry.name = uuid + "." + self.entry_factory.default_dns_zone.name
         entry.content = "123.123.123.123"
@@ -84,6 +87,7 @@ class RsdnsEventletTests(object):
     def use_dns_from_multiple_greenthreads(self):
         """Add multiple DNS records at once."""
         self.new_records = {}
+
         def make_record(index):
             def __cb():
                 self.make_record(index)

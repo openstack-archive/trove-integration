@@ -52,8 +52,6 @@ if WHITE_BOX:
     from reddwarf.utils import poll_until
 
 
-
-
 GROUP = "dbaas.api.instances.actions"
 GROUP_REBOOT = "dbaas.api.instances.actions.reboot"
 GROUP_RESTART = "dbaas.api.instances.actions.restart"
@@ -97,6 +95,7 @@ class MySqlConnection(object):
 
 TIME_OUT_TIME = 4 * 60
 
+
 class RebootTestBase(object):
     """Tests restarting MySQL."""
 
@@ -133,7 +132,6 @@ class RebootTestBase(object):
         if not FAKE_MODE:
             time.sleep(5)
 
-
     def ensure_mysql_is_running(self):
         """Make sure MySQL is accessible before restarting."""
         with Checker() as check:
@@ -154,7 +152,8 @@ class RebootTestBase(object):
         if not USE_IP:
             return
         poll_until(self.connection.is_connected,
-                   lambda connected : not connected, time_out = TIME_OUT_TIME)
+                   lambda connected: not connected,
+                   time_out=TIME_OUT_TIME)
 
     def wait_for_successful_restart(self):
         """Wait until status becomes running."""
@@ -165,7 +164,7 @@ class RebootTestBase(object):
             assert_equal("ACTIVE", instance.status)
             return True
 
-        poll_until(is_finished_rebooting, time_out = TIME_OUT_TIME)
+        poll_until(is_finished_rebooting, time_out=TIME_OUT_TIME)
 
     def assert_mysql_proc_is_different(self):
         if not USE_LOCAL_OVZ:
@@ -184,7 +183,7 @@ class RebootTestBase(object):
 
     def mess_up_mysql(self):
         """Ruin MySQL's ability to restart."""
-        self.fix_mysql() # kill files
+        self.fix_mysql()  # kill files
         cmd = """ssh %s 'sudo cp /dev/null /var/lib/mysql/ib_logfile%d'"""
         for index in range(2):
             full_cmd = cmd % (instance_info.get_address(), index)
@@ -207,7 +206,7 @@ class RebootTestBase(object):
             assert_equal("SHUTDOWN", instance.status)
             return True
 
-        poll_until(is_finished_rebooting, time_out = TIME_OUT_TIME)
+        poll_until(is_finished_rebooting, time_out=TIME_OUT_TIME)
 
     def unsuccessful_restart(self):
         """Restart MySQL via the REST when it should fail, assert it does."""
@@ -291,7 +290,8 @@ class RebootTests(RebootTestBase):
         self.successful_restart()
 
 
-@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP + ".resize.instance"],
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP,
+              GROUP + ".resize.instance"],
       depends_on_groups=[GROUP_START], depends_on=[RebootTests])
 class ResizeInstanceTest(RebootTestBase):
     """
@@ -302,7 +302,8 @@ class ResizeInstanceTest(RebootTestBase):
         return instance_info.dbaas_flavor_href
 
     def get_flavor_id(self, flavor_id=2):
-        dbaas_flavor, dbaas_flavor_href = instance_info.dbaas.find_flavor_and_self_href(flavor_id)
+        res = instance_info.dbaas.find_flavor_and_self_href(flavor_id)
+        dbaas_flavor, dbaas_flavor_href = res
         return dbaas_flavor_href
 
     def wait_for_resize(self):
@@ -312,7 +313,7 @@ class ResizeInstanceTest(RebootTestBase):
                 return False
             assert_equal("ACTIVE", instance.status)
             return True
-        poll_until(is_finished_resizing, time_out = TIME_OUT_TIME)
+        poll_until(is_finished_resizing, time_out=TIME_OUT_TIME)
 
     @before_class
     def setup(self):
@@ -349,7 +350,8 @@ class ResizeInstanceTest(RebootTestBase):
         self.dbaas.instances.resize_instance(self.instance_id,
                                              self.get_flavor_id(flavor_id=1))
         self.wait_for_resize()
-        assert_equal(self.get_flavor_id(self.instance.flavor['id']), self.flavor_id)
+        assert_equal(self.get_flavor_id(self.instance.flavor['id']),
+                     self.flavor_id)
 
 
 @test(depends_on_classes=[ResizeInstanceTest], groups=[GROUP, tests.INSTANCES])
@@ -374,7 +376,8 @@ class ResizeInstanceVolume(object):
     @test
     @time_out(60)
     def test_volume_resize(self):
-        instance_info.dbaas.instances.resize_volume(instance_info.id, self.new_volume_size)
+        instance_info.dbaas.instances.resize_volume(instance_info.id,
+                                                    self.new_volume_size)
 
     @test
     @time_out(300)
@@ -416,6 +419,7 @@ class ResizeInstanceVolume(object):
 # test conf. If it is not specified this test never runs.
 UPDATE_GUEST_CONF = util.test_config.values.get("guest-update-test", None)
 
+
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP + ".update_guest"],
       depends_on_groups=[GROUP_START])
 class UpdateGuest(object):
@@ -440,6 +444,7 @@ class UpdateGuest(object):
           depends_on=[upload_update_to_repo])
     def update_and_wait_to_finish(self):
         instance_info.dbaas_admin.management.update(instance_info.id)
+
         def finished():
             current_version = self.get_version()
             if current_version == self.next_version:

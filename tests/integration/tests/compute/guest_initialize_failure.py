@@ -17,7 +17,7 @@ import time
 from tests import util
 
 
-GROUP='dbaas.guest.initialize.failure'
+GROUP = 'dbaas.guest.initialize.failure'
 
 from proboscis import after_class
 from proboscis import before_class
@@ -57,7 +57,7 @@ if WHITE_BOX:
     from reddwarf.api.common import dbaas_mapping
     from reddwarf.db import api as dbapi
     from reddwarf.utils import poll_until
-    from reddwarf.scheduler import simple # import used for FLAG values
+    from reddwarf.scheduler import simple  # import used for FLAG values
     from nova import flags
     from reddwarf.compute.manager import ReddwarfInstanceMetaData
     FLAGS = flags.FLAGS
@@ -130,14 +130,14 @@ class VerifyManagerAbortsInstanceWhenVolumeFails(InstanceTest):
         test_config.volume_service.start()
         restart_compute_service()
         if self.instance_exists:
-            self.db.instance_destroy(context.get_admin_context(), self.local_id)
-
+            self.db.instance_destroy(context.get_admin_context(),
+                                     self.local_id)
 
     @test
     def create_instance(self):
         """Create a new instance."""
         self.abort_count = count_notifications(notifier.ERROR,
-                                               "reddwarf.instance.abort.volume")
+            "reddwarf.instance.abort.volume")
         self._create_instance()
         # Use an admin context to avoid the possibility that in between the
         # previous line and this one the request goes through and the instance
@@ -154,7 +154,6 @@ class VerifyManagerAbortsInstanceWhenVolumeFails(InstanceTest):
         abort_count2 = count_notifications(notifier.ERROR,
                                            "reddwarf.instance.abort.volume")
         assert_true(self.abort_count < abort_count2)
-
 
     @test(depends_on=[wait_for_failure])
     @time_out(2 * 60)
@@ -178,6 +177,7 @@ class VerifyManagerAbortsInstanceWhenVolumeFails(InstanceTest):
 #TODO: Find some way to get the compute instance creation to fail.
 
 GUEST_INSTALL_TIMEOUT = 60 * 2
+
 
 @test(groups=[GROUP, GROUP + ".guest"],
       depends_on_groups=["services.initialize"])
@@ -234,8 +234,9 @@ class VerifyManagerAbortsInstanceWhenGuestInstallFails(InstanceTest):
         while pid is None:
             guest_status = dbapi.guest_status_get(self.local_id)
             rest_api_result = self.dbaas.instances.get(self.id)
-            out, err = process("pstree -ap | grep init | cut -d',' -f2 | vzpid - | grep %s | awk '{print $1}'"
-                                % str(self.local_id))
+            cmd = ("pstree -ap | grep init | cut -d',' -f2 | vzpid - | "
+                   "grep %s | awk '{print $1}'")
+            out, err = process(cmd % str(self.local_id))
             pid = out.strip()
             if not pid:
                 # Make sure the guest status is BUILDING during this time.

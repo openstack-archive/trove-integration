@@ -29,7 +29,7 @@ from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
-GROUP="dbaas.api.mgmt.storage"
+GROUP = "dbaas.api.mgmt.storage"
 
 
 @test(groups=[tests.DBAAS_API, GROUP, tests.PRE_INSTANCES],
@@ -73,7 +73,9 @@ class StorageAfterInstanceCreation(object):
             CheckInstance(None).attrs_exist(device._info, expected_attrs,
                                             msg="Storage")
             assert_equal(device.name, instance_info.storage[index].name)
-            assert_equal(device.totalsize, instance_info.storage[index].totalsize)
+            instance_totalsize = instance_info.storage[index].totalsize
+            assert_equal(device.totalsize, instance_totalsize)
             assert_equal(device.type, instance_info.storage[index].type)
-            avail = instance_info.storage[index].availablesize - instance_info.volume['size']
+            avail = instance_info.storage[index].availablesize
+            avail -= instance_info.volume['size']
             assert_equal(device.availablesize, avail)

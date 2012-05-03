@@ -55,7 +55,7 @@ class WhenInstanceIsCreated(unittest.TestCase):
                 return dns_driver.get_entries_by_name(entry.name)
             try:
                 poll_until(get_entries, lambda entries: len(entries) > 0,
-                                 sleep_time=2, time_out = 60)
+                           sleep_time=2, time_out=60)
             except exception.PollTimeOut:
                 self.fail("Did not find name " + entry.name + \
                           " in the entries, which were as follows:"
@@ -83,8 +83,8 @@ class AfterInstanceIsDestroyed(unittest.TestCase):
             return dns_driver.get_entries_by_name(entry.name)
 
         try:
-            poll_until(get_entries, lambda entries : len(entries) == 0,
-                             sleep_time=2, time_out=60)
+            poll_until(get_entries, lambda entries: len(entries) == 0,
+                       sleep_time=2, time_out=60)
         except exception.PollTimeOut:
             # Manually delete the rogue item
             dns_driver.delete_entry(entry.name, entry.type, entry.dns_zone)

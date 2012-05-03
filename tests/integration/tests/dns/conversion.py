@@ -32,8 +32,8 @@ if WHITE_BOX:
     FLAGS = flags.FLAGS
     driver = None
     DEFAULT_ZONE = RsDnsZone(1, "dbaas.rackspace.org")
-    TEST_CONTENT="126.1.1.1"
-    TEST_NAME="hiwassup.dbaas.rackspace.org"
+    TEST_CONTENT = "126.1.1.1"
+    TEST_NAME = "hiwassup.dbaas.rackspace.org"
 
 
 @wb_test(groups=["unit", "rsdns.conversion"])
@@ -42,7 +42,6 @@ class ConvertingNovaEntryNamesToRecordNames(unittest.TestCase):
     def setUp(self):
         self.converter = EntryToRecordConverter(DEFAULT_ZONE)
         self.fake_zone = RsDnsZone(id=5, name="blah.org")
-
 
     def test_normal_name(self):
         long_name = self.converter.name_to_long_name("hi", self.fake_zone)
@@ -65,11 +64,11 @@ class ConvertingRecordsToEntries(unittest.TestCase):
         self.converter = EntryToRecordConverter(DEFAULT_ZONE)
         self.fake_zone = RsDnsZone(id=5, name="blah.org")
 
-
     def test_normal_name(self):
-        record = Record(None, {"id":5, "name":"hi.blah.org",
-                               "data":"stacker.com blah@blah 13452378", "ttl":5,
-                               "type":"SOA"})
+        record = Record(None, {"id": 5, "name": "hi.blah.org",
+                               "data": "stacker.com blah@blah 13452378",
+                               "ttl": 5,
+                               "type": "SOA"})
         entry = self.converter.record_to_entry(record=record,
                                                dns_zone=self.fake_zone)
         self.assertEqual("stacker.com blah@blah 13452378", entry.content)
@@ -87,7 +86,7 @@ class WhenCreatingAnEntryForAnInstance(unittest.TestCase):
         self.creator = RsDnsInstanceEntryFactory()
 
     def test_should_concatanate_strings(self):
-        instance = {'id':'56',
+        instance = {'id': '56',
                     'uuid': '000136c0-effa-4711-a747-a5b9fbfcb3bd'}
         entry = self.creator.create_entry(instance)
         expected_name = "%s.%s" % (hashlib.sha1(instance['uuid']).hexdigest(),

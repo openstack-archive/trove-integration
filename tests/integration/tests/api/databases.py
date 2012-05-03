@@ -34,8 +34,9 @@ from tests.api.instances import instance_info
 from tests.openvz.dbaas_ovz import TestMysqlAccess
 from tests.util import test_config
 
-GROUP="dbaas.api.databases"
+GROUP = "dbaas.api.databases"
 FAKE = test_config.values['fake_mode']
+
 
 @test(depends_on_classes=[TestMysqlAccess], groups=[tests.DBAAS_API, GROUP,
                                                     tests.INSTANCES])
@@ -49,7 +50,7 @@ class TestDatabases(object):
 
     dbname2 = "seconddb"
     created_dbs = [dbname, dbname2]
-    system_dbs = ['information_schema','mysql', 'lost+found']
+    system_dbs = ['information_schema', 'mysql', 'lost+found']
 
     @before_class
     def setUp(self):
@@ -85,7 +86,8 @@ class TestDatabases(object):
         found = False
         for db in self.system_dbs:
             found = any(result.name == db for result in databases)
-            assert_false(found, "Database '%s' SHOULD NOT be found in result" % db)
+            msg = "Database '%s' SHOULD NOT be found in result" % db
+            assert_false(found, msg)
             found = False
 
     @test
@@ -113,7 +115,9 @@ class TestDatabases(object):
     @test
     def test_database_name_too_long(self):
         databases = []
-        databases.append({"name": "aasdlkhaglkjhakjdkjgfakjgadgfkajsg34523dfkljgasldkjfglkjadsgflkjagsdd"})
+        name = ("aasdlkhaglkjhakjdkjgfakjgadgfkajsg"
+                "34523dfkljgasldkjfglkjadsgflkjagsdd")
+        databases.append({"name": name})
         assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
 

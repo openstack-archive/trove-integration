@@ -62,7 +62,10 @@ class TestAdminRequired(object):
 
     @test
     def test_mgmt_show(self):
-        """ A regular user may not view the management details of any instance. """
+        """
+        A regular user may not view the management details
+        of any instance.
+        """
         assert_raises(Unauthorized, self.dbaas.management.show, 0)
 
     @test
@@ -88,4 +91,3 @@ class TestAdminRequired(object):
     def test_diagnostics_get(self):
         """ A regular user may not view the diagnostics. """
         assert_raises(Unauthorized, self.dbaas.diagnostics.get, 0)
-

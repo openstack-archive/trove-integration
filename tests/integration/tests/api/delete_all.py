@@ -20,8 +20,6 @@ from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
 
-
-
 GROUP = "dbaas.api.instances.actions"
 
 

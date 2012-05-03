@@ -67,9 +67,11 @@ def glance_code_root():
     """The file path to the Glance source code."""
     return str(values.get("glance_code_root"))
 
+
 def glance_bin_root():
     """The file path to the Glance bin directory."""
     return str(values.get("glance_code_root")) + "/bin/"
+
 
 def glance_images_directory():
     """The path to images that will be uploaded by Glance."""
@@ -80,9 +82,11 @@ def nova_code_root():
     """The path to the Nova source code."""
     return str(values.get("nova_code_root"))
 
+
 def keystone_code_root():
     """The path to the Keystone source code."""
     return str(values.get("keystone_code_root"))
+
 
 def keystone_bin(service):
     """The path of the specific keystone service"""
@@ -109,33 +113,36 @@ def python_cmd_list():
 def _setup():
     """Initializes the module."""
     from tests.util.users import Users
-    global nova_auth_url
-    global reddwarf_auth_url
+    global clean_slate
     global compute_service
     global dbaas
-    global nova
-    global users
     global dbaas_image
-    global typical_nova_image_name
-    global use_venv
-    global values
     global dbaas_url
+    global glance_image
+    global keystone_service
+    global nova
+    global nova_auth_url
+    global reddwarf_auth_url
+    global test_mgmt
+    global typical_nova_image_name
+    global use_reaper
+    global use_venv
+    global users
+    global values
     global version_url
     global volume_service
-    global keystone_service
-    global glance_image
-    global use_reaper
-    global clean_slate
     global white_box
-    global test_mgmt
     clean_slate = os.environ.get("CLEAN_SLATE", "False") == "True"
     values = load_configuration()
     if os.environ.get("FAKE_MODE", "False") == "True":
         values["fake_mode"] = True
     use_venv = values.get("use_venv", True)
-    nova_auth_url = str(values.get("nova_auth_url", "http://localhost:5000/v2.0"))
-    reddwarf_auth_url = str(values.get("reddwarf_auth_url", "http://localhost:5000/v1.1"))
-    dbaas_url = str(values.get("dbaas_url", "http://localhost:8775/v1.0/dbaas"))
+    nova_auth_url = str(values.get("nova_auth_url",
+                                   "http://localhost:5000/v2.0"))
+    reddwarf_auth_url = str(values.get("reddwarf_auth_url",
+                                       "http://localhost:5000/v1.1"))
+    dbaas_url = str(values.get("dbaas_url",
+                               "http://localhost:8775/v1.0/dbaas"))
     version_url = str(values.get("version_url", "http://localhost:8775/"))
     nova_url = str(values.get("nova_url", "http://localhost:8774/v1.1"))
     nova_code_root = str(values["nova_code_root"])
@@ -164,10 +171,10 @@ def _setup():
                       url=nova_url)
     volume_service = Service(cmd=python_cmd_list() +
                              ["%s/bin/nova-volume" % nova_code_root,
-                              "--flagfile=%s" % nova_conf ])
+                              "--flagfile=%s" % nova_conf])
     compute_service = Service(cmd=python_cmd_list() +
                               ["%s/bin/nova-compute" % nova_code_root,
-                               "--flagfile=%s" % nova_conf ])
+                               "--flagfile=%s" % nova_conf])
     keystone_service = Service(python_cmd_list() +
                                [keystone_bin("keystone-auth"),
                                 "-c %s" % keystone_conf])
