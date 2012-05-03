@@ -61,6 +61,11 @@ class TestRoot(object):
         assert_true(mgmt_instance is not None)
         timestamp = mgmt_instance.root_enabled_at
         assert_equal(self.root_enabled_timestamp, timestamp)
+        if test_config.values['test_mgmt']:
+            reh = self.dbaas_admin.management.root_enabled_history(id)
+            timestamp = reh.root_enabled_at
+            assert_equal(self.root_enabled_timestamp, timestamp)
+            assert_equal(id, reh.id)
 
     def _root(self):
         global root_password
