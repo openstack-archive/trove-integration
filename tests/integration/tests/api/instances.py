@@ -262,7 +262,10 @@ class CreateInstance(unittest.TestCase):
         users.append({"name": "lite", "password": "litepass",
                       "databases": [{"name": "firstdb"}]})
         instance_info.users = users
-        instance_info.volume = {'size': 2}
+        if test_config.values['reddwarf_main_instance_has_volume']:
+            instance_info.volume = {'size': 2}
+        else:
+            instance_info.volume = None
 
         if create_new_instance():
             instance_info.initial_result = dbaas.instances.create(
@@ -318,7 +321,7 @@ class CreateInstance(unittest.TestCase):
                           volume, databases)
 
     def test_create_failure_with_no_volume_size(self):
-        if test_config.values['reddwarf_can_have_volume']:
+        if test_config.values['reddwarf_must_have_volume']:
             instance_name = "instance-failure-with-no-volume-size"
             databases = []
             volume = {'size': None}
@@ -640,7 +643,7 @@ class TestInstanceListing(object):
     def test_get_legacy_status_notfound(self):
         assert_raises(nova_exceptions.NotFound, dbaas.instances.get, -2)
 
-    @test(enabled=test_config.values["reddwarf_can_have_volume"])
+    @test(enabled=test_config.values["reddwarf_main_instance_has_volume"])
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
         assert_equal(instance_info.volume['size'], instance.volume['size'])
@@ -880,10 +883,11 @@ class CheckInstance(Check):
             self.links(self.instance['flavor']['links'])
 
     def volume_key_exists(self):
-        if 'volume' not in self.instance:
-            self.fail("'volume' not found in instance.")
-            return False
-        return True
+        if test_config.values['reddwarf_main_instance_has_volume']:
+            if 'volume' not in self.instance:
+                self.fail("'volume' not found in instance.")
+                return False
+            return True
 
     def volume(self):
         if not test_config.values["reddwarf_can_have_volume"]:
