@@ -33,16 +33,11 @@ ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
 
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
+. $REDSTACK_SCRIPTS/functions_qemu
 
 if [ -f $PATH_ENV_CONF ]; then
     source $PATH_ENV_CONF
 fi
-
-TEST_HOME="$REDSTACK_SCRIPTS/../tests"
-
-INTEGRATION_CONF="/tmp/integration"
-TESTS_CONF="$INTEGRATION_CONF/tests.conf"
-
 
 
 ###############################################################################
@@ -229,15 +224,6 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 # Install all the required dependencies
 ###############################################################################
 
-function install_packages_1() {
-    # Called before devstack
-    exclaim 'Updating dependencies (part 1a)...'
-    pkg_update
-    exclaim 'Installing dependencies (part 1b)...'
-    pkg_install git-core kvm-pxe ubuntu-vm-builder
-}
-
-
 function add_to_keystone_conf() {
     exclaim 'adding reddwarf to keystone catalog templates'
     echo '
@@ -248,7 +234,7 @@ catalog.RegionOne.reddwarf.name = Reddwarf
     ' >> /etc/keystone/default_catalog.templates
 }
 
-function install_packages_2() {
+function install_reddwarf_packages() {
     # Called after devstack.
     exclaim "Installing dependencies (part 2)..."
     # The default version of pip Ubuntu installs is old.
@@ -303,7 +289,7 @@ function install_devstack() {
     if [ ! -d $PATH_DEVSTACK_SRC ]; then
         echo "DevStack not in a shared folder, cloning from git."
         mkdir -p $PATH_DEVSTACK_SRC
-        git clone git://github.com/openstack-dev/devstack.git $PATH_DEVSTACK_SRC
+        git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
 }
 
@@ -316,11 +302,11 @@ function install_devstack_code() {
     fi
     # Clones all of the code to where devstack expects it to be
     cd $PATH_DEVSTACK_OUTPUT
-    for project in glance horizon keystone nova python-keystoneclient python-novaclient python-quantumclient
+    for project in glance keystone nova python-keystoneclient python-novaclient
     do
       if [ ! -d $project ]; then
           echo "Creating a new clone of $project..."
-          git clone git://github.com/openstack/$project
+          git clone $OPENSTACK_GITHUB/$project
       else
           echo "$project was already cloned or exists in a shared folder, ignoring..."
       fi
@@ -394,13 +380,13 @@ function ensure_local_sources() {
 }
 
 function cmd_install() {
-    install_packages_1
+    install_prep_packages
     install_devstack
     install_devstack_code
     install_reviews_on_top_of_devstack
     run_devstack
     ensure_local_sources
-    install_packages_2
+    install_reddwarf_packages
     exclaim "FINISHED INSTALL"
 }
 
@@ -535,22 +521,21 @@ function cmd_set_image() {
 }
 
 function upload_image_to_glance() {
-    exclaim "uploading the image to glance."
+    exclaim "Uploading the image to glance."
 
     IMAGE_NAME=$1
-    REDDWARF_TOKEN=$2
-    IMAGE_LOC=$3
-    UBUNTU_DISTRO=$4
-    SERVICE_TYPE=$5
-    REDDWARF_TENANT=$6
+    CONTAINER_FORMAT=$2
+    DISK_FORMAT=$3
+    REDDWARF_TENANT=$4
+    IMAGE_LOC=$5
+    SERVICE_TYPE=$6
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
         --name="$IMAGE_NAME" --public \
-        --container-format=ovf --disk-format=qcow2 \
+        --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
         --owner=$REDDWARF_TENANT < $IMAGE_LOC`
 
-    echo "IMAGE ID?"
-    echo $GLANCE_IMAGEID
+    echo "IMAGE ID: $GLANCE_IMAGEID"
     if [ -z "$GLANCE_IMAGEID" ];
     then
         echo "Glance upload failed!"
@@ -558,125 +543,6 @@ function upload_image_to_glance() {
     fi
 
     cmd_set_image $GLANCE_IMAGEID $SERVICE_TYPE
-}
-
-function build_vm() {
-    exclaim "Actually building the image, this can take up to 15 minutes"
-
-    HOMEDIR=$1
-    USERNAME=$2
-    UBUNTU_DISTRO_NAME=$3
-    VM_PATH=$4
-    SERVICE_TYPE=$5
-
-    # Create the guest with the specific files
-    mkdir -p $HOMEDIR/.ssh
-    if [ ! -e $HOMEDIR/.ssh/id_rsa.pub ]
-    then
-        pkg_install expect
-
-        # Generate a public key
-        generate_empty_passphrase_ssh_key $HOMEDIR
-    fi
-
-    # Time to create the files to copy into the VM
-    COPY_FILE=/tmp/guest-agent-files.txt
-    rm -fr $COPY_FILE
-
-    # the bootstrap_init-$SERVICE_TYPE.sh file is used in --firstboot param of ubuntu-vm-builder
-    # This file copies the current reddwarf codebase into each spawned image
-    # and executes the guestagent as a service. New code to reddwarf does not require
-    # a new image, just a new create of an instance.
-    # Please note, this is ONLY for dev and should not be considered production ready.
-    INIT_FILE=bootstrap_init-${SERVICE_TYPE}.sh
-    cp $REDSTACK_SCRIPTS/files/$INIT_FILE /tmp
-
-    sed -i.bak "s/PATH_REDDWARF/$ESCAPED_PATH_REDDWARF/g" /tmp/$INIT_FILE
-    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/$INIT_FILE
-
-    # Apt repo on the local machine
-    cp $REDSTACK_SCRIPTS/files/apt_repo.list /tmp
-    echo "/tmp/apt_repo.list /etc/apt/sources.list.d/apt_repo.list" >> $COPY_FILE
-
-    # Upstart script to start the guest
-    cp $REDSTACK_SCRIPTS/files/reddwarf-guest.upstart.conf /tmp
-    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/reddwarf-guest.upstart.conf
-    echo "/tmp/reddwarf-guest.upstart.conf /etc/init/reddwarf-guest.conf" >> $COPY_FILE
-
-    # Now put the pub key in this machines auth keys
-    # so the vm can log in to the host (scp from bootstrap_init-$SERVICE_TYPE.sh)
-    # This will also enable us to log in to the dev instances w/o a password
-    is_in_keyfile=`cat $HOMEDIR/.ssh/id_rsa.pub |grep -f - $HOMEDIR/.ssh/authorized_keys |wc -l`
-    if [ $is_in_keyfile == 0 ]
-    then
-        echo "Adding keyfile to authorized_keys, it does not yet exist"
-        cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
-    fi
-
-    # These will be the way the firstboot script phones home to get the latest guest via scp.
-    # See bootstrap_init-$SERVICE_TYPE.sh for more info on what it does
-    # man ubuntu-vm-builder for more infomration on the --copy flag
-    echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
-    echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
-    echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
-
-    if [ $SERVICE_TYPE == 'mysql' ]
-    then
-        PKGS="--addpkg mysql-server-5.1"
-    else
-        exclaim "Warning: You did not pass in a valid image type, the image may fail"
-    fi
-
-    #build a qemu image
-    VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME $PKGS \
-         --addpkg vim --addpkg openssh-server \
-         --addpkg gcc --addpkg python-dev --addpkg rsync \
-         --addpkg libxml2-dev --addpkg libxslt-dev \
-         --addpkg python-setuptools --addpkg python-pip \
-         --addpkg python-sqlalchemy --addpkg python-lxml \
-         --addpkg python-routes --addpkg python-eventlet \
-         --addpkg python-webob --addpkg python-kombu \
-         --addpkg python-pastedeploy --addpkg python-paste \
-         --addpkg python-netaddr --addpkg python-httplib2 \
-         --addpkg python-iso8601 --addpkg python-novaclient \
-         --addpkg python-pexpect --addpkg python-mysqldb \
-         --addpkg python-migrate \
-         --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
-         --firstboot /tmp/$INIT_FILE -d $VM_PATH"
-    echo "Running the following command:"
-    echo "sudo ubuntu-vm-builder $VM_BUILDER_ARGS"
-    sudo ubuntu-vm-builder $VM_BUILDER_ARGS
-}
-
-function cmd_build_image() {
-    exclaim "Building an image for use with development and integration tests."
-    if [ -z "$1" ]
-    then
-        echo "You must pass an image type to build, like mysql"
-        exit 1
-    fi
-    SERVICE_TYPE=$1
-
-
-    USERNAME=`whoami`
-    mkdir -p $USERHOME/images
-    VM_PATH=$USERHOME/images/oneiric_${SERVICE_TYPE}_image
-    UBUNTU_DISTRO=ubuntu_oneiric
-    UBUNTU_DISTRO_NAME=oneiric
-
-    # If the path doesnt exist, build it, otherwise just upload it
-    if [ ! -d $VM_PATH ]
-    then
-        build_vm $USERHOME $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE
-    else
-        exclaim "Found image in $VM_PATH using the qcow2 image found here..."
-    fi
-
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
-
-    # Now upload it
-    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" $REDDWARF_TOKEN $QCOW_IMAGE $UBUNTU_DISTRO $SERVICE_TYPE $REDDWARF_TOKEN
 }
 
 
@@ -698,8 +564,6 @@ function cmd_start_deps() {
         screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
     fi
 }
-
-
 
 function cmd_stop_deps() {
     cd $PATH_DEVSTACK_SRC
@@ -937,8 +801,7 @@ function cmd_run_ci() {
 
 function cmd_clear() {
     cmd_int_tests --group=dbaas.api.instances.delete
-    LIST=`virsh -q list|awk '{print $1}'`
-    for i in $LIST; do sudo virsh destroy $i; done
+    clean_instances
     mysql_nova "DELETE FROM instance_info_caches;"
     mysql_nova "DELETE FROM instances;"
     mysql_reddwarf "DELETE FROM instances;"
@@ -970,7 +833,6 @@ function cmd_update_projects() {
       fi
   done
 }
-
 
 
 ###############################################################################
