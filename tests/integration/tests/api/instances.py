@@ -364,7 +364,6 @@ def assert_unprocessable(func, *args):
         pass  # Good
 
 
-
 @test(depends_on_classes=[CreateInstance],
       groups=[GROUP, GROUP_START, 'dbaas.mgmt.hosts_post_install'],
       enabled=create_new_instance())

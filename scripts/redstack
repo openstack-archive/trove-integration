@@ -753,6 +753,13 @@ function cmd_rd_client() {
     reddwarf-cli $@
 }
 
+function cmd_rd_mgmt_client() {
+    # This serves as an example of how to call the Reddwarf managment client script.
+    reddwarf-cli auth login radmin radmin reddwarf \
+        http://localhost:35357/v2.0
+    reddwarf-mgmt-cli $@
+}
+
 function cmd_delete_nova_instance() {
     # Nova will not let you delete an instance whose state is error, but we
     # won't let that stop us.
@@ -882,6 +889,7 @@ function print_usage() {
           glance-client   - Runs glance client with admin user.
           nova-client     - Runs Nova client with admin user.
           rd-client       - Runs Reddwarf client with admin user.
+          rd-mgmt-client  - Runs Reddwarf management client with admin user.
                             * Shows a valid token.
           wipe-logs       - Resets all log files.
           nova-delete     - Deletes a nova instance.
@@ -917,6 +925,7 @@ function run_command() {
         "glance-client" ) shift; cmd_glance_client;;
         "nova-client" ) shift; cmd_nova_client $@;;
         "rd-client" ) shift; cmd_rd_client $@;;
+        "rd-mgmt-client" ) shift; cmd_rd_mgmt_client $@;;
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
         "wipe-logs" ) cmd_wipe_logs;;
         "rd-sql" ) shift; cmd_rd_sql $@;;
