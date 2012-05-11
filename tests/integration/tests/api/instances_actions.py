@@ -327,7 +327,7 @@ class RebootTests(RebootTestBase):
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP,
               GROUP + ".resize.instance"],
       depends_on_groups=[GROUP_START], depends_on=[create_user],
-      runs_after=[RebootTests], enabled=False)
+      runs_after=[RebootTests])
 class ResizeInstanceTest(ActionTestBase):
 
     """
