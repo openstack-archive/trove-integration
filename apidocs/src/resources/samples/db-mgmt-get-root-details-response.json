@@ -4,9 +4,9 @@ Content-Length: 108
 Date: Wed, 25 Jan 2012 21:58:26 GMT
 
 {
-    "root_enabled_history": {
-        "id": 2, 
-        "root_enabled_at": "2012-01-25 21:58:11", 
-        "root_enabled_by": "examples"
+    "root_history": {
+        "id": 692d8418-7a8f-47f1-8060-59846c6e024f, 
+        "enabled": "2012-01-25 21:58:11", 
+        "user": "examples"
     }
 }
