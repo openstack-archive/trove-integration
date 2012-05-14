@@ -57,22 +57,17 @@ class TestRoot(object):
         self.dbaas_admin = util.create_dbaas_client(instance_info.admin_user)
 
     def _verify_root_timestamp(self, id):
-        mgmt_instance = self.dbaas.instances.get(id)
-        assert_true(mgmt_instance is not None)
-        timestamp = mgmt_instance.root_enabled_at
+        reh = self.dbaas_admin.management.root_enabled_history(id)
+        timestamp = reh.enabled
         assert_equal(self.root_enabled_timestamp, timestamp)
-        if test_config.values['test_mgmt']:
-            reh = self.dbaas_admin.management.root_enabled_history(id)
-            timestamp = reh.root_enabled_at
-            assert_equal(self.root_enabled_timestamp, timestamp)
-            assert_equal(id, reh.id)
+        assert_equal(id, reh.id)
 
     def _root(self):
         global root_password
         host = "%"
         user, password = self.dbaas.root.create(instance_info.id)
-        instance = self.dbaas.instances.get(instance_info.id)
-        self.root_enabled_timestamp = instance.root_enabled_at
+        reh = self.dbaas_admin.management.root_enabled_history
+        self.root_enabled_timestamp = reh(instance_info.id).enabled
 
     def _root_local_sql(self):
         engine = init_engine(user, password, instance_info.user_ip)
@@ -85,8 +80,8 @@ class TestRoot(object):
                 assert_equal(user, row['User'])
                 assert_equal(host, row['Host'])
         root_password = password
-        instance = self.dbaas.instances.get(instance_info.id)
-        self.root_enabled_timestamp = instance.root_enabled_at
+        reh = self.dbaas_admin.management.root_enabled_history
+        self.root_enabled_timestamp = reh(instance_info.id).enabled
         assert_not_equal(self.root_enabled_timestamp, 'Never')
 
     @test

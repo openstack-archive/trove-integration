@@ -130,10 +130,12 @@ class ActionTestBase(object):
         users = [{"name": MYSQL_USERNAME, "password": MYSQL_PASSWORD,
                   "database": MYSQL_USERNAME}]
         self.dbaas.users.create(instance_info.id, users)
+
         def has_user():
             users = self.dbaas.users.list(instance_info.id)
             return any([user.name == MYSQL_USERNAME for user in users])
-        poll_until(has_user, time_out = 30)
+
+        poll_until(has_user, time_out=30)
         if not FAKE_MODE:
             time.sleep(5)
 
@@ -410,7 +412,8 @@ class ResizeInstanceTest(ActionTestBase):
         assert_equal(str(self.instance.flavor['id']), "1")
 
 
-@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP + ".resize.instance"],
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP,
+              GROUP + ".resize.instance"],
       depends_on_groups=[GROUP_START], depends_on=[create_user],
       runs_after=[RebootTests, ResizeInstanceTest])
 def resize_should_not_delete_users():
