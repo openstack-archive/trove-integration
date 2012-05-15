@@ -46,6 +46,7 @@ from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
 from reddwarfclient import Dbaas
+from reddwarfclient.client import ReddwarfHTTPClient
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
@@ -148,13 +149,24 @@ def count_notifications(priority, event_type):
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
     test_config.nova.ensure_started()
-    dbaas = Dbaas(user.auth_user, user.auth_key,
-                  user.tenant, test_config.reddwarf_auth_url,
-                  service_type='reddwarf')
+    auth_strategy = None
+    kwargs = {
+        'service_type':'reddwarf',
+        'insecure':test_config.values['reddwarf_client_insecure'],
+        'auth_strategy':test_config.values['auth_strategy'],
+        'region_name':test_config.values['reddwarf_client_region_name']
+    }
+    force_url = test_config.values.get('override_reddwarf_api_url', None)
+    if force_url:
+        # In some test environments the catalog returned by auth is poppycock
+        # so use this instead.
+        kwargs['service_url'] = force_url
+    dbaas = Dbaas(user.auth_user, user.auth_key, user.tenant,
+                  test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()
     with Check() as check:
         check.is_not_none(dbaas.client.auth_token, "Auth token not set!")
-        if user.requirements.is_admin:
+        if not force_url and user.requirements.is_admin:
             expected_prefix = test_config.dbaas_url
             actual = dbaas.client.management_url
             msg = "Dbaas management url was expected to start with %s, but " \

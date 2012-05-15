@@ -37,6 +37,9 @@ class Requirements(object):
                 return False
         return True
 
+    def __str__(self):
+        return "is_admin=%s, services=%s" % (self.is_admin, self.services)
+
 
 class ServiceUser(object):
     """Represents a user who uses a service.
@@ -79,7 +82,11 @@ class Users(object):
     def find_user(self, requirements):
         """Finds a user who meets the requirements and has been used least."""
         users = self.find_all_users_who_satisfy(requirements)
-        user = min(users, key=lambda user: user.test_count)
+        try:
+            user = min(users, key=lambda user: user.test_count)
+        except ValueError:
+            raise RuntimeError("The test configuration data lacks a user "
+                 "who meets these requirements: %s" % requirements)
         user.test_count += 1
         return user
 

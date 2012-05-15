@@ -171,9 +171,9 @@ class InstanceSetup(object):
         instance_info.user = test_config.users.find_user(reqs)
         instance_info.dbaas = create_dbaas_client(instance_info.user)
 
-        nova_user = test_config.users.find_user(
-            Requirements(is_admin=False, services=["nova"]))
-        self.nova_client = create_nova_client(nova_user)
+        # nova_user = test_config.users.find_user(
+        #     Requirements(is_admin=False, services=["nova"]))
+        # self.nova_client = create_nova_client(nova_user)
 
         dbaas = instance_info.dbaas
 
@@ -195,7 +195,7 @@ class InstanceSetup(object):
 
     @test
     def test_find_flavor(self):
-        result = self.nova_client.find_flavor_and_self_href(flavor_id=1)
+        result = dbaas.find_flavor_and_self_href(flavor_id=1)
         instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
 
     @test(enabled=WHITE_BOX)
@@ -300,6 +300,8 @@ class CreateInstance(unittest.TestCase):
                           'name', 'status', 'updated']
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
+        if not test_config.values['hostname_not_implemented']:
+            expected_attrs.append('hostname')
 
         with CheckInstance(result._info) as check:
             if create_new_instance():
