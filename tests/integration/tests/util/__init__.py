@@ -26,13 +26,18 @@
 .. moduleauthor:: Tim Simpson <tim.simpson@rackspace.com>
 """
 
-from eventlet import event
 import re
 import subprocess
 import sys
 import time
 
-from eventlet import greenthread
+try:
+    from eventlet import event
+    from eventlet import greenthread
+    EVENT_AVAILABLE = True
+except ImportError:
+    EVENT_AVAILABLE = False
+
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
@@ -148,7 +153,6 @@ def count_notifications(priority, event_type):
 
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
-    test_config.nova.ensure_started()
     auth_strategy = None
     kwargs = {
         'service_type':'reddwarf',
@@ -265,86 +269,110 @@ def get_vz_ip_for_device(instance_id, device):
         return ip.strip()
 
 
-class LoopingCallDone(Exception):
-    """Exception to break out and stop a LoopingCall.
-
-    The poll-function passed to LoopingCall can raise this exception to
-    break out of the loop normally. This is somewhat analogous to
-    StopIteration.
-
-    An optional return-value can be included as the argument to the exception;
-    this return-value will be returned by LoopingCall.wait()
-
-    """
-
-    def __init__(self, retvalue=True):
-        """:param retvalue: Value that LoopingCall.wait() should return."""
-        self.retvalue = retvalue
-
-
-class LoopingCall(object):
-    def __init__(self, f=None, *args, **kw):
-        self.args = args
-        self.kw = kw
-        self.f = f
-        self._running = False
-
-    def start(self, interval, now=True):
-        self._running = True
-        done = event.Event()
-
-        def _inner():
-            if not now:
-                greenthread.sleep(interval)
-            try:
-                while self._running:
-                    self.f(*self.args, **self.kw)
-                    if not self._running:
-                        break
-                    greenthread.sleep(interval)
-            except LoopingCallDone, e:
-                self.stop()
-                done.send(e.retvalue)
-            except Exception:
-                done.send_exception(*sys.exc_info())
-                return
-            else:
-                done.send(True)
-
-        self.done = done
-
-        greenthread.spawn(_inner)
-        return self.done
-
-    def stop(self):
-        self._running = False
-
-    def wait(self):
-        return self.done.wait()
-
 
 class PollTimeOut(RuntimeError):
     message = _("Polling request timed out.")
 
+if not EVENT_AVAILABLE:
 
-def poll_until(retriever, condition=lambda value: value,
-               sleep_time=1, time_out=None):
-    """Retrieves object until it passes condition, then returns it.
+    # Without event let, this just calls time.sleep.
+    def poll_until(retriever, condition=lambda value: value,
+                   sleep_time=1, time_out=None):
+        """Retrieves object until it passes condition, then returns it.
 
-    If time_out_limit is passed in, PollTimeOut will be raised once that
-    amount of time is eclipsed.
+        If time_out_limit is passed in, PollTimeOut will be raised once that
+        amount of time is eclipsed.
 
-    """
-    start_time = time.time()
+        """
+        start_time = time.time()
+        def check_timeout():
+            if time_out is not None and time.time() > start_time + time_out:
+                raise PollTimeOut
 
-    def poll_and_check():
-        obj = retriever()
-        if condition(obj):
-            raise LoopingCallDone(retvalue=obj)
-        if time_out is not None and time.time() > start_time + time_out:
-            raise PollTimeOut
-    lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
-    return lc.wait()
+        while True:
+            obj = retriever()
+            if condition(obj):
+                return
+            check_timeout()
+            time.sleep(sleep_time)
+
+else:
+
+    class LoopingCallDone(Exception):
+        """Exception to break out and stop a LoopingCall.
+
+        The poll-function passed to LoopingCall can raise this exception to
+        break out of the loop normally. This is somewhat analogous to
+        StopIteration.
+
+        An optional return-value can be included as the argument to the
+        exception; this return-value will be returned by LoopingCall.wait()
+
+        """
+
+        def __init__(self, retvalue=True):
+            """:param retvalue: Value that LoopingCall.wait() should return."""
+            self.retvalue = retvalue
+
+
+    class LoopingCall(object):
+        def __init__(self, f=None, *args, **kw):
+            self.args = args
+            self.kw = kw
+            self.f = f
+            self._running = False
+
+        def start(self, interval, now=True):
+            self._running = True
+            done = event.Event()
+
+            def _inner():
+                if not now:
+                    greenthread.sleep(interval)
+                try:
+                    while self._running:
+                        self.f(*self.args, **self.kw)
+                        if not self._running:
+                            break
+                        greenthread.sleep(interval)
+                except LoopingCallDone, e:
+                    self.stop()
+                    done.send(e.retvalue)
+                except Exception:
+                    done.send_exception(*sys.exc_info())
+                    return
+                else:
+                    done.send(True)
+
+            self.done = done
+
+            greenthread.spawn(_inner)
+            return self.done
+
+        def stop(self):
+            self._running = False
+
+        def wait(self):
+            return self.done.wait()
+
+    def poll_until(retriever, condition=lambda value: value,
+                   sleep_time=1, time_out=None):
+        """Retrieves object until it passes condition, then returns it.
+
+        If time_out_limit is passed in, PollTimeOut will be raised once that
+        amount of time is eclipsed.
+
+        """
+        start_time = time.time()
+
+        def poll_and_check():
+            obj = retriever()
+            if condition(obj):
+                raise LoopingCallDone(retvalue=obj)
+            if time_out is not None and time.time() > start_time + time_out:
+                raise PollTimeOut
+        lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
+        return lc.wait()
 
 
 class LocalSqlClient(object):

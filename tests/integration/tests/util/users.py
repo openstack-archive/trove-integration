@@ -74,14 +74,16 @@ class Users(object):
                                requirements=reqs)
             self.users.append(user)
 
-    def find_all_users_who_satisfy(self, requirements):
+    def find_all_users_who_satisfy(self, requirements, black_list=None):
         """Returns a list of all users who satisfy the given requirements."""
-        return (user for user in self.users \
-                if user.requirements.satisfies(requirements))
+        black_list = black_list or []
+        return (user for user in self.users
+                if user.auth_user not in black_list and
+                user.requirements.satisfies(requirements))
 
-    def find_user(self, requirements):
+    def find_user(self, requirements, black_list=None):
         """Finds a user who meets the requirements and has been used least."""
-        users = self.find_all_users_who_satisfy(requirements)
+        users = self.find_all_users_who_satisfy(requirements, black_list)
         try:
             user = min(users, key=lambda user: user.test_count)
         except ValueError:
@@ -93,6 +95,9 @@ class Users(object):
     def find_user_by_name(self, name):
         """Finds a user who meets the requirements and has been used least."""
         users = (user for user in self.users if user.auth_user == name)
-        user = min(users, key=lambda user: user.test_count)
+        try:
+            user = min(users, key=lambda user: user.test_count)
+        except ValueError:
+            raise RuntimeError('Did not find a user with name "%s".' % name)
         user.test_count += 1
         return user

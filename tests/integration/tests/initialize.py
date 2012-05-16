@@ -41,7 +41,7 @@ if WHITE_BOX:
     from nova.db import api as dbapi
 
 FAKE = test_config.values['fake_mode']
-START_SERVICES = not FAKE
+START_SERVICES = not FAKE and test_config.values.get('start_services', False)
 KEYSTONE_ALL = test_config.values.get('keystone_use_combined', True)
 
 dbaas_image = None
