@@ -189,6 +189,7 @@ if __name__ == '__main__':
         from tests.compute import guest_initialize_failure
         from tests.openvz import compute_reboot_vz as compute_reboot
         from tests import util
+        from tests.smoke import instance
 
         black_box_groups = [
             flavors.GROUP,

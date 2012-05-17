@@ -56,6 +56,7 @@ from reddwarfclient.client import ReddwarfHTTPClient
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
+from tests.util.users import Requirements
 
 
 WHITE_BOX = test_config.white_box

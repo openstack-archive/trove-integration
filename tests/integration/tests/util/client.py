@@ -86,7 +86,7 @@ class TestClient(object):
     @property
     def last_http_code(self):
         resp, body = self.real_client.client.last_response
-        retrun resp.status
+        return resp.status
 
     @staticmethod
     def find_flavor_self_href(flavor):
