@@ -132,6 +132,7 @@ def _setup():
     global version_url
     global volume_service
     global white_box
+    global instance_create_time
     clean_slate = os.environ.get("CLEAN_SLATE", "False") == "True"
     values = load_configuration()
     if os.environ.get("FAKE_MODE", "False") == "True":
@@ -152,6 +153,7 @@ def _setup():
     reddwarf_conf = str(values["reddwarf_conf"])
     glance_image = str(values["glance_image"])
     use_reaper = values["use_reaper"]
+    instance_create_time = values.get('instance_create_time', 16 * 60)
     if not nova_conf:
         raise ValueError("Configuration value \"nova_conf\" not found.")
 

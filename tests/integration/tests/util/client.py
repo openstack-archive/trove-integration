@@ -79,6 +79,15 @@ class TestClient(object):
         """Accepts a normal client."""
         self.real_client = real_client
 
+    def assert_http_code(self, expected_http_code):
+        resp, body = self.real_client.client.last_response
+        assert_equal(resp.status, expected_http_code)
+
+    @property
+    def last_http_code(self):
+        resp, body = self.real_client.client.last_response
+        retrun resp.status
+
     @staticmethod
     def find_flavor_self_href(flavor):
         self_links = [link for link in flavor.links if link['rel'] == 'self']

@@ -42,6 +42,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from novaclient.v1_1.client import Client
+from novaclient import exceptions
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -104,6 +105,18 @@ def assert_mysql_connection_fails(user_name, password, ip):
         assert_mysql_failure_msg_was_permissions_issue(oe.message)
 
 
+def assert_http_code(expected_http_code, func, *args, **kwargs):
+    try:
+        rtn_value = func(*args, **kwargs)
+        assert_equal(expected_http_code, 200, "Expected the function to "
+            "return http code %s but instead got no error (code 200?)."
+            % expected_http_code)
+        return rtn_value
+    except exceptions.ClientException as ce:
+        assert_equal(expected_http_code, ce.code,
+            "Expected the function to return http code %s but instead got "
+            "code %s." % (expected_http_code, ce.code))
+
 _dns_entry_factory = None
 
 
@@ -150,6 +163,15 @@ def count_notifications(priority, event_type):
     log_msg = priority + " nova.notification." + event_type
     return count_message_occurrence_in_logs(log_msg)
 
+
+def create_client(*args, **kwargs):
+    """
+    Using the User Requirements as arguments, finds a user and grabs a new
+    DBAAS client.
+    """
+    reqs = Requirements(*args, **kwargs)
+    user = test_config.users.find_user(reqs)
+    return create_dbaas_client(user)
 
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
