@@ -40,6 +40,8 @@ if WHITE_BOX:
     from nova import utils
     from nova.db import api as dbapi
 
+FAKE = test_config.values['fake_mode']
+START_SERVICES = not FAKE and test_config.values.get('start_services', False)
 KEYSTONE_ALL = test_config.values.get('keystone_use_combined', True)
 
 dbaas_image = None
@@ -78,8 +80,8 @@ def either_web_service_is_up():
 
 install_image = False
 
-
-@test(groups=["services.initialize", "services.initialize.glance"])
+@test(groups=["services.initialize", "services.initialize.glance"],
+      enabled=START_SERVICES)
 class GlanceRegistry(unittest.TestCase):
     """Starts the Glance Registry."""
 
@@ -97,7 +99,7 @@ class GlanceRegistry(unittest.TestCase):
 
 
 @test(groups=["services.initialize", "services.initialize.glance"],
-      depends_on_classes=[GlanceRegistry])
+      depends_on_classes=[GlanceRegistry], enabled=START_SERVICES)
 class GlanceApi(unittest.TestCase):
     """Starts the Glance API."""
 
@@ -115,7 +117,7 @@ class GlanceApi(unittest.TestCase):
 
 
 @test(groups=["services.initialize", "services.initialize.glance"],
-      depends_on_classes=[GlanceApi])
+      depends_on_classes=[GlanceApi], enabled=START_SERVICES)
 class AddGlanceImage(unittest.TestCase):
     """Adds the default glance image for reddwarf"""
 
@@ -136,7 +138,8 @@ class AddGlanceImage(unittest.TestCase):
             print "proc.communicate()'s stderr\n%s" % stderrdata
 
 
-@test(groups=["services.initialize"], depends_on_classes=[GlanceApi])
+@test(groups=["services.initialize"], depends_on_classes=[GlanceApi],
+      enabled=START_SERVICES)
 class Network(unittest.TestCase):
     """Starts the Network Service."""
 
@@ -150,7 +153,8 @@ class Network(unittest.TestCase):
             self.service.start()
 
 
-@test(groups=["services.initialize"], depends_on_classes=[GlanceApi])
+@test(groups=["services.initialize"], depends_on_classes=[GlanceApi],
+      enabled=START_SERVICES)
 class Dns(unittest.TestCase):
     """Starts the DNS Service."""
 
@@ -164,7 +168,7 @@ class Dns(unittest.TestCase):
             self.service.start()
 
 
-@test(groups=["services.initialize"])
+@test(groups=["services.initialize"], enabled=START_SERVICES)
 class Scheduler(unittest.TestCase):
     """Starts the Scheduler Service."""
 
@@ -178,7 +182,8 @@ class Scheduler(unittest.TestCase):
             self.service.start()
 
 
-@test(groups=["services.initialize"], depends_on_classes=[GlanceApi, Network])
+@test(groups=["services.initialize"], depends_on_classes=[GlanceApi, Network],
+      enabled=START_SERVICES)
 class Compute(unittest.TestCase):
     """Starts the Compute Service."""
 
@@ -190,7 +195,8 @@ class Compute(unittest.TestCase):
             self.service.start()
 
 
-@test(groups=["services.initialize"], depends_on_classes=[Scheduler])
+@test(groups=["services.initialize"], depends_on_classes=[Scheduler],
+      enabled=START_SERVICES)
 class Volume(unittest.TestCase):
     """Starts the Volume Service."""
 
@@ -203,7 +209,8 @@ class Volume(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[Volume], enabled=(not KEYSTONE_ALL))
+      depends_on_classes=[Volume],
+      enabled=START_SERVICES and (not KEYSTONE_ALL))
 class KeystoneAPI(unittest.TestCase):
     """Starts the Keystone Service API"""
 
@@ -218,7 +225,8 @@ class KeystoneAPI(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[KeystoneAPI], enabled=(not KEYSTONE_ALL))
+      depends_on_classes=[KeystoneAPI],
+      enabled=START_SERVICES and (not KEYSTONE_ALL))
 class KeystoneAdmin(unittest.TestCase):
     """Starts the Keystone Admin API"""
 
@@ -233,7 +241,8 @@ class KeystoneAdmin(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[KeystoneAPI], enabled=KEYSTONE_ALL)
+      depends_on_classes=[KeystoneAPI],
+      enabled=START_SERVICES and KEYSTONE_ALL)
 class KeystoneAll(unittest.TestCase):
     """Starts the Keystone combined daemon."""
 
@@ -249,7 +258,7 @@ class KeystoneAll(unittest.TestCase):
 
 @test(groups=["services.initialize"],
       depends_on_classes=[Compute, Network, Scheduler, Volume],
-      enabled=use_reaper)
+      enabled=START_SERVICES and use_reaper)
 class Reaper(unittest.TestCase):
     """Starts the Reaper."""
 
@@ -265,7 +274,8 @@ class Reaper(unittest.TestCase):
 
 @test(groups=["services.initialize"],
       depends_on_classes=[Compute, Network, Scheduler, Volume, KeystoneAdmin,
-                          KeystoneAPI])
+                          KeystoneAPI],
+      enabled=START_SERVICES)
 class Api(unittest.TestCase):
     """Starts the Servers API."""
 
@@ -279,7 +289,8 @@ class Api(unittest.TestCase):
 
 @test(groups=["services.initialize"],
       depends_on_classes=[Compute, Network, Scheduler, Volume, KeystoneAdmin,
-                          KeystoneAPI])
+                          KeystoneAPI],
+      enabled=START_SERVICES)
 class ReddwarfApi(unittest.TestCase):
     """Starts the Reddwarf API."""
 
@@ -293,7 +304,7 @@ class ReddwarfApi(unittest.TestCase):
 
 @test(groups=["services.initialize"],
       depends_on_classes=[Compute, Network, Scheduler, Volume],
-      enabled=WHITE_BOX)
+      enabled=START_SERVICES and WHITE_BOX)
 class WaitForTopics(unittest.TestCase):
     """Waits until needed services are up."""
 
@@ -306,7 +317,7 @@ class WaitForTopics(unittest.TestCase):
 
 
 @test(groups=["services.initialize"],
-      depends_on_classes=[WaitForTopics], enabled=WHITE_BOX)
+      depends_on_classes=[WaitForTopics], enabled=START_SERVICES and WHITE_BOX)
 class ServicesTestable(unittest.TestCase):
     """Check Services are ready for Tests
 

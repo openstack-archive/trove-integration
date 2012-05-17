@@ -171,10 +171,6 @@ class InstanceSetup(object):
         instance_info.user = test_config.users.find_user(reqs)
         instance_info.dbaas = create_dbaas_client(instance_info.user)
 
-        nova_user = test_config.users.find_user(
-            Requirements(is_admin=False, services=["nova"]))
-        self.nova_client = create_nova_client(nova_user)
-
         dbaas = instance_info.dbaas
 
         reqs = Requirements(is_admin=True)
@@ -195,7 +191,7 @@ class InstanceSetup(object):
 
     @test
     def test_find_flavor(self):
-        result = self.nova_client.find_flavor_and_self_href(flavor_id=1)
+        result = dbaas.find_flavor_and_self_href(flavor_id=1)
         instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
 
     @test(enabled=WHITE_BOX)
@@ -245,12 +241,13 @@ class CreateInstance(unittest.TestCase):
     """
 
     def test_instance_size_too_big(self):
-        if test_config.values['reddwarf_can_have_volume']:
-            raise SkipTest("Wrong assertion because we have no volume limit")
+        if 'reddwarf_max_accepted_volume_size' in test_config.values:
             too_big = test_config.values['reddwarf_max_accepted_volume_size']
             assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
                           "way_too_large", instance_info.dbaas_flavor_href,
                           {'size': too_big + 1}, [])
+        else:
+            raise SkipTest("N/A: No max accepted volume size defined.")
 
     def test_create(self):
         databases = []
@@ -300,6 +297,8 @@ class CreateInstance(unittest.TestCase):
                           'name', 'status', 'updated']
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
+        if not test_config.values['hostname_not_implemented']:
+            expected_attrs.append('hostname')
 
         with CheckInstance(result._info) as check:
             if create_new_instance():
@@ -568,8 +567,10 @@ class TestInstanceListing(object):
 
     @before_class
     def setUp(self):
-        self.daffy_user = test_config.users.find_user_by_name("daffy")
-        self.daffy_client = create_dbaas_client(self.daffy_user)
+        reqs = Requirements(is_admin=False)
+        self.other_user = test_config.users.find_user(reqs,
+            black_list=[instance_info.user.auth_user])
+        self.other_client = create_dbaas_client(self.other_user)
 
     @test
     def test_detail_list(self):
@@ -658,21 +659,21 @@ class TestInstanceListing(object):
     @test
     def test_instance_not_shown_to_other_user(self):
         daffy_ids = [instance.id for instance in
-                     self.daffy_client.instances.list()]
+                     self.other_client.instances.list()]
         admin_ids = [instance.id for instance in dbaas.instances.list()]
         assert_equal(len(daffy_ids), 0)
         assert_not_equal(sorted(admin_ids), sorted(daffy_ids))
         assert_raises(nova_exceptions.NotFound,
-                      self.daffy_client.instances.get, instance_info.id)
+                      self.other_client.instances.get, instance_info.id)
         for id in admin_ids:
             assert_equal(daffy_ids.count(id), 0)
 
     @test
     def test_instance_not_deleted_by_other_user(self):
         assert_raises(nova_exceptions.NotFound,
-                      self.daffy_client.instances.get, instance_info.id)
+                      self.other_client.instances.get, instance_info.id)
         assert_raises(nova_exceptions.NotFound,
-                      self.daffy_client.instances.delete, instance_info.id)
+                      self.other_client.instances.delete, instance_info.id)
 
     @test(enabled=test_config.values['test_mgmt'])
     def test_mgmt_get_instance_after_started(self):

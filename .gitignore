@@ -3,3 +3,8 @@
 scripts/.screenrc
 run_tests.log
 host-syslog.log
+scripts/test-def.conf
+.tox
+*.pyc
+*.coverage
+tests/integration/Reddwarf_Integration_Tests.egg-info/*

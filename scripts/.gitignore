@@ -6,3 +6,4 @@ Vagrantfile
 .rnd
 host-syslog.log
 options.rc
+.novaclient

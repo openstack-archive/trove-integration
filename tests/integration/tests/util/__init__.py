@@ -26,13 +26,18 @@
 .. moduleauthor:: Tim Simpson <tim.simpson@rackspace.com>
 """
 
-from eventlet import event
 import re
 import subprocess
 import sys
 import time
 
-from eventlet import greenthread
+try:
+    from eventlet import event
+    from eventlet import greenthread
+    EVENT_AVAILABLE = True
+except ImportError:
+    EVENT_AVAILABLE = False
+
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
@@ -46,6 +51,7 @@ from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
 from reddwarfclient import Dbaas
+from reddwarfclient.client import ReddwarfHTTPClient
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
@@ -147,14 +153,24 @@ def count_notifications(priority, event_type):
 
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
-    test_config.nova.ensure_started()
-    dbaas = Dbaas(user.auth_user, user.auth_key,
-                  user.tenant, test_config.reddwarf_auth_url,
-                  service_type='reddwarf')
+    auth_strategy = None
+    kwargs = {
+        'service_type':'reddwarf',
+        'insecure':test_config.values['reddwarf_client_insecure'],
+        'auth_strategy':test_config.values['auth_strategy'],
+        'region_name':test_config.values['reddwarf_client_region_name']
+    }
+    force_url = test_config.values.get('override_reddwarf_api_url', None)
+    if force_url:
+        # In some test environments the catalog returned by auth is poppycock
+        # so use this instead.
+        kwargs['service_url'] = force_url
+    dbaas = Dbaas(user.auth_user, user.auth_key, user.tenant,
+                  test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()
     with Check() as check:
         check.is_not_none(dbaas.client.auth_token, "Auth token not set!")
-        if user.requirements.is_admin:
+        if not force_url and user.requirements.is_admin:
             expected_prefix = test_config.dbaas_url
             actual = dbaas.client.management_url
             msg = "Dbaas management url was expected to start with %s, but " \
@@ -253,86 +269,110 @@ def get_vz_ip_for_device(instance_id, device):
         return ip.strip()
 
 
-class LoopingCallDone(Exception):
-    """Exception to break out and stop a LoopingCall.
-
-    The poll-function passed to LoopingCall can raise this exception to
-    break out of the loop normally. This is somewhat analogous to
-    StopIteration.
-
-    An optional return-value can be included as the argument to the exception;
-    this return-value will be returned by LoopingCall.wait()
-
-    """
-
-    def __init__(self, retvalue=True):
-        """:param retvalue: Value that LoopingCall.wait() should return."""
-        self.retvalue = retvalue
-
-
-class LoopingCall(object):
-    def __init__(self, f=None, *args, **kw):
-        self.args = args
-        self.kw = kw
-        self.f = f
-        self._running = False
-
-    def start(self, interval, now=True):
-        self._running = True
-        done = event.Event()
-
-        def _inner():
-            if not now:
-                greenthread.sleep(interval)
-            try:
-                while self._running:
-                    self.f(*self.args, **self.kw)
-                    if not self._running:
-                        break
-                    greenthread.sleep(interval)
-            except LoopingCallDone, e:
-                self.stop()
-                done.send(e.retvalue)
-            except Exception:
-                done.send_exception(*sys.exc_info())
-                return
-            else:
-                done.send(True)
-
-        self.done = done
-
-        greenthread.spawn(_inner)
-        return self.done
-
-    def stop(self):
-        self._running = False
-
-    def wait(self):
-        return self.done.wait()
-
 
 class PollTimeOut(RuntimeError):
     message = _("Polling request timed out.")
 
+if not EVENT_AVAILABLE:
 
-def poll_until(retriever, condition=lambda value: value,
-               sleep_time=1, time_out=None):
-    """Retrieves object until it passes condition, then returns it.
+    # Without event let, this just calls time.sleep.
+    def poll_until(retriever, condition=lambda value: value,
+                   sleep_time=1, time_out=None):
+        """Retrieves object until it passes condition, then returns it.
 
-    If time_out_limit is passed in, PollTimeOut will be raised once that
-    amount of time is eclipsed.
+        If time_out_limit is passed in, PollTimeOut will be raised once that
+        amount of time is eclipsed.
 
-    """
-    start_time = time.time()
+        """
+        start_time = time.time()
+        def check_timeout():
+            if time_out is not None and time.time() > start_time + time_out:
+                raise PollTimeOut
 
-    def poll_and_check():
-        obj = retriever()
-        if condition(obj):
-            raise LoopingCallDone(retvalue=obj)
-        if time_out is not None and time.time() > start_time + time_out:
-            raise PollTimeOut
-    lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
-    return lc.wait()
+        while True:
+            obj = retriever()
+            if condition(obj):
+                return
+            check_timeout()
+            time.sleep(sleep_time)
+
+else:
+
+    class LoopingCallDone(Exception):
+        """Exception to break out and stop a LoopingCall.
+
+        The poll-function passed to LoopingCall can raise this exception to
+        break out of the loop normally. This is somewhat analogous to
+        StopIteration.
+
+        An optional return-value can be included as the argument to the
+        exception; this return-value will be returned by LoopingCall.wait()
+
+        """
+
+        def __init__(self, retvalue=True):
+            """:param retvalue: Value that LoopingCall.wait() should return."""
+            self.retvalue = retvalue
+
+
+    class LoopingCall(object):
+        def __init__(self, f=None, *args, **kw):
+            self.args = args
+            self.kw = kw
+            self.f = f
+            self._running = False
+
+        def start(self, interval, now=True):
+            self._running = True
+            done = event.Event()
+
+            def _inner():
+                if not now:
+                    greenthread.sleep(interval)
+                try:
+                    while self._running:
+                        self.f(*self.args, **self.kw)
+                        if not self._running:
+                            break
+                        greenthread.sleep(interval)
+                except LoopingCallDone, e:
+                    self.stop()
+                    done.send(e.retvalue)
+                except Exception:
+                    done.send_exception(*sys.exc_info())
+                    return
+                else:
+                    done.send(True)
+
+            self.done = done
+
+            greenthread.spawn(_inner)
+            return self.done
+
+        def stop(self):
+            self._running = False
+
+        def wait(self):
+            return self.done.wait()
+
+    def poll_until(retriever, condition=lambda value: value,
+                   sleep_time=1, time_out=None):
+        """Retrieves object until it passes condition, then returns it.
+
+        If time_out_limit is passed in, PollTimeOut will be raised once that
+        amount of time is eclipsed.
+
+        """
+        start_time = time.time()
+
+        def poll_and_check():
+            obj = retriever()
+            if condition(obj):
+                raise LoopingCallDone(retvalue=obj)
+            if time_out is not None and time.time() > start_time + time_out:
+                raise PollTimeOut
+        lc = LoopingCall(f=poll_and_check).start(sleep_time, True)
+        return lc.wait()
 
 
 class LocalSqlClient(object):

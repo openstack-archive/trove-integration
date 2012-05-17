@@ -31,7 +31,11 @@ Using the old (broken) RsDNS client code this test recreates the greatest error
 message ever.
 """
 
-import eventlet
+try:
+    import eventlet
+    CAN_USE_EVENTLET = True
+except ImportError:
+    CAN_USE_EVENTLET = False
 import uuid
 
 from proboscis import before_class
@@ -49,7 +53,7 @@ if WHITE_BOX:
     FLAGS = flags.FLAGS
 
 
-@test(groups=["rsdns.eventlet"])
+@test(groups=["rsdns.eventlet"], enabled=CAN_USE_EVENTLET)
 class RsdnsEventletTests(object):
     """Makes sure the RSDNS client can be used from multiple green threads."""
 
