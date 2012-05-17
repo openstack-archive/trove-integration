@@ -59,7 +59,7 @@ class TestDatabases(object):
 
     @test
     def test_create_database(self):
-        databases = list()
+        databases = []
         databases.append({"name": self.dbname, "charset": "latin2",
                           "collate": "latin2_general_ci"})
         databases.append({"name": self.dbname2})
@@ -127,3 +127,33 @@ class TestDatabases(object):
         databases.append({"name": "sdfsd,"})
         assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
+
+    @test
+    def test_pagination(self):
+        databases = []
+        databases.append({"name": "Sprockets", "charset": "latin2",
+                          "collate": "latin2_general_ci"})
+        databases.append({"name": "Cogs"})
+        databases.append({"name": "Widgets"})
+
+        self.dbaas.databases.create(instance_info.id, databases)
+        if not FAKE:
+            time.sleep(5)
+        limit = 2
+        databases = self.dbaas.databases.list(instance_info.id, limit=limit)
+        marker = databases.next
+
+        # Better get only as many as we asked for
+        assert_true(len(databases) <= limit)
+        assert_true(databases.next is not None)
+        assert_equal(marker, databases[-1].name)
+        marker = databases.next
+
+        # I better get new databases if I use the marker I was handed.
+        databases = self.dbaas.databases.list(instance_info.id, limit=limit,
+                                              marker=marker)
+        assert_true(marker not in [database.name for database in databases])
+
+        # Now fetch again with a larger limit.
+        databases = self.dbaas.databases.list(instance_info.id)
+        assert_true(databases.next is None)

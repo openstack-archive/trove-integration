@@ -80,6 +80,7 @@ def either_web_service_is_up():
 
 install_image = False
 
+
 @test(groups=["services.initialize", "services.initialize.glance"],
       enabled=START_SERVICES)
 class GlanceRegistry(unittest.TestCase):

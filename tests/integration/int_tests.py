@@ -201,6 +201,7 @@ if __name__ == '__main__':
             "dbaas.preinstance",
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
+            "dbaas.api.instances.pagination",
             "dbaas.guest.shutdown",
             versions.GROUP,
         ]

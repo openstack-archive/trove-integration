@@ -102,11 +102,11 @@ class TestClient(object):
         return [flavor for flavor in flavors if condition(flavor)]
 
     def find_flavors_by_name(self, name, flavor_manager=None):
-        return self.find_flavors_by(lambda flavor : flavor.name == name,
+        return self.find_flavors_by(lambda flavor: flavor.name == name,
                                     flavor_manager)
 
     def find_flavors_by_ram(self, ram, flavor_manager=None):
-        return self.find_flavors_by(lambda flavor : flavor.ram == ram,
+        return self.find_flavors_by(lambda flavor: flavor.ram == ram,
                                     flavor_manager)
 
     def find_flavor_and_self_href(self, flavor_id, flavor_manager=None):
