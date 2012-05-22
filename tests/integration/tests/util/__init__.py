@@ -177,17 +177,20 @@ def create_client(*args, **kwargs):
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
     auth_strategy = None
+
     kwargs = {
         'service_type':'reddwarf',
         'insecure':test_config.values['reddwarf_client_insecure'],
-        'auth_strategy':test_config.values['auth_strategy'],
-        'region_name':test_config.values['reddwarf_client_region_name']
     }
-    force_url = test_config.values.get('override_reddwarf_api_url', None)
-    if force_url:
-        # In some test environments the catalog returned by auth is poppycock
-        # so use this instead.
-        kwargs['service_url'] = force_url
+    def set_optional(kwargs_name, test_conf_name):
+        value = test_config.values.get(test_conf_name, None)
+        if value is not None:
+            kwargs[kwargs_name] = value
+    force_url = 'override_reddwarf_api_url' in test_config.values
+    set_optional('auth_strategy', 'auth_strategy')
+    set_optional('region_name', 'reddwarf_client_region_name')
+    set_optional('service_url', 'override_reddwarf_api_url')
+
     dbaas = Dbaas(user.auth_user, user.auth_key, user.tenant,
                   test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()

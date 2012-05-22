@@ -96,11 +96,18 @@ class TestClient(object):
         assert_false(flavor_href is None, "Flavor link self href missing.")
         return flavor_href
 
-    def find_flavors_by_ram(self, ram, flavor_manager=None):
+    def find_flavors_by(self, condition, flavor_manager=None):
         flavor_manager = flavor_manager or self.flavors
-        assert_false(ram is None)
         flavors = flavor_manager.list()
-        return [flavor for flavor in flavors if flavor.ram == ram]
+        return [flavor for flavor in flavors if condition(flavor)]
+
+    def find_flavors_by_name(self, name, flavor_manager=None):
+        return self.find_flavors_by(lambda flavor : flavor.name == name,
+                                    flavor_manager)
+
+    def find_flavors_by_ram(self, ram, flavor_manager=None):
+        return self.find_flavors_by(lambda flavor : flavor.ram == ram,
+                                    flavor_manager)
 
     def find_flavor_and_self_href(self, flavor_id, flavor_manager=None):
         """Given an ID, returns flavor and its self href."""
