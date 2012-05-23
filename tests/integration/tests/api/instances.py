@@ -191,8 +191,17 @@ class InstanceSetup(object):
 
     @test
     def test_find_flavor(self):
-        result = dbaas.find_flavor_and_self_href(flavor_id=1)
-        instance_info.dbaas_flavor, instance_info.dbaas_flavor_href = result
+        flavor_name = test_config.values.get('instance_flavor_name', 'm1.tiny')
+        flavors = dbaas.find_flavors_by_name(flavor_name)
+        assert_equal(len(flavors), 1, "Number of flavors with name '%s' "
+                     "found was '%d'." % (flavor_name, len(flavors)))
+        flavor = flavors[0]
+        assert_true(flavor is not None, "Flavor '%s' not found!" % flavor_name)
+        flavor_href = dbaas.find_flavor_self_href(flavor)
+        assert_true(flavor_href is not None,
+                    "Flavor href '%s' not found!" % flavor_name)
+        instance_info.dbaas_flavor = flavor
+        instance_info.dbaas_flavor_href = flavor_href
 
     @test(enabled=WHITE_BOX)
     def test_add_imageref_config(self):

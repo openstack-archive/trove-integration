@@ -42,6 +42,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from novaclient.v1_1.client import Client
+from novaclient import exceptions
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -55,6 +56,7 @@ from reddwarfclient.client import ReddwarfHTTPClient
 from tests.util import test_config
 from tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
+from tests.util.users import Requirements
 
 
 WHITE_BOX = test_config.white_box
@@ -104,6 +106,18 @@ def assert_mysql_connection_fails(user_name, password, ip):
         assert_mysql_failure_msg_was_permissions_issue(oe.message)
 
 
+def assert_http_code(expected_http_code, func, *args, **kwargs):
+    try:
+        rtn_value = func(*args, **kwargs)
+        assert_equal(expected_http_code, 200, "Expected the function to "
+            "return http code %s but instead got no error (code 200?)."
+            % expected_http_code)
+        return rtn_value
+    except exceptions.ClientException as ce:
+        assert_equal(expected_http_code, ce.code,
+            "Expected the function to return http code %s but instead got "
+            "code %s." % (expected_http_code, ce.code))
+
 _dns_entry_factory = None
 
 
@@ -151,20 +165,32 @@ def count_notifications(priority, event_type):
     return count_message_occurrence_in_logs(log_msg)
 
 
+def create_client(*args, **kwargs):
+    """
+    Using the User Requirements as arguments, finds a user and grabs a new
+    DBAAS client.
+    """
+    reqs = Requirements(*args, **kwargs)
+    user = test_config.users.find_user(reqs)
+    return create_dbaas_client(user)
+
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
     auth_strategy = None
+
     kwargs = {
         'service_type':'reddwarf',
         'insecure':test_config.values['reddwarf_client_insecure'],
-        'auth_strategy':test_config.values['auth_strategy'],
-        'region_name':test_config.values['reddwarf_client_region_name']
     }
-    force_url = test_config.values.get('override_reddwarf_api_url', None)
-    if force_url:
-        # In some test environments the catalog returned by auth is poppycock
-        # so use this instead.
-        kwargs['service_url'] = force_url
+    def set_optional(kwargs_name, test_conf_name):
+        value = test_config.values.get(test_conf_name, None)
+        if value is not None:
+            kwargs[kwargs_name] = value
+    force_url = 'override_reddwarf_api_url' in test_config.values
+    set_optional('auth_strategy', 'auth_strategy')
+    set_optional('region_name', 'reddwarf_client_region_name')
+    set_optional('service_url', 'override_reddwarf_api_url')
+
     dbaas = Dbaas(user.auth_user, user.auth_key, user.tenant,
                   test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()
