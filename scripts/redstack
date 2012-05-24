@@ -510,14 +510,8 @@ function cmd_set_image() {
     #TODO(hub-cap): Upload this sucker to our database.
     # This should be a reddwarf-manage function
     exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
-
-    set +e
-    mysql_reddwarf "INSERT INTO service_images VALUES('1','$SERVICE_TYPE','$GLANCE_IMAGEID');"
-    set -e
-    mysql_reddwarf "UPDATE service_images SET image_id = '$GLANCE_IMAGEID' where service_name = '$SERVICE_TYPE';"
-
-    # Reminder: Check the glance database with:
-    # $ glance index -A {token-id}
+    
+    rd_manage image_update $SERVICE_TYPE $GLANCE_IMAGEID
 }
 
 function upload_image_to_glance() {
