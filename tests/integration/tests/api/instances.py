@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import hashlib
 
 import os
 import re
@@ -19,6 +20,7 @@ import string
 import time
 import unittest
 from tests import util
+import urlparse
 
 
 GROUP = "dbaas.guest"
@@ -303,9 +305,11 @@ class CreateInstance(unittest.TestCase):
 
         # Check these attrs only are returned in create response
         expected_attrs = ['created', 'flavor', 'addresses', 'id', 'links',
-                          'hostname', 'name', 'status', 'updated']
+                          'name', 'status', 'updated']
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
+        if test_config.values['reddwarf_dns_support']:
+            expected_attrs.append('hostname')
 
         with CheckInstance(result._info) as check:
             if create_new_instance():
@@ -622,13 +626,13 @@ class TestInstanceListing(object):
 
     @test
     def test_instance_hostname(self):
-        instance = dbaas.instances.get(instance_info.id)
         dns_support = test_config.values['reddwarf_dns_support']
-        if dns_support:
-            dns_entry = instance_info.expected_dns_entry()
-            assert_equal(dns_entry.name, instance.hostname)
-        else:
-            assert_equal(instance_info.name, instance.hostname)
+        if not dns_support:
+            raise SkipTest("No dns support enabled for reddwarf.")
+        instance = dbaas.instances.get(instance_info.id)
+        hostname_prefix = ("%s" % (hashlib.sha1(instance.id).hexdigest()))
+        instance_hostname_prefix = instance.hostname.split('.')[0]
+        assert_equal(hostname_prefix, instance_hostname_prefix)
 
     @test
     def test_get_instance_status(self):
