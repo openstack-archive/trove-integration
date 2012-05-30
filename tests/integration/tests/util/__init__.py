@@ -66,6 +66,7 @@ if WHITE_BOX:
     from nova import flags
     from nova import utils
     from reddwarf import dns  # import for flag values
+    from reddwarf.common import utils
     from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
     from reddwarf import exception
     FLAGS = flags.FLAGS
@@ -125,8 +126,9 @@ def get_dns_entry_factory():
     """Returns a DNS entry factory."""
     global _dns_entry_factory
     if not _dns_entry_factory:
-        class_name = FLAGS.dns_instance_entry_factory
+        class_name = test_config.values["dns_instance_entry_factory"]
         _dns_entry_factory = utils.import_object(class_name)
+        _dns_entry_factory = _dns_entry_factory()
     return _dns_entry_factory
 
 
@@ -207,9 +209,9 @@ def create_dbaas_client(user):
 
 def create_dns_entry(id, uuid):
     """Given the instance_Id and it's owner returns the DNS entry."""
-    instance = {'uuid': uuid, 'id': str(id)}
     entry_factory = get_dns_entry_factory()
-    entry = entry_factory.create_entry(instance)
+    instance_id = str(id)
+    entry = entry_factory.create_entry(instance_id)
     # There is a lot of test code which calls this and then, if the entry
     # is None, does nothing. That's actually how the contract for this class
     # works. But we want to make sure that if the RsDnsDriver is defined in the
@@ -276,7 +278,8 @@ def wait_for_compute_service():
 
 def should_run_rsdns_tests():
     """If true, then the RS DNS tests should also be run."""
-    return FLAGS.dns_driver == "reddwarf.dns.rsdns.driver.RsDnsDriver"
+    dns_driver = test_config.values["reddwarf_dns_support"]
+    return dns_driver == "true"
 
 
 def string_in_list(str, substr_list):

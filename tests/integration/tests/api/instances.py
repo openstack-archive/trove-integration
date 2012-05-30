@@ -303,11 +303,9 @@ class CreateInstance(unittest.TestCase):
 
         # Check these attrs only are returned in create response
         expected_attrs = ['created', 'flavor', 'addresses', 'id', 'links',
-                          'name', 'status', 'updated']
+                          'hostname', 'name', 'status', 'updated']
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
-        if not test_config.values['hostname_not_implemented']:
-            expected_attrs.append('hostname')
 
         with CheckInstance(result._info) as check:
             if create_new_instance():
@@ -598,7 +596,7 @@ class TestInstanceListing(object):
 
     @test
     def test_index_list(self):
-        expected_attrs = ['id', 'links', 'name', 'status', 'ip']
+        expected_attrs = ['id', 'links', 'hostname', 'name', 'status', 'ip']
         instances = dbaas.instances.index()
         for instance in instances:
             instance_dict = instance._info
@@ -624,19 +622,13 @@ class TestInstanceListing(object):
 
     @test
     def test_instance_hostname(self):
-        if test_config.values['hostname_not_implemented']:
-            raise SkipTest("We havent implemented hostname yet")
         instance = dbaas.instances.get(instance_info.id)
-        dns_entry = instance_info.expected_dns_entry()
-        if dns_entry:
+        dns_support = test_config.values['reddwarf_dns_support']
+        if dns_support:
+            dns_entry = instance_info.expected_dns_entry()
             assert_equal(dns_entry.name, instance.hostname)
         else:
-            table = string.maketrans("_ ", "--")
-            deletions = ":."
-            name = instance_info.name.translate(table, deletions).lower()
-            expected_hostname = "%s-instance-%s" % (name,
-                                                    instance_info.local_id)
-            assert_equal(expected_hostname, instance.hostname)
+            assert_equal(instance_info.name, instance.hostname)
 
     @test
     def test_get_instance_status(self):
