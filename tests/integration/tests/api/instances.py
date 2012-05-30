@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import hashlib
 
 import os
 import re
@@ -19,6 +20,7 @@ import string
 import time
 import unittest
 from tests import util
+import urlparse
 
 
 GROUP = "dbaas.guest"
@@ -306,7 +308,7 @@ class CreateInstance(unittest.TestCase):
                           'name', 'status', 'updated']
         if test_config.values['reddwarf_can_have_volume']:
             expected_attrs.append('volume')
-        if not test_config.values['hostname_not_implemented']:
+        if test_config.values['reddwarf_dns_support']:
             expected_attrs.append('hostname')
 
         with CheckInstance(result._info) as check:
@@ -598,7 +600,7 @@ class TestInstanceListing(object):
 
     @test
     def test_index_list(self):
-        expected_attrs = ['id', 'links', 'name', 'status', 'ip']
+        expected_attrs = ['id', 'links', 'hostname', 'name', 'status', 'ip']
         instances = dbaas.instances.index()
         for instance in instances:
             instance_dict = instance._info
@@ -624,19 +626,13 @@ class TestInstanceListing(object):
 
     @test
     def test_instance_hostname(self):
-        if test_config.values['hostname_not_implemented']:
-            raise SkipTest("We havent implemented hostname yet")
+        dns_support = test_config.values['reddwarf_dns_support']
+        if not dns_support:
+            raise SkipTest("No dns support enabled for reddwarf.")
         instance = dbaas.instances.get(instance_info.id)
-        dns_entry = instance_info.expected_dns_entry()
-        if dns_entry:
-            assert_equal(dns_entry.name, instance.hostname)
-        else:
-            table = string.maketrans("_ ", "--")
-            deletions = ":."
-            name = instance_info.name.translate(table, deletions).lower()
-            expected_hostname = "%s-instance-%s" % (name,
-                                                    instance_info.local_id)
-            assert_equal(expected_hostname, instance.hostname)
+        hostname_prefix = ("%s" % (hashlib.sha1(instance.id).hexdigest()))
+        instance_hostname_prefix = instance.hostname.split('.')[0]
+        assert_equal(hostname_prefix, instance_hostname_prefix)
 
     @test
     def test_get_instance_status(self):
