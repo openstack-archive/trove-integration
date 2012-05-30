@@ -251,14 +251,8 @@ function install_reddwarf_packages() {
 
     exclaim "Installing Proboscis."
     sudo pip install openstack.nose_plugin
-    #sudo pip install proboscis
+    sudo pip install proboscis
 
-    sudo rm -rf /opt/stack/python-proboscis
-    cd /opt/stack
-    git_clone https://github.com/TimSimpsonR/python-proboscis.git \
-        /opt/stack/python-proboscis runs_after_dangerous
-    cd /opt/stack/python-proboscis
-    sudo python setup.py develop
     cd /tmp
 
     echo "Adding to nova.conf..."
@@ -615,7 +609,9 @@ function cmd_initialize() {
     set +e
     mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb) VALUES('tinier', 6, 506, 1, 0, 40, 1, 6, 10);"
     # It can also be useful to have a flavor with 512 megs and a bit of disk space.
-    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb) VALUES('m1.rd-tiny', 7, 512, 1, 0, 40, 1, 6, 2);"
+    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb) VALUES('m1.rd-tiny', 7, 512, 1, 0, 40, 1, 7, 2);"
+    # Its also useful to have a slightly bigger flavor...
+    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb) VALUES('m1.rd-smaller', 8, 768, 1, 0, 40, 1, 8, 2);"
     set -e
 }
 
