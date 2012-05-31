@@ -571,7 +571,8 @@ function cmd_stop_deps() {
 
 function fix_rd_configfile() {
     cd $PATH_REDDWARF
-    cp etc/reddwarf/reddwarf.conf.sample /tmp
+    cp etc/reddwarf/reddwarf.conf.sample $USERHOME/reddwarf.conf
+    cp etc/reddwarf/reddwarf-taskmanager.conf.sample $USERHOME/reddwarf-taskmanager.conf
     # Do some munging to get it a-working
     # Tenant is no longer needed from the config, but we are leaving it in
     # until we have a better example of stuff to sed out.
@@ -580,7 +581,7 @@ function fix_rd_configfile() {
 
 function rd_manage() {
     cd $PATH_REDDWARF
-    bin/reddwarf-manage --config-file=/tmp/reddwarf.conf.sample $@
+    bin/reddwarf-manage --config-file=$USERHOME/reddwarf.conf $@
 }
 
 function mod_test_conf() {
@@ -649,12 +650,13 @@ EOF
     screen -d -m -S reddwarf -t reddwarf
     sleep 1
 
-    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-server --config-file=/tmp/reddwarf.conf.sample"
+    screen_it api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$USERHOME/reddwarf.conf"
+    screen_it taskmanager "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$USERHOME/reddwarf-taskmanager.conf"
 }
 
 function cmd_run() {
-    cd $PATH_REDDWARF; bin/reddwarf-server \
-        --config-file=/tmp/reddwarf.conf.sample $@
+    cd $PATH_REDDWARF; bin/reddwarf-api \
+        --config-file=$USERHOME/reddwarf.conf $@
 }
 
 function cmd_run_fake() {
@@ -667,7 +669,7 @@ function cmd_run_fake() {
         repo_path=reddwarf_test.sqlite
     sqlite3 reddwarf_test.sqlite \
         "INSERT INTO service_images VALUES('1','mysql','fake');"
-    bin/reddwarf-server --config-file=$CONF_FILE $@ \
+    bin/reddwarf-api --config-file=$CONF_FILE $@ \
         repo_path=reddwarf_test.sqlite
 }
 
