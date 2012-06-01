@@ -209,7 +209,7 @@ REDDWARF_ROLE=$REDDWARF_ROLE
     if [ -z $SERVICE_UUID ]; then
         OS_USERNAME=reddwarf \
         OS_PASSWORD=REDDWARF-PASS \
-        OS_AUTH_URL='http://localhost:8779/v0.1/$(tenant_id)s' \
+        OS_AUTH_URL='http://localhost:8779/v1.0/$(tenant_id)s' \
         keystone_manage service-create --name=reddwarf \
                             --type=dbaas \
                             --description="Reddwarf"
@@ -227,9 +227,9 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 function add_to_keystone_conf() {
     exclaim 'adding reddwarf to keystone catalog templates'
     echo '
-catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v0.1/$(tenant_id)s
-catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v0.1/$(tenant_id)s
-catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v0.1/$(tenant_id)s
+catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v1.0/$(tenant_id)s
+catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v1.0/$(tenant_id)s
+catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v1.0/$(tenant_id)s
 catalog.RegionOne.reddwarf.name = Reddwarf
     ' >> /etc/keystone/default_catalog.templates
 }
