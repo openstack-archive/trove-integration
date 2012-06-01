@@ -6,6 +6,7 @@ from tests.util.generation import InstanceGenerator
 from proboscis import before_class
 from tests.util import create_client
 
+
 @test(groups=['smoke', 'positive'])
 class CreateInstance(object):
 
@@ -14,8 +15,8 @@ class CreateInstance(object):
         self.client = create_client(is_admin=False)
         self.name = 'test_createInstance_container'
         self.flavor = 1
-        self.volume_size=1
-        db_name='test_db'
+        self.volume_size = 1
+        db_name = 'test_db'
         self.databases = [
                 {
                     "name": db_name

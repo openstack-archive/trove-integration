@@ -176,14 +176,16 @@ def create_client(*args, **kwargs):
     user = test_config.users.find_user(reqs)
     return create_dbaas_client(user)
 
+
 def create_dbaas_client(user):
     """Creates a rich client for the RedDwarf API using the test config."""
     auth_strategy = None
 
     kwargs = {
-        'service_type':'reddwarf',
-        'insecure':test_config.values['reddwarf_client_insecure'],
+        'service_type': 'reddwarf',
+        'insecure': test_config.values['reddwarf_client_insecure'],
     }
+
     def set_optional(kwargs_name, test_conf_name):
         value = test_config.values.get(test_conf_name, None)
         if value is not None:
@@ -298,7 +300,6 @@ def get_vz_ip_for_device(instance_id, device):
         return ip.strip()
 
 
-
 class PollTimeOut(RuntimeError):
     message = _("Polling request timed out.")
 
@@ -314,6 +315,7 @@ if not EVENT_AVAILABLE:
 
         """
         start_time = time.time()
+
         def check_timeout():
             if time_out is not None and time.time() > start_time + time_out:
                 raise PollTimeOut
@@ -342,7 +344,6 @@ else:
         def __init__(self, retvalue=True):
             """:param retvalue: Value that LoopingCall.wait() should return."""
             self.retvalue = retvalue
-
 
     class LoopingCall(object):
         def __init__(self, f=None, *args, **kw):

@@ -28,8 +28,8 @@ class InstanceGenerator(object):
         return instance
 
     def wait_for_build_to_finish(self):
-        poll_until(lambda : self.client.instance.get(self.id),
-                   lambda instance : instance.status != "BUILD",
+        poll_until(lambda: self.client.instance.get(self.id),
+                   lambda instance: instance.status != "BUILD",
                    time_out=instance_create_time)
 
     def get_active_instance(self):

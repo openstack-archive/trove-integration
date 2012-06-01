@@ -191,6 +191,38 @@ class TestUsers(object):
         assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
 
+    @test
+    def test_pagination(self):
+        users = []
+        users.append({"name": "Jetson", "password": "george",
+                      "databases": [{"name": "Sprockets"}]})
+        users.append({"name": "Spacely", "password": "cosmo",
+                      "databases": [{"name": "Sprockets"}]})
+        users.append({"name": "Uniblab", "password": "fired",
+                      "databases": [{"name": "Sprockets"}]})
+
+        self.dbaas.users.create(instance_info.id, users)
+        if not FAKE:
+            time.sleep(5)
+        limit = 2
+        users = self.dbaas.users.list(instance_info.id, limit=limit)
+        marker = users.next
+
+        # Better get only as many as we asked for
+        assert_true(len(users) <= limit)
+        assert_true(users.next is not None)
+        assert_equal(marker, users[-1].name)
+        marker = users.next
+
+        # I better get new users if I use the marker I was handed.
+        users = self.dbaas.users.list(instance_info.id, limit=limit,
+                                      marker=marker)
+        assert_true(marker not in [user.name for user in users])
+
+        # Now fetch again with a larger limit.
+        users = self.dbaas.users.list(instance_info.id)
+        assert_true(users.next is None)
+
     def _check_connection(self, username, password):
         if not FAKE:
             util.assert_mysql_connection_fails(username, password,

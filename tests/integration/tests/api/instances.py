@@ -929,6 +929,37 @@ class CheckInstance(Check):
                          msg="Volume")
 
 
+@test(depends_on=[DeleteInstance], groups=['dbaas.api.instances.pagination'])
+class InstancePagination(object):
+
+    @test
+    def test_pagination(self):
+        ids = []
+        for instance in ['multi-one', 'multi-two', 'multi-three']:
+            result = dbaas.instances.create(instance,
+                                   instance_info.dbaas_flavor_href,
+                                   instance_info.volume, [], [])
+            ids.append(result.id)
+        time.sleep(5)
+        limit = 2
+        instances = dbaas.instances.list(limit=limit)
+        marker = instances.next
+
+        # Better get only as many as we asked for
+        assert_true(len(instances) <= limit)
+        assert_true(instances.next is not None)
+        assert_equal(marker, instances[-1].id)
+        marker = instances.next
+
+        # I better get new instances if I use the marker I was handed.
+        instances = dbaas.instances.list(limit=limit, marker=marker)
+        assert_true(marker not in [instance.id for instance in instances])
+
+        # Now fetch again with a larger limit.
+        instances = dbaas.instances.list()
+        assert_true(instances.next is None)
+
+
 def diagnostic_tests_helper(diagnostics):
     print("diagnostics : %r" % diagnostics._info)
     expected_attrs = ['version', 'fdSize', 'vmSize', 'vmHwm', 'vmRss',
