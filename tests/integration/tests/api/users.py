@@ -127,7 +127,7 @@ class TestUsers(object):
 
     def show_databases(self, user, password):
         cmd = "sudo mysql -h %s -u '%s' -p'%s' -e 'show databases;'"\
-                % (instance_info.user_ip, user, password)
+                % (instance_info.get_address(), user, password)
         print("Running cmd: %s" % cmd)
         dblist, err = process(cmd)
         print("returned: %s" % dblist)
@@ -194,7 +194,7 @@ class TestUsers(object):
     def _check_connection(self, username, password):
         if not FAKE:
             util.assert_mysql_connection_fails(username, password,
-                                               instance_info.user_ip)
+                                               instance_info.get_address())
         # Also determine the db is gone via API.
         result = self.dbaas.users.list(instance_info.id)
         for item in result:

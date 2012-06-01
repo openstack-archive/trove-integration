@@ -89,7 +89,7 @@ class TestMultiNic(object):
             assert_equal(vz_ip, fixed_ip[0]['address'])
 
 
-@test(depends_on_classes=[TestMultiNic],
+@test(depends_on_groups=[GROUP_START], runs_after=[TestMultiNic],
       groups=[GROUP_TEST, "dbaas.guest.mysql"],
       enabled=not test_config.values['fake_mode'])
 class TestMysqlAccess(object):
@@ -102,13 +102,13 @@ class TestMysqlAccess(object):
     def test_mysql_admin(self):
         """Ensure we aren't allowed access with os_admin and wrong password."""
         assert_mysql_connection_fails("os_admin", "asdfd-asdf234",
-                                      instance_info.user_ip)
+                                      instance_info.get_address())
 
     @test
     def test_mysql_root(self):
         """Ensure we aren't allowed access with root and wrong password."""
         assert_mysql_connection_fails("root", "dsfgnear",
-                                      instance_info.user_ip)
+                                      instance_info.get_address())
 
     @test(enabled=WHITE_BOX)
     def test_zfirst_db(self):
