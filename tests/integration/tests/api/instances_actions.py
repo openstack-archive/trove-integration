@@ -337,7 +337,7 @@ class ResizeInstanceTest(ActionTestBase):
     def flavor_id(self):
         return instance_info.dbaas_flavor_href
 
-    def get_flavor_id(self, flavor_id=2):
+    def get_flavor_href(self, flavor_id=2):
         res = instance_info.dbaas.find_flavor_and_self_href(flavor_id)
         dbaas_flavor, dbaas_flavor_href = res
         return dbaas_flavor_href
@@ -365,14 +365,30 @@ class ResizeInstanceTest(ActionTestBase):
         assert_raises(BadRequest, self.dbaas.instances.resize_instance,
             self.instance_id, self.flavor_id)
 
+    def obtain_flavor_ids(self):
+        self.expected_old_flavor_id = self.instance.flavor['id']
+        flavor_name = test_config.values.get('instance_bigger_flavor_name',
+                                             'm1.small')
+        flavors = self.dbaas.find_flavors_by_name(flavor_name)
+        assert_equal(len(flavors), 1, "Number of flavors with name '%s' "
+                     "found was '%d'." % (flavor_name, len(flavors)))
+        flavor = flavors[0]
+        assert_true(flavor is not None, "Flavor '%s' not found!" % flavor_name)
+        flavor_href = self.dbaas.find_flavor_self_href(flavor)
+        assert_true(flavor_href is not None,
+                    "Flavor href '%s' not found!" % flavor_name)
+        self.expected_new_flavor_id = flavor.id
+
     @test(depends_on=[test_instance_resize_same_size_should_fail])
     def test_status_changed_to_resize(self):
         self.log_current_users()
+        self.obtain_flavor_ids()
         self.dbaas.instances.resize_instance(self.instance_id,
-                                             self.get_flavor_id(flavor_id=2))
+            self.get_flavor_href(flavor_id=self.expected_new_flavor_id))
         #(WARNING) IF THE RESIZE IS WAY TOO FAST THIS WILL FAIL
         assert_unprocessable(self.dbaas.instances.resize_instance,
-                             self.instance_id, self.get_flavor_id(flavor_id=2))
+            self.instance_id,
+            self.get_flavor_href(flavor_id=self.expected_new_flavor_id))
 
     @test(depends_on=[test_status_changed_to_resize])
     @time_out(TIME_OUT_TIME)
@@ -400,16 +416,17 @@ class ResizeInstanceTest(ActionTestBase):
           runs_after=[resize_should_not_delete_users])
     def test_make_sure_mysql_is_running_after_resize(self):
         self.ensure_mysql_is_running()
-        assert_equal(self.get_flavor_id(self.instance.flavor['id']),
-                     self.get_flavor_id(flavor_id=2))
+        assert_equal(self.get_flavor_href(self.instance.flavor['id']),
+                     self.get_flavor_href(flavor_id=self.expected_new_flavor_id))
 
     @test(depends_on=[test_make_sure_mysql_is_running_after_resize])
     @time_out(TIME_OUT_TIME)
     def test_resize_down(self):
         self.dbaas.instances.resize_instance(self.instance_id,
-                                             self.get_flavor_id(flavor_id=1))
+            self.get_flavor_href(flavor_id=self.expected_old_flavor_id))
         self.wait_for_resize()
-        assert_equal(str(self.instance.flavor['id']), "1")
+        assert_equal(str(self.instance.flavor['id']),
+                     str(self.expected_old_flavor_id))
 
 
 @test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP,

@@ -257,8 +257,8 @@ class CreateInstance(unittest.TestCase):
             assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
                           "way_too_large", instance_info.dbaas_flavor_href,
                           {'size': too_big + 1}, [])
-        else:
-            raise SkipTest("N/A: No max accepted volume size defined.")
+        #else:
+        #    raise SkipTest("N/A: No max accepted volume size defined.")
 
     def test_create(self):
         databases = []
@@ -624,11 +624,9 @@ class TestInstanceListing(object):
             check.links(instance_dict['links'])
             check.volume()
 
-    @test
+    @test(enabled=not test_config.values['hostname_not_implemented']
+                  and test_config.values['reddwarf_dns_support'])
     def test_instance_hostname(self):
-        dns_support = test_config.values['reddwarf_dns_support']
-        if not dns_support:
-            raise SkipTest("No dns support enabled for reddwarf.")
         instance = dbaas.instances.get(instance_info.id)
         hostname_prefix = ("%s" % (hashlib.sha1(instance.id).hexdigest()))
         instance_hostname_prefix = instance.hostname.split('.')[0]
