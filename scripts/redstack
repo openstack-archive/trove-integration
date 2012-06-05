@@ -659,7 +659,7 @@ function cmd_run_fake() {
     CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
     cd $PATH_REDDWARF
     set -e
-    rm reddwarf_test.sqlite
+    rm -f reddwarf_test.sqlite
     set +e
     bin/reddwarf-manage --config-file=$CONF_FILE db_sync \
         repo_path=reddwarf_test.sqlite
