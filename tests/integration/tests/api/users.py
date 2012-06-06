@@ -31,6 +31,7 @@ from proboscis.decorators import time_out
 
 import tests
 from tests.api.databases import TestDatabases
+from tests.openvz.dbaas_ovz import TestMysqlAccess
 from tests.api.instances import instance_info
 from tests.util import process
 from tests import util
@@ -38,10 +39,11 @@ from tests.util import test_config
 
 GROUP = "dbaas.api.users"
 FAKE = test_config.values['fake_mode']
+from tests.openvz.dbaas_ovz import TestMysqlAccess
 
-
-@test(depends_on_classes=[TestDatabases], groups=[tests.DBAAS_API, GROUP,
-                                                  tests.INSTANCES])
+@test(depends_on_classes=[TestMysqlAccess], groups=[tests.DBAAS_API, GROUP,
+                                                    tests.INSTANCES],
+      runs_after=[TestDatabases])
 class TestUsers(object):
     """
     Test the creation and deletion of users
@@ -66,7 +68,10 @@ class TestUsers(object):
         databases = [{"name": self.db1, "charset": "latin2",
                       "collate": "latin2_general_ci"},
                      {"name": self.db2}]
-        self.dbaas.databases.create(instance_info.id, databases)
+        try:
+            self.dbaas.databases.create(instance_info.id, databases)
+        except nova_exceptions.BadRequest:
+            pass  # If the db already exists that's OK.
         if not FAKE:
             time.sleep(5)
 
@@ -104,6 +109,16 @@ class TestUsers(object):
             assert_true(found, "User '%s' not found in result" % user)
             found = False
 
+    @test(depends_on=[test_create_users])
+    def test_fails_when_creating_user_twice(self):
+        users = []
+        users.append({"name": self.username, "password": self.password,
+                      "databases": [{"name": self.db1}]})
+        users.append({"name": self.username1, "password": self.password1,
+                     "databases": [{"name": self.db1}, {"name": self.db2}]})
+        assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
+                      instance_info.id, users)
+
     @test(depends_on=[test_create_users_list])
     def test_create_users_list_system(self):
         #tests for users that should not be listed
@@ -115,7 +130,8 @@ class TestUsers(object):
             assert_false(found, msg)
             found = False
 
-    @test(depends_on=[test_create_users_list])
+    @test(depends_on=[test_create_users_list],
+          runs_after=[test_fails_when_creating_user_twice])
     def test_delete_users(self):
         self.dbaas.users.delete(instance_info.id, self.username_urlencoded)
         self.dbaas.users.delete(instance_info.id, self.username1_urlendcoded)
