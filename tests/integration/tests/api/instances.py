@@ -97,6 +97,8 @@ class InstanceTestInfo(object):
         self.user_ip = None  # The IP address of the instance, given to user.
         self.infra_ip = None  # The infrastructure network IP address.
         self.result = None  # The instance info returned by the API
+        self.nova_client = None # The instance of novaclient.
+        self.volume_client = None # The instance of the volume client.
         self.name = None  # Test name, generated each test run.
         self.pid = None  # The process ID of the instance.
         self.user = None  # The user instance who owns the instance.
@@ -172,6 +174,10 @@ class InstanceSetup(object):
         reqs = Requirements(is_admin=False)
         instance_info.user = test_config.users.find_user(reqs)
         instance_info.dbaas = create_dbaas_client(instance_info.user)
+        if WHITE_BOX:
+            instance_info.nova_client = create_nova_client(instance_info.user)
+            instance_info.volume_client = create_nova_client(instance_info.user,
+                                            service_type="volume_service_type")
 
         dbaas = instance_info.dbaas
 
@@ -271,7 +277,7 @@ class CreateInstance(unittest.TestCase):
                       "databases": [{"name": "firstdb"}]})
         instance_info.users = users
         if test_config.values['reddwarf_main_instance_has_volume']:
-            instance_info.volume = {'size': 2}
+            instance_info.volume = {'size': 1}
         else:
             instance_info.volume = None
 

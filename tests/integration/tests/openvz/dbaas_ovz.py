@@ -46,7 +46,8 @@ if WHITE_BOX:
     from nova import db
 
 
-@test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, "dbaas.guest.ovz"])
+@test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, "dbaas.guest.ovz"],
+      enabled=WHITE_BOX)
 class TestMultiNic(object):
     """
         Test that the created instance has 2 nics with the specified ip

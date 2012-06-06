@@ -223,12 +223,12 @@ def create_dns_entry(id, uuid):
     return entry
 
 
-def create_nova_client(user):
+def create_nova_client(user, service_type="nova_service_type"):
     """Creates a rich client for the Nova API using the test config."""
     test_config.nova.ensure_started()
     openstack = Client(user.auth_user, user.auth_key,
                        user.tenant, test_config.nova_auth_url,
-                       service_type=test_config.values['nova_service_type'])
+                       service_type=test_config.values[service_type])
     openstack.authenticate()
     return TestClient(openstack)
 
