@@ -68,7 +68,7 @@ class TestDatabases(object):
         if not FAKE:
             time.sleep(5)
 
-    @test
+    @test(depends_on=[test_create_database])
     def test_create_database_list(self):
         databases = self.dbaas.databases.list(instance_info.id)
         found = False
@@ -78,6 +78,16 @@ class TestDatabases(object):
                     found = True
             assert_true(found, "Database '%s' not found in result" % db)
             found = False
+
+    @test(depends_on=[test_create_database])
+    def test_fails_when_creating_a_db_twice(self):
+        databases = []
+        databases.append({"name": self.dbname, "charset": "latin2",
+                          "collate": "latin2_general_ci"})
+        databases.append({"name": self.dbname2})
+
+        assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
+                      instance_info.id, databases)
 
     @test
     def test_create_database_list_system(self):
@@ -97,12 +107,7 @@ class TestDatabases(object):
         assert_raises(nova_exceptions.NotFound, self.dbaas.databases.create,
                       -1, databases)
 
-    @test
-    def test_delete_database_on_missing_instance(self):
-        assert_raises(nova_exceptions.NotFound, self.dbaas.databases.delete,
-                      -1, self.dbname_urlencoded)
-
-    @test
+    @test(runs_after=[test_create_database])
     def test_delete_database(self):
         self.dbaas.databases.delete(instance_info.id, self.dbname_urlencoded)
         if not FAKE:
@@ -111,6 +116,11 @@ class TestDatabases(object):
         found = any(result.name == self.dbname_urlencoded for result in dbs)
         assert_false(found, "Database '%s' SHOULD NOT be found in result" %
                      self.dbname_urlencoded)
+
+    @test(runs_after=[test_delete_database])
+    def test_delete_database_on_missing_instance(self):
+        assert_raises(nova_exceptions.NotFound, self.dbaas.databases.delete,
+                      -1, self.dbname_urlencoded)
 
     @test
     def test_database_name_too_long(self):
