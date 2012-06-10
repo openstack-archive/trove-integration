@@ -38,17 +38,21 @@ class ExampleGenerator(object):
         self.replace_host = config.get("replace_host", None)
         print "tenant = %s" % self.tenant
         self.replace_dns_hostname = config.get("replace_dns_hostname", None)
-        auth_id = self.get_auth_token_id(auth_url, username, password)
+        auth_id, tenant_id = self.get_auth_token_id_tenant_id(auth_url,
+                                                              username,
+                                                              password)
         print "id = %s" % auth_id
         self.headers = {
-            'X-Auth-Token': auth_id
+            'X-Auth-Token': str(auth_id)
         }
-        self.dbaas_url = "%s/v1.0/%s" % (self.api_url, self.tenant)
+        print "tenantID = %s" % tenant_id
+        self.tenantID = tenant_id
+        self.dbaas_url = "%s/v1.0/%s" % (self.api_url, self.tenantID)
 
     def http_call(self, name, method, json, xml, output=True):
         name = name.replace('_', '-')
         print "http call for %s" % name
-        http = httplib2.Http()
+        http = httplib2.Http(disable_ssl_certificate_validation=True)
         req_headers = {'User-Agent': "python-example-client",
                        'Content-Type': "application/json",
                        'Accept': "application/json"
@@ -64,6 +68,7 @@ class ExampleGenerator(object):
             with open(filename, "w") as file:
                 output = self.output_request(url, req_headers, request_body,
                                              content_type, method)
+                output = output.replace(self.tenantID, '1234')
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
@@ -78,6 +83,7 @@ class ExampleGenerator(object):
                                                 content_type)
             with open(filename, "w") as file:
                 output = self.output_response(resp, resp_content, content_type)
+                output = output.replace(self.tenantID, '1234')
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
@@ -85,6 +91,7 @@ class ExampleGenerator(object):
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
 
+        """
         content_type = 'xml'
         req_headers['Accept'] = 'application/xml'
         req_headers['Content-Type'] = 'application/xml'
@@ -116,6 +123,8 @@ class ExampleGenerator(object):
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
+        """
+        xml_resp = None
 
         return json_resp, xml_resp
 
@@ -153,8 +162,9 @@ class ExampleGenerator(object):
             ["Content-Type: %s" % resp['content-type']],
             ["Content-Length: %s" % resp['content-length']],
             ["Date: %s" % resp['date']]]
-        for line in lines:
-            output_list.append(line)
+        new_lines = [x[0] for x in lines]
+        joined_lines = '\n'.join(new_lines)
+        output_list.append(joined_lines)
         if body:
             output_list.append("")
             pretty_body = self.format_body(body, content_type)
@@ -183,21 +193,22 @@ class ExampleGenerator(object):
             except Exception as ex:
                 return body if body else ''
 
-    def get_auth_token_id(self, url, username, password):
-        body = ('{"passwordCredentials": {"username": "%s", "password": "%s",'
-                ' "tenantId": "%s"}}')
-        body = body % (username, password, self.tenant)
-        http = httplib2.Http()
+    def get_auth_token_id_tenant_id(self, url, username, password):
+        body = ('{"auth":{"tenantName": "%s", "passwordCredentials": '
+                '{"username": "%s", "password": "%s"}}}')
+        body = body % (self.tenant, username, password)
+        http = httplib2.Http(disable_ssl_certificate_validation=True)
         req_headers = {'User-Agent': "python-example-client",
                        'Content-Type': "application/json",
                        'Accept': "application/json",
                       }
         resp, body = http.request(url, 'POST', body=body, headers=req_headers)
         auth = json.loads(body)
-        auth_id = auth['auth']['token']['id']
-        return auth_id
+        auth_id = auth['access']['token']['id']
+        tenant_id = auth['access']['token']['tenant']['id']
+        return auth_id, tenant_id
 
-    def wait_for_instances(self):
+    def wait_for_instances(self, num=1):
         example_instances = []
         # wait for instances
         while True:
@@ -214,9 +225,11 @@ class ExampleGenerator(object):
             bad_status = ['ACTIVE', 'ERROR', 'FAILED', 'SHUTDOWN']
             list_id_status = [(instance['id'], instance['status']) for instance
                               in instances if instance['status'] in bad_status]
-            if len(list_id_status) == 2:
+            # TODO(pdmars): because of pagination we're now creating 2
+            # instances again at the end of main
+            if len(list_id_status) == num:
                 statuses = [item[1] for item in list_id_status]
-                if statuses.count('ACTIVE') != 2:
+                if statuses.count('ACTIVE') != num:
                     break
                 example_instances = [inst[0] for inst in list_id_status]
                 print "\nusing instance ids ---\n%s\n" % example_instances
@@ -316,7 +329,7 @@ class ExampleGenerator(object):
                 },
 
                     {
-                    "name": "sampledb"
+                    "name": "anotherdb"
                 }
             ]
         }
@@ -337,6 +350,14 @@ class ExampleGenerator(object):
         req_xml = {"url": "%s/instances/%s/databases"
                             % (self.dbaas_url, instance_ids['xml'])}
         self.http_call("list_databases", 'GET', req_json, req_xml)
+
+    def get_list_databases_limit_one(self, instance_ids):
+        req_json = {"url": "%s/instances/%s/databases?limit=1"
+                            % (self.dbaas_url, instance_ids['json'])}
+        req_xml = {"url": "%s/instances/%s/databases?limit=1"
+                            % (self.dbaas_url, instance_ids['xml'])}
+        self.http_call("list_databases_limit_one", 'GET', req_json, req_xml)
+
 
     def delete_databases(self, database_name, instance_ids):
         req_json = {"url": "%s/instances/%s/databases/%s"
@@ -437,6 +458,13 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['xml'])}
         self.http_call("list_users", 'GET', req_json, req_xml)
 
+    def get_list_users_limit_one(self, instance_ids):
+        req_json = {"url": "%s/instances/%s/users?limit=1"
+                            % (self.dbaas_url, instance_ids['json'])}
+        req_xml = {"url": "%s/instances/%s/users?limit=1"
+                            % (self.dbaas_url, instance_ids['xml'])}
+        self.http_call("list_users_limit_one", 'GET', req_json, req_xml)
+
     def delete_users(self, instance_ids, user_name):
         req_json = {"url": "%s/instances/%s/users/%s"
                     % (self.dbaas_url, instance_ids['json'], user_name)}
@@ -462,6 +490,11 @@ class ExampleGenerator(object):
         req_json = {"url": "%s/instances" % self.dbaas_url}
         req_xml = {"url": "%s/instances" % self.dbaas_url}
         self.http_call("instances_index", 'GET', req_json, req_xml)
+
+    def get_list_instance_index_limit_one(self):
+        req_json = {"url": "%s/instances?limit=1" % self.dbaas_url}
+        req_xml = {"url": "%s/instances?limit=1" % self.dbaas_url}
+        self.http_call("instances_index_limit_one", 'GET', req_json, req_xml)
 
     def get_list_instance_details(self):
         req_json = {"url": "%s/instances/detail" % self.dbaas_url}
@@ -615,7 +648,8 @@ class ExampleGenerator(object):
         self.get_versions()
 
         # requires auth
-        self.get_version()
+        # TODO(pdmars): is this a bug with get_version? the others seem to work
+        #self.get_version()
         self.get_flavors()
         self.get_flavor_details()
         self.get_flavor_by_id()
@@ -623,8 +657,9 @@ class ExampleGenerator(object):
         self.post_create_instance()
 
         # this will be used later to make instance related calls
-        example_instances = self.wait_for_instances()
-        if len(example_instances) != 2:
+        example_instances = self.wait_for_instances(num=1)
+        # TODO(pdmars): only json, so should not be != 2
+        if len(example_instances) != 1:
             print("-" * 60)
             print("-" * 60)
             print("SOMETHING WENT WRONG CREATING THE INSTANCES FOR THE "
@@ -634,7 +669,11 @@ class ExampleGenerator(object):
             return 1
 
         instance_ids = {"json": example_instances[0],
+                        "xml": None}
+        """
+        instance_ids = {"json": example_instances[0],
                         "xml": example_instances[1]}
+        """
         database_name = "exampledb"
         user_name = "testuser"
         print "\nUsing instance id(%s) for JSON calls\n" % instance_ids['json']
@@ -642,9 +681,11 @@ class ExampleGenerator(object):
 
         self.post_create_databases(database_name, instance_ids)
         self.get_list_databases(instance_ids)
+        self.get_list_databases_limit_one(instance_ids)
         self.delete_databases(database_name, instance_ids)
         self.post_create_users(instance_ids, user_name)
         self.get_list_users(instance_ids)
+        self.get_list_users_limit_one(instance_ids)
         self.delete_users(instance_ids, user_name)
         self.post_enable_root_access(instance_ids)
         self.get_check_root_access(instance_ids)
@@ -655,12 +696,14 @@ class ExampleGenerator(object):
         # Need to wait after each of these calls for
         # the instance to return back to active
         self.instance_restart(instance_ids)
-        self.wait_for_instances()
+        self.wait_for_instances(num=1)
         self.instance_resize_volume(instance_ids)
         self.wait_for_instances()
         self.instance_resize_flavor(instance_ids)
         self.wait_for_instances()
 
+        # TODO(pdmars): most of these don't exist yet
+        """
         # Do some mgmt calls before deleting the instances
         self.mgmt_list_hosts()
         self.mgmt_get_host_detail()
@@ -680,9 +723,23 @@ class ExampleGenerator(object):
         self.mgmt_list_configs()
         self.mgmt_get_config(config_id)
         self.mgmt_delete_configs(config_id)
+        """
+
+        # Test instance pagination, create a second instance
+        # Database and user pagination is tested above (see limit_one methods)
+        self.post_create_instance()
+
+        example_instances = self.wait_for_instances(num=2)
+
+        self.get_list_instance_index_limit_one()
 
         # Clean up the instances
-        self.delete_instance(instance_ids)
+        # TODO(pdmars): this is kind of hacky now that we have multiple json
+        # instances and no xml, should be fixed when xml is added back
+        for i in range(len(example_instances)):
+            instance_ids = {"json": example_instances[i],
+                            "xml": None}
+            self.delete_instance(instance_ids)
 
 
 if __name__ == "__main__":
