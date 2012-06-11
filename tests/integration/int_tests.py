@@ -251,6 +251,7 @@ if __name__ == '__main__':
             users.GROUP,
             databases.GROUP,
             root.GROUP,
+            accounts.GROUP,
             "services.initialize",
             "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
