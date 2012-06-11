@@ -111,8 +111,8 @@ class WhenMgmtInstanceGetIsCalledButServerIsNotReady(object):
             raise SkipTest("This test only works in fake mode.")
         self.client = create_client(is_admin=True)
         self.mgmt = self.client.management
-        # Fake nova will fail a server ending with 'server_fail'."
-        response = self.client.instances.create('server_fail', 1,
+        # Fake nova will fail a server ending with 'test_SERVER_ERROR'."
+        response = self.client.instances.create('test_SERVER_ERROR', 1,
                                                 {'size': 1}, [])
         poll_until(lambda: self.client.instances.get(response.id),
                    lambda instance: instance.status == 'ERROR',

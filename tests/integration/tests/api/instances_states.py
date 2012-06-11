@@ -54,8 +54,8 @@ class InstanceStatusTests(object):
 
     @test
     def test_create_failure_on_server_failure(self):
-        # Fake nova will fail a server ending with 'server_fail'."
-        response = self.dbaas.instances.create('server_fail', 1,
+        # Fake nova will fail a server ending with 'SERVER_ERROR'."
+        response = self.dbaas.instances.create('test_SERVER_ERROR', 1,
             {'size': 1}, [])
         poll_until(lambda: self.dbaas.instances.get(response.id),
                    lambda instance: instance.status == 'ERROR',
@@ -69,7 +69,7 @@ class InstanceStatusTests(object):
     @test(enabled=False)
     def test_create_failure_on_dns_failure(self):
         #TODO(ed-): Throw DNS-specific monkeywrench into works
-        response = self.dbaas.instances.create('dns_fail', 1,
+        response = self.dbaas.instances.create('test_DNS_ERROR', 1,
             {'size': 1}, [])
         poll_until(lambda: self.dbaas.instances.get(response.id),
                    lambda instance: instance.status == 'ERROR',

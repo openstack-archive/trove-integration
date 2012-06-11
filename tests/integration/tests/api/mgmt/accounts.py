@@ -19,13 +19,7 @@ from nose.plugins.skip import SkipTest
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
-from proboscis.asserts import assert_equal
-from proboscis.asserts import assert_false
-from proboscis.asserts import assert_is_not_none
-from proboscis.asserts import assert_not_equal
-from proboscis.asserts import assert_raises
-from proboscis.asserts import assert_true
-from proboscis.asserts import fail
+from proboscis.asserts import *
 from proboscis.decorators import time_out
 
 import tests
