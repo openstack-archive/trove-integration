@@ -138,8 +138,12 @@ function keystone_manage () {
     keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 $@
 }
 
-function reddwarf_tenant_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep reddwarf | awk '{print $2}'
+function get_tenant_id() {
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep $1 | awk '{print $2}'
+}
+
+function get_role_id() {
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep $1 | awk '{print $2}'
 }
 
 function configure_keystone() {
@@ -148,22 +152,23 @@ function configure_keystone() {
 
     # Create the tenant "reddwarf".
     # First we should check if these exist
-    REDDWARF_TENANT=`reddwarf_tenant_id`
+    REDDWARF_TENANT=`get_tenant_id reddwarf`
+    ADMIN_ROLE=`get_role_id admin`
     if [ -z $REDDWARF_TENANT ]; then
         REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
     fi
 
-    REDDWARF_ROLE=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep reddwarf | awk '{print $2}'`
+    REDDWARF_ROLE=`get_role_id reddwarf`
     if [ -z "$REDDWARF_ROLE" ]; then
         REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
     fi
 
-    DAFFY_TENANT=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep daffy | awk '{print $2}'`
+    DAFFY_TENANT=`get_tenant_id daffy`
     if [ -z $DAFFY_TENANT ]; then
         DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=daffy`
     fi
 
-    DAFFY_ROLE=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep daffy | awk '{print $2}'`
+    DAFFY_ROLE=`get_role_id daffy`
     if [ -z "$DAFFY_ROLE" ]; then
         DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=daffy`
     fi
@@ -175,9 +180,11 @@ function configure_keystone() {
     # TODO: Restrict permissions.
     REDDWARF_USER=`keystone_add_user radmin radmin radmin@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $ADMIN_ROLE
 
     REDDWARF_USER=`keystone_add_user Boss admin boss@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $ADMIN_ROLE
 
     REDDWARF_USER=`keystone_add_user chunk chunk chunk@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
@@ -187,6 +194,12 @@ function configure_keystone() {
 
     REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    # Add the tenant id's into test.conf
+    DEMO_TENANT=`get_tenant_id demo`
+    sed -i "s/%reddwarf_tenant_id%/$REDDWARF_TENANT/g" $USERHOME/test.conf
+    sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $USERHOME/test.conf
+    sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $USERHOME/test.conf
 
     echo "
 REDDWARF_TENANT=$REDDWARF_TENANT
@@ -734,7 +747,7 @@ function cmd_nova_client() {
 }
 
 function cmd_glance_client() {
-    REDDWARF_TENANT=`reddwarf_tenant_id`
+    REDDWARF_TENANT=`get_tenant_id reddwarf`
     glance --os-auth-url=http://localhost:35357/v2.0 \
         --os-username=radmin --os-password=radmin \
         --os-tenant-id $REDDWARF_TENANT $@
