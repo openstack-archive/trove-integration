@@ -1,33 +1,11 @@
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 987
-Date: Wed, 25 Jan 2012 21:58:17 GMT
+Content-Length: 685
+Date: Wed, 28 Mar 2012 21:37:29 GMT
 
 {
     "instance": {
-        "created": "2012-01-25T21:53:18Z", 
-        "databases": [
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "anotherexampledb"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "nextround"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "sampledb"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "testingdb"
-            }
-        ], 
+        "created": "2012-03-28T21:31:02Z", 
         "flavor": {
             "id": "1", 
             "links": [
@@ -42,23 +20,23 @@ Date: Wed, 25 Jan 2012 21:58:17 GMT
             ]
         }, 
         "hostname": "e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com", 
-        "id": "692d8418-7a8f-47f1-8060-59846c6e024f", 
+        "id": "2450c73f-7805-4afe-a42c-4094ab42666b", 
         "links": [
             {
-                "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/692d8418-7a8f-47f1-8060-59846c6e024f", 
+                "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/2450c73f-7805-4afe-a42c-4094ab42666b", 
                 "rel": "self"
             }, 
             {
-                "href": "https://ord.databases.api.rackspacecloud.com/instances/692d8418-7a8f-47f1-8060-59846c6e024f", 
+                "href": "https://ord.databases.api.rackspacecloud.com/instances/2450c73f-7805-4afe-a42c-4094ab42666b", 
                 "rel": "bookmark"
             }
         ], 
-        "name": "xml_rack_instance", 
-        "rootEnabled": true, 
+        "name": "xml_rack_instance",  
         "status": "ACTIVE", 
-        "updated": "2012-01-25T21:55:30Z", 
+        "updated": "2012-03-28T21:34:25Z", 
         "volume": {
-            "size": 2
+            "size": 2, 
+            "used": 0.124542236328125
         }
     }
 }

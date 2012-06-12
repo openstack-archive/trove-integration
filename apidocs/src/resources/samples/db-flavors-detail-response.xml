@@ -4,37 +4,37 @@ Content-Length: 1624
 Date: Wed, 25 Jan 2012 21:53:05 GMT
 
 <flavors xmlns="http://docs.openstack.org/database/api/v1.0">
-	<flavor id="3" name="m1.medium" ram="2048" vcpus="1">
+	<flavor id="3" name="m1.medium" ram="2048">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/3" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/3" rel="bookmark"/>
 		</links>
 	</flavor>
-	<flavor id="2" name="m1.small" ram="1024" vcpus="1">
+	<flavor id="2" name="m1.small" ram="1024">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/2" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/2" rel="bookmark"/>
 		</links>
 	</flavor>
-	<flavor id="4" name="m1.large" ram="4096" vcpus="1">
+	<flavor id="4" name="m1.large" ram="4096">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/4" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/4" rel="bookmark"/>
 		</links>
 	</flavor>
-	<flavor id="6" name="m1.xxlarge" ram="16384" vcpus="4">
+	<flavor id="6" name="m1.xxlarge" ram="16384">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/6" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/6" rel="bookmark"/>
 		</links>
 	</flavor>
-	<flavor id="1" name="m1.tiny" ram="512" vcpus="1">
+	<flavor id="1" name="m1.tiny" ram="512">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/1" rel="bookmark"/>
 		</links>
 	</flavor>
-	<flavor id="5" name="m1.xlarge" ram="8192" vcpus="2">
+	<flavor id="5" name="m1.xlarge" ram="8192">
 		<links>
 			<link href="https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/5" rel="self"/>
 			<link href="https://ord.databases.api.rackspacecloud.com/flavors/5" rel="bookmark"/>

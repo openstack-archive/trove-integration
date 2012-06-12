@@ -1,52 +1,72 @@
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 477
-Date: Tue, 29 Nov 2011 16:50:31 GMT
+Date: Thu, 12 Apr 2012 18:45:13 GMT
 
 {
-    "auth" : {
-        "token" : {
-            "id" : "asdasdasd-adsasdads-asdasdasd-adsadsasd",
-            "expires" : "2010-11-01T03:32:15-05:00"
-        },
-        "serviceCatalog" : {
-            "cloudFiles" : [
+    "auth": {
+        "serviceCatalog": {
+            "cloudDNS": [
                 {
-                    "region" : "DFW",
-                    "v1Default" : true,
-                    "publicURL" : "https://storage.clouddrive.com/v1/RackCloudFS_demo", 
-                    "internalURL" : "https://storage-snet.clouddrive.com/v1/RackCloudFS_demo"
+                    "publicURL": "https://dns.api.rackspacecloud.com/v1.0/1234"
+                }
+            ],
+            "cloudDatabases": [
+                {           
+                    "publicURL": "https://dfw.databases.api.rackspacecloud.com/v1.0/1234",
+                    "region": "DFW"
                 },
                 {
-                    "region" : "ORD",
-                    "publicURL" : "https://otherstorage.clouddrive.com/v1/RackCloudFS_demo",
-                    "internalURL" : "https://otherstorage-snet.clouddrive.com/v1/RackCloudFS_demo"
+                    "publicURL": "https://ord.databases.api.rackspacecloud.com/v1.0/1234",
+                    "region": "ORD"
                 }
             ],
-            "cloudFilesCDN" : [
+            "cloudFiles": [
                 {
-                    "region" : "DFW",
-                    "v1Default" : true,
-                    "publicURL" : "https://cdn.clouddrive.com/v1/1234"
+                    "internalURL": "https://snet-storage101.dfw1.clouddrive.com/v1/ MossoCloudFS_aaaa-bbbbb-cccc-ddddd ",
+                    "publicURL": "https://storage101.dfw1.clouddrive.com/v1/ MossoCloudFS_aaaa-bbbbb-cccc-ddddd ",
+                    "region": "DFW",
+                    "v1Default": true
+                }
+            ],
+            "cloudFilesCDN": [
+                {
+                    "publicURL": "https://cdn1.clouddrive.com/v1/MossoCloudFS_aaaa-bbbbb-cccc-ddddd",
+                    "region": "DFW",
+                    "v1Default": true
+                }
+            ],
+            "cloudLoadBalancers": [
+                {
+                    "publicURL": "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/1234",
+                    "region": "ORD"
                 },
                 {
-                    "region" : "ORD",
-                    "publicURL" : "https://othercdn.clouddrive.com/v1/1234"
+                    "publicURL": "https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/1234",
+                    "region": "DFW"
                 }
             ],
-            "cloudServers" : [
+            "cloudMonitoring": [
                 {
-                    "v1Default" : true,
-                    "publicURL" : "https://servers.api.rackspacecloud.com/v1.0/1234"
+                    "publicURL": "https://monitoring.api.rackspacecloud.com/v1.0/1234"
                 }
             ],
-            "cloudServersOpenStack" : [
+            "cloudServers": [
                 {
-                    "v1Default" : false,
-                    "publicURL" : "https://dfw.servers.api.rackspacecloud.com/v2/322781", 
-                    "region" : "DFW"
-                }    
+                    "publicURL": "https://servers.api.rackspacecloud.com/v1.0/1234",
+                    "v1Default": true
+                }
+            ],
+            "cloudServersOpenStack": [
+                {
+                    "publicURL": "https://dfw.servers.api.rackspacecloud.com/v2/1234",
+                    "region": "DFW"
+                }
             ]
+        },
+        "token": {
+            "expires": "2012-04-12T13:15:52.000-05:00",
+            "id": "aaaaa-bbbbbb-cccccc-ddddd"
         }
     }
 }

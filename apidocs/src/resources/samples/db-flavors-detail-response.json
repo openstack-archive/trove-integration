@@ -18,8 +18,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.medium", 
-            "ram": 2048, 
-            "vcpus": 1
+            "ram": 2048
         }, 
         {
             "id": 2, 
@@ -34,8 +33,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.small", 
-            "ram": 1024, 
-            "vcpus": 1
+            "ram": 1024
         }, 
         {
             "id": 4, 
@@ -50,8 +48,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.large", 
-            "ram": 4096, 
-            "vcpus": 1
+            "ram": 4096
         }, 
         {
             "id": 6, 
@@ -66,8 +63,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.xxlarge", 
-            "ram": 16384, 
-            "vcpus": 4
+            "ram": 16384
         }, 
         {
             "id": 1, 
@@ -82,8 +78,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.tiny", 
-            "ram": 512, 
-            "vcpus": 1
+            "ram": 512
         }, 
         {
             "id": 5, 
@@ -98,8 +93,7 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
                 }
             ], 
             "name": "m1.xlarge", 
-            "ram": 8192, 
-            "vcpus": 2
+            "ram": 8192
         }
     ]
 }

@@ -1,7 +1,7 @@
 POST /v1.0/1234/instances HTTP/1.1
 User-Agent: python-example-client
 Host: ord.databases.api.rackspacecloud.com
-X-Auth-Token: 87c6033c-9ff6-405f-943e-2deb73f278b7
+X-Auth-Token: d6cafa5b-e0c7-4ab8-948e-7c95f2acd031
 Accept: application/xml
 Content-Type: application/xml
 
@@ -11,5 +11,13 @@ Content-Type: application/xml
 		<database character_set="utf8" collate="utf8_general_ci" name="sampledb"/>
 		<database name="nextround"/>
 	</databases>
+	<users>
+		<user name="demouser" password="demopassword">
+			<databases>
+				<database name="sampledb"/>
+			</databases>
+		</user>
+	</users>
 	<volume size="2"/>
 </instance>
+

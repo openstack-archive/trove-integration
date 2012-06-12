@@ -32,13 +32,15 @@
     xmlns:m="http://www.w3.org/1998/Math/MathML"
     xmlns:html="http://www.w3.org/1999/xhtml" 
     xml:id="cdb-devguide"
-    status="draft"
+   
     version="5.0">
-    <?rax status.bar.text="BETA"?>
+    <?rax status.bar.text="Early Access"?>
     <?rax title.font.size="35px" subtitle.font.size="20px"?>
-    <title>Rackspace Cloud Database BETA Developer Guide for Service Management</title>
+    <title>Rackspace Cloud Databases Developer Guide for Service
+        Management</title>
     <?rax status.bar.text="RAX INTERNAL"?>
-    <titleabbrev>Rackspace Cloud Database BETA Mgmt Dev Guide</titleabbrev>
+    <titleabbrev>Rackspace Cloud Databases Management Developer
+        Guide</titleabbrev>
     <info>
         <author>
             <personname>
@@ -54,9 +56,9 @@
             <year>2012</year>
             <holder>Rackspace US, Inc.</holder>
         </copyright>
-        <releaseinfo>API v1.0 BETA</releaseinfo>
-        <productname>Rackspace Cloud Database BETA</productname>
-        <pubdate>2012-01-26</pubdate>
+        <releaseinfo>API v1.0 EAP</releaseinfo>
+        <productname>Rackspace Cloud Databases</productname>
+        <pubdate>2012-06-01</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -65,44 +67,30 @@
         <abstract>
             <para>This document is intended for software developers
                 interested in developing service management
-                applications using the Rackspace Cloud Database
+                applications using the Rackspace Cloud Databases
                 Application Programming Interface
                     (<abbrev>API</abbrev>). </para>
         </abstract>
         
         <revhistory>
             <revision>
-                <date>2012-01-26</date>
+                <date>2012-06-xx</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Updated doc for bug fixes in
-                                code.</para>
+                            <para>Updated syntax highlighting for all
+                                examples.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
             </revision>
             <revision>
-                <date>2011-01-16</date>
+                <date>2012-04-16</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Updated xml examples to remove extra
-                                white space.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Added <xref
-                                   linkend="Root_Flag"/>.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2011-01-11</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Initial draft.</para>
+                            <para>Initial Early Access Program (EAP)
+                                release.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
@@ -118,11 +106,12 @@
     </info>
     <chapter xml:id="overview">
         <title>Overview</title>
-        <para>Rackspace Cloud Database is a database available to
+        <para>Rackspace Cloud Databases is a database available to
             Rackspace Cloud customers. Interactions with Cloud
-            Database occur programmatically via the Cloud Database API
-            as described in this <citetitle>Cloud Database Developer
-                Guide for Service Management</citetitle>.</para>
+            Databases occur programmatically via the Cloud Databases
+            API as described in this <citetitle>Cloud Databases
+                Developer Guide for Service
+            Management</citetitle>.</para>
         <remark>Writer: need to synch up Overview section with
             marketing blurb for web. These should be
             consistent.</remark>
@@ -130,13 +119,13 @@
             name once we have settled on that name; then get product
             name modified throughout entire manual .</remark>
         <para>The API operations described in this manual relate to
-            support of Cloud Database service activities on behalf of
+            support of Cloud Databases service activities on behalf of
             a specific customer. The scope of these operations is
             narrow, relating to the needs of a single customer. A
             customer might directly request these operations, however
             only Rackers are authorized to perform them.</para>
         <para security="writeronly">The following figure shows an
-            overview of Cloud Database Infrastructure: <informalfigure>
+            overview of Cloud Databases Infrastructure: <informalfigure>
                 <mediaobject>
                     <imageobject role="fo">
                         <imagedata
@@ -164,7 +153,8 @@
             ticket, chat, email, or phone.</remark>
         <section xml:id="Intended_Audience-d1e122">
             <title>Intended Audience</title>
-            <para>Two APIs provide access to Rackspace Cloud Database: </para>
+            <para>Two APIs provide access to Rackspace Cloud
+                Databases: </para>
             <itemizedlist spacing="compact">
                 <listitem>
                     <para>The <emphasis>management</emphasis> API,
@@ -179,7 +169,7 @@
                         available to developers within Rackspace and
                         Rackspace customers, is the subject of a
                         companion document, the <citetitle>Cloud
-                            Database Developer
+                            Databases Developer
                         Guide</citetitle>.</para>
                 </listitem>
             </itemizedlist>
@@ -215,10 +205,10 @@
         </section>
         <section xml:id="Additional_Resources-d1e532">
             <title>Additional Resources</title>
-            <para>Descriptive information about Cloud Database is also
-                published in its Web Application Description Language
-                (WADL) and XML Schema Definition (XSD). You are
-                welcome to read this information here:</para>
+            <para>Descriptive information about Cloud Databases is
+                also published in its Web Application Description
+                Language (WADL) and XML Schema Definition (XSD). You
+                are welcome to read this information here:</para>
             <itemizedlist>
                 <listitem>
                     <para>The WADL is <link
@@ -235,9 +225,9 @@
                     xlink:href="http://docs.rackspace.com/api/"
                     >http://docs.rackspace.com/api/</link>. </para>
             <para>For information about getting started using Cloud
-                Database and Cloud Servers, refer to
+                Databases and Cloud Servers, refer to
                     <citetitle>Getting Started with Rackspace Cloud
-                    Database and Servers</citetitle>.</para>
+                    Databases and Servers</citetitle>.</para>
             <para>For information about Rackspace Cloud products,
                 refer to <link
                     xlink:href="http://www.rackspace.com/cloud/"
@@ -245,9 +235,16 @@
                 also offers links to Rackspace's official support
                 channels, including knowledge base articles, forums,
                 phone, chat, and email. </para>
-            <para>For issues using the Cloud Database API, please send
-                email to the beta support list:
-                    <email>clouddb_beta@rackspace.com</email>.</para>
+            <para>Get access to the Cloud Databases Forum during the
+                Early Access Program (EAP) by sending an email to:
+                    <email>clouddb_beta@rackspace.com</email>. Once
+                received, we will send you an invitation to join our
+                forum group and you may set up your account if you
+                don’t already have one.</para>
+            <para>Please visit our <link
+                    xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
+                    >Product Feedback Forum</link> to find out what
+                customers think about Cloud Databases.</para>
             <para>You can also follow Rackspace updates and
                 announcements via twitter at <link
                     xlink:href="http://www.twitter.com/rackspace"
@@ -262,7 +259,7 @@
     <chapter xml:id="Concepts-d1e563">
         <title>Concepts</title>
         <?dbhtml stop-chunking?>
-        <para> To use the Cloud Database API effectively, you should
+        <para> To use the Cloud Databases API effectively, you should
             understand several key concepts: </para>
         <remark>Reviewer: Daniel  Morris is asking Daniel Salinas to
             do an initial write-up of this chapter.</remark>
@@ -308,30 +305,51 @@
     </chapter>
     <chapter xml:id="General_API_Information-d1e633">
         <title>General API Information</title>
-        <para> The Cloud Database Management API is implemented using
+        <para> The Cloud Databases Management API is implemented using
             a ReSTful web service interface. Most functions of the
-            customer-facing Cloud Database API may be accessed on
-            behalf of a customer. The Cloud Database Management API
+            customer-facing Cloud Databases API may be accessed on
+            behalf of a customer. The Cloud Databases Management API
             also extends this functionality to include operations for
             managing features of the public API <remark>as well as
                 additional data fields not available to
                 customers</remark>.</para>
         <section xml:id="Authentication-d1e647">
             <title>Authentication</title>
-            <para>Every ReST request against the Cloud Database
+            <para>Every ReST request against the Cloud Databases
                 Management API requires that the caller be
                 authenticated with HTTP Basic Auth using LDAP. </para>
             <note>
                 <para>Not all Rackspace employees will have access to
-                    the Cloud Database Management API. If you cannot
+                    the Cloud Databases Management API. If you cannot
                     access the service and feel that this is in error,
                     please contact your supervisor and have the
                     appropriate LDAP roles/permissions added. </para>
             </note>
         </section>
+        <section xml:id="Service_Access_Endpoints-d1e753">
+            <title>Service Access</title>
+            <para>The Database Service is a regionalized service. The
+                user of the service is therefore responsible for
+                appropriate replication, caching, and overall
+                maintenance of Cloud Databases data across regional
+                boundaries to other Cloud Databases servers.</para>
+            <?rax-fo keep-with-next?>
+            <para>Replace the sample account ID number,
+                    <parameter>1234</parameter>, as shown in the URLs
+                in this guide, with your actual account number
+                returned as part of the authentication service
+                response.</para>
+            <para>You will find the actual account number after the
+                final '/' in the <code>publicURL</code> field returned
+                by the authentication response. In the following
+                example, you can see from the <code>publicURL</code>
+                field for <code>cloudServers</code>
+                (publicURL="https://servers.api.rackspacecloud.com/v1.0/322781")
+                that the account number is 322781.</para>
+        </section>
         <section xml:id="Request_Response_Types-d1e503">
             <title>Request/Response Types</title>
-            <para> The Cloud Database API supports both the JSON and
+            <para> The Cloud Databases API supports both the JSON and
                 XML data serialization formats. The request format is
                 specified using the <code>Content-Type</code> header
                 and is <emphasis>required</emphasis> for calls that
@@ -396,7 +414,7 @@
             <example xml:id="request_with_headers_json">
                 <title>Request with Headers: JSON</title>
                 <?dbfo keep-together="always"?>
-                <programlisting language="xml"><xi:include href="samples/db-request-types.json" parse="text"><xi:fallback>Missing code sample!<?rax fail?></xi:fallback></xi:include></programlisting>
+                <programlisting language="json"><xi:include href="samples/db-request-types.json" parse="text"><xi:fallback>Missing code sample!<?rax fail?></xi:fallback></xi:include></programlisting>
             </example>
             <para><?rax-fo keep-with-next?>Therefore an XML response format is returned:</para>
             <example>
@@ -430,7 +448,7 @@
             <example>
                 <title>202 ACCEPTED Response: JSON</title>
                 <?dbfo keep-together="always"?>
-                <programlisting language="xml">Reviewer: need code example</programlisting>
+                <programlisting language="json">Reviewer: need code example</programlisting>
             </example>
             <para>The following table shows the attributes for asynchronous responses:</para>
             <table rules="all">
@@ -930,7 +948,7 @@
         <section xml:id="DB_faults">
             <title>Faults</title>
             <remark>Reviewer: need to update this section as needed
-                for Cloud Database.</remark>
+                for Cloud Databases.</remark>
             <para> When an error occurs, the Database Service returns
                 a fault object containing an HTTP error response code
                 that denotes the type of error. In the body of the
@@ -1030,7 +1048,7 @@
             <example>
                 <title>Example Fault Response: JSON</title>
                 <?dbfo keep-together="always"?>
-                <programlisting language="xml">
+                <programlisting language="json">
 <xi:include href="samples/db-faults-instanceFault.json" parse="text"/>
                     </programlisting>
             </example>
@@ -1057,7 +1075,7 @@
                 <title>Example badRequest Fault on Volume Size Errors:
                     JSON</title>
                 <?dbfo keep-together="always"?>
-                <programlisting language="xml">
+                <programlisting language="json">
 <xi:include href="samples/db-faults-badRequest.json" parse="text"/>
                     </programlisting>
             </example>
@@ -1073,7 +1091,7 @@
             <example>
                 <title>Example itemNotFound Fault: JSON</title>
                 <?dbfo keep-together="always"?>
-                <programlisting language="xml">
+                <programlisting language="json">
 <xi:include href="samples/db-faults-itemNotFound.json" parse="text"/>
                     </programlisting>
             </example>
@@ -1094,7 +1112,11 @@
                 <listitem>
                     <para>BLOCKED &ndash; The database instance is
                         unresponsive at the moment.</para>
-                </listitem> 
+                </listitem>
+                <listitem>
+                    <para>RESIZE &ndash; The database instance is being
+                        resized at the moment.</para>
+                </listitem>
                 <listitem>
                     <para>SHUTDOWN &ndash; The database instance is
                         terminating services. Also, SHUTDOWN is
@@ -1129,13 +1151,13 @@
             <para>This section describes the operations that are supported for managing database instances.</para>
             <wadl:resources 
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#instances">
+                <wadl:resource href="../../../xsd/management.wadl#instances">
                     <wadl:method href="getIndex"/>
                 </wadl:resource>
-                <wadl:resource href="management.wadl#instanceId">
+                <wadl:resource href="../../../xsd/management.wadl#instanceId">
                     <wadl:method href="showinstances"/>                
                 </wadl:resource>
-                <wadl:resource href="management.wadl#diagnostics">
+                <wadl:resource href="../../../xsd/management.wadl#diagnostics">
                     <wadl:method href="getdiagnosticdetails"/>
                 </wadl:resource>
             </wadl:resources>
@@ -1146,10 +1168,10 @@
             <para>This section describes the operations that are supported for getting host information.</para>
             <wadl:resources
                     xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#hosts">
+                <wadl:resource href="../../../xsd/management.wadl#hosts">
                     <wadl:method href="gethosts"/>
                 </wadl:resource>
-                <wadl:resource href="management.wadl#hostid">
+                <wadl:resource href="../../../xsd/management.wadl#hostid">
                     <wadl:method href="gethostbyid"/>
                 </wadl:resource>
             </wadl:resources>               
@@ -1159,7 +1181,7 @@
             <title>Management Instance Actions</title>
             <para>This section describes the actions that are supported for database instances.</para>
             <wadl:resources xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#instanceAction" >
+                <wadl:resource href="../../../xsd/management.wadl#instanceAction" >
                     <wadl:method href="rebootInstance"/>
                     <wadl:method href="updateGuest"/>
                 </wadl:resource>
@@ -1171,7 +1193,7 @@
             <para>This section describes the operations that are supported for getting information about storage devices.</para>
             <wadl:resources 
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#storage">
+                <wadl:resource href="../../../xsd/management.wadl#storage">
                     <wadl:method href="indexstorage"/>                
                 </wadl:resource>
             </wadl:resources>               
@@ -1183,7 +1205,7 @@
                 supported for accounts.</para>
             <wadl:resources
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#accountid">
+                <wadl:resource href="../../../xsd/management.wadl#accountid">
                     <wadl:method href="getaccountbyid"/>
                 </wadl:resource>
             </wadl:resources>
@@ -1195,11 +1217,11 @@
                 supported for managing configurations.</para>
             <wadl:resources
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#configs">
+                <wadl:resource href="../../../xsd/management.wadl#configs">
                     <wadl:method href="createconfigs"/>
                     <wadl:method href="getconfigs"/>
                 </wadl:resource>
-                <wadl:resource href="management.wadl#configid">
+                <wadl:resource href="../../../xsd/management.wadl#configid">
                     <wadl:method href="getconfigbyid"/>
                     <wadl:method href="updateconfig"/>
                     <wadl:method href="deleteconfig"/>
@@ -1212,7 +1234,7 @@
             <para>This section describes the operations that are supported for getting information about the root flag.</para>
             <wadl:resources 
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="management.wadl#rootdetails">
+                <wadl:resource href="../../../xsd/management.wadl#rootdetails">
                     <wadl:method href="getrootdetails"/>                
                 </wadl:resource>
             </wadl:resources>               

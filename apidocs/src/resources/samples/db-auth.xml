@@ -1,43 +1,50 @@
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
 Content-Length: 477
-Date: Wed, 23 Nov 2011 18:14:30 GMT
+Date: Thu, 12 Apr 2012 18:50:20 GMT
 
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <auth  xmlns="http://docs.rackspacecloud.com/auth/api/v1.1">
-  <token id="asdasdasd-adsasdads-asdasdasd-adsadsasd"
-    expires="2010-11-01T03:32:15-05:00" />
+  <token id="aaaaa-bbbbbb-cccccc-ddddd"
+    expires="2012-04-12T13:15:52.000-05:00" />
   <serviceCatalog>
-    <service name="cloudFiles">
-      <endpoint
-        region="DFW"
-        v1Default="true"
-        publicURL="https://storage.clouddrive.com/v1/RackCloudFS_demo"
-        internalURL="https://storage-snet.clouddrive.com/v1/RackCloudFS_demo" />
-      <endpoint
-        region="ORD"
-        publicURL="https://otherstorage.clouddrive.com/v1/RackCloudFS_demo"
-        internalURL="https://otherstorage-snet.clouddrive.com/v1/RackCloudFS_demo" />
+    <service name="cloudDatabases">
+      <endpoint region="ORD" v1Default="false"
+        publicURL="https://ord.databases.api.rackspacecloud.com/v1.0/1234"/>
+      <endpoint region="DFW" v1Default="false"
+        publicURL="https://dfw.databases.api.rackspacecloud.com/v1.0/1234"/>
     </service>
-    <service name="cloudFilesCDN">
-      <endpoint
-        region="DFW"
-        v1Default="true"
-        publicURL="https://cdn.clouddrive.com/v1/RackCloudFS_demo" />
-      <endpoint
-        region="ORD"
-        publicURL="https://othercdn.clouddrive.com/v1/RackCloudFS_demo" />
+    <service name="cloudDNS">
+      <endpoint v1Default="false" publicURL="https://dns.api.rackspacecloud.com/v1.0/1234"/>
     </service>
     <service name="cloudServers">
-      <endpoint
-        v1Default="true"
-        publicURL="https://servers.api.rackspacecloud.com/v1.0/322781" />
+      <endpoint v1Default="true"
+        publicURL="https://servers.api.rackspacecloud.com/v1.0/1234"/>
+    </service>
+    <service name="cloudLoadBalancers">
+      <endpoint region="DFW" v1Default="false"
+        publicURL="https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/1234"/>
+      <endpoint region="ORD" v1Default="false"
+        publicURL="https://ord.loadbalancers.api.rackspacecloud.com/v1.0/1234"/>
+    </service>
+    <service name="cloudMonitoring">
+      <endpoint v1Default="false"
+        publicURL="https://monitoring.api.rackspacecloud.com/v1.0/1234"/>
     </service>
     <service name="cloudServersOpenStack">
-      <endpoint
-        region="DFW"
-        v1Default="false"
-        publicURL="https://dfw.servers.api.rackspacecloud.com/v2/322781" />
+      <endpoint region="DFW" v1Default="false"
+        publicURL="https://dfw.servers.api.rackspacecloud.com/v2/1234"/>
+    </service>
+    <service name="cloudFiles">
+      <endpoint region="DFW" v1Default="true"
+        publicURL="https://storage101.dfw1.clouddrive.com/v1/MossoCloudFS_aaaa-bbbbbb-ccccc-ddddd"
+        internalURL="https://snet-storage101.dfw1.clouddrive.com/v1/MossoCloudFS_aaaa-bbbbbb-ccccc-ddddd"
+      />
+    </service>
+    <service name="cloudFilesCDN">
+      <endpoint region="DFW" v1Default="true"
+        publicURL="https://cdn1.clouddrive.com/v1/MossoCloudFS_aaaa-bbbbbb-ccccc-ddddd"
+      />
     </service>
   </serviceCatalog>
 </auth>
