@@ -290,7 +290,8 @@ class RestartTests(RebootTestBase):
         # under test which aside from these tangential issues is working.
         self.unsuccessful_restart()
 
-    @after_class(always_run=True)
+    @test(depends_on=[test_set_up],
+          runs_after=[test_ensure_mysql_is_running,test_unsuccessful_restart])
     def test_successful_restart(self):
         """Restart MySQL via the REST API successfully."""
         self.successful_restart()
