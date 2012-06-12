@@ -3,8 +3,8 @@ Content-Type: application/xml
 Content-Length: 1687
 Date: Wed, 25 Jan 2012 21:58:26 GMT
 
-<instance account_id="examples" created="2012-01-25T21:53:18Z" host="host" hostname="e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com" id="692d8418-7a8f-47f1-8060-59846c6e024f" name="xml_rack_instance" server_state_description="active" status="ACTIVE" updated="2012-01-25T21:55:30Z" xmlns="http://docs.openstack.org/database/api/v1.0">
-	<volume description="Volume ID: None assigned to Instance: None" id="2" name="xml_rack_instance" size="2"/>
+<instance account_id="examples" created="2012-01-25T21:53:18Z" host="host" hostname="e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com" id="692d8418-7a8f-47f1-8060-59846c6e024f" name="xml_rack_instance" root_enabled_at="2012-01-25 21:58:11" root_enabled_by="examples" server_state_description="active" status="ACTIVE" updated="2012-01-25T21:55:30Z" xmlns="http://docs.openstack.org/database/api/v1.0">
+	<volume description="Volume ID: None assigned to Instance: None" id="2" name="xml_rack_instance" size="2" used="0.12451171875"/>
 	<guest_status created_at="2012-01-25 21:53:23" deleted="False" deleted_at="None" instance_id="2" state="1" state_description="running" updated_at="2012-01-25 21:57:57"/>
 	<users>
 		<user name="dbuser3"/>

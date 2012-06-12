@@ -17,7 +17,6 @@ Date: Wed, 25 Jan 2012 21:53:05 GMT
             }
         ], 
         "name": "m1.tiny", 
-        "ram": 512, 
-        "vcpus": 1
+        "ram": 512
     }
 }

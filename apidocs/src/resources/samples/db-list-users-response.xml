@@ -1,11 +1,33 @@
 HTTP/1.1 200 OK
 Content-Type: application/xml
-Content-Length: 183
-Date: Wed, 25 Jan 2012 21:58:08 GMT
+Content-Length: 808
+Date: Wed, 21 Mar 2012 17:46:47 GMT
 
+<?xml version="1.0" ?>
 <users xmlns="http://docs.openstack.org/database/api/v1.0">
-	<user name="dbuser3"/>
-	<user name="dbuser4"/>
-	<user name="testuser"/>
-	<user name="userwith2dbs"/>
+	<user name="demouser">
+		<databases>
+			<database>
+				<name>sampledb</name>
+			</database>
+		</databases>
+	</user>
+	<user name="testuser">
+		<databases>
+			<database>
+				<name>databaseC</name>
+			</database>
+		</databases>
+	</user>
+	<user name="userwith2dbs">
+		<databases>
+			<database>
+				<name>databaseA</name>
+			</database>
+			<database>
+				<name>databaseB</name>
+			</database>
+		</databases>
+	</user>
 </users>
+
