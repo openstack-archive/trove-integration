@@ -590,24 +590,10 @@ class TestInstanceListing(object):
         self.other_client = create_dbaas_client(self.other_user)
 
     @test
-    def test_detail_list(self):
-        expected_attrs = ['created', 'flavor', 'hostname', 'id', 'links',
-                          'name', 'status', 'updated', 'volume', 'ip']
-        instances = dbaas.instances.details()
-        for instance in instances:
-            instance_dict = instance._info
-            with CheckInstance(instance_dict) as check:
-                print("Checking instance: %s" % instance_dict)
-                check.attrs_exist(instance_dict, expected_attrs,
-                                  msg="Instance Details")
-                check.flavor()
-                check.volume()
-                check.links(instance_dict['links'])
-
-    @test
     def test_index_list(self):
-        expected_attrs = ['id', 'links', 'hostname', 'name', 'status', 'ip']
-        instances = dbaas.instances.index()
+        expected_attrs = ['id', 'links', 'hostname', 'name', 'status', 'ip',
+                          'flavor', 'volume']
+        instances = dbaas.instances.list()
         for instance in instances:
             instance_dict = instance._info
             with CheckInstance(instance_dict) as check:
@@ -615,6 +601,8 @@ class TestInstanceListing(object):
                 check.attrs_exist(instance_dict, expected_attrs,
                                   msg="Instance Index")
                 check.links(instance_dict['links'])
+                check.flavor()
+                check.volume()
 
     @test
     def test_get_instance(self):
@@ -656,14 +644,6 @@ class TestInstanceListing(object):
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
         assert_equal(instance_info.volume['size'], instance.volume['size'])
-
-    @test
-    def test_index_detail_match_for_regular_user(self):
-        user = test_config.users.find_user(Requirements(is_admin=False))
-        dbaas = create_dbaas_client(user)
-        details = [instance.id for instance in dbaas.instances.list()]
-        index = [instance.id for instance in dbaas.instances.index()]
-        assert_equal(sorted(details), sorted(index))
 
     @test
     def test_instance_not_shown_to_other_user(self):
