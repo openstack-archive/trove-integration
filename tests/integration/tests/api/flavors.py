@@ -18,16 +18,18 @@ import os
 from nose.tools import assert_equal
 from nose.tools import assert_false
 from nose.tools import assert_true
+from novaclient import exceptions as nova_exceptions
 
 from proboscis import before_class
 from proboscis import test
+from proboscis.asserts import assert_raises
 
 import tests
 from tests.util import create_dbaas_client
 from tests.util import create_nova_client
 from tests.util import test_config
 from tests.util.users import Requirements
-
+from tests.util.check import AttrCheck
 
 GROUP = "dbaas.api.flavors"
 
@@ -119,3 +121,29 @@ class Flavors(object):
             assert_false(found_index is None, msg)
         for flavor in dbaas_flavors:
             assert_link_list_is_equal(flavor)
+
+    @test
+    def test_flavor_list_attrs(self):
+        expected_attrs =['id', 'name', 'ram', 'links']
+        flavors = self.rd_client.flavors.list()
+        attrcheck = AttrCheck()
+        for flavor in flavors:
+            flavor_dict = flavor._info
+            attrcheck.attrs_exist(flavor_dict, expected_attrs,
+                                  msg="Flavors list")
+            attrcheck.links(flavor_dict['links'])
+
+    @test
+    def test_flavor_get_attrs(self):
+        expected_attrs =['id', 'name', 'ram', 'links']
+        flavor = self.rd_client.flavors.get(1)
+        attrcheck = AttrCheck()
+        flavor_dict = flavor._info
+        attrcheck.attrs_exist(flavor_dict, expected_attrs,
+                              msg="Flavor Get 1")
+        attrcheck.links(flavor_dict['links'])
+
+    @test
+    def test_flavor_not_found(self):
+        assert_raises(nova_exceptions.NotFound,
+                      self.rd_client.flavors.get, "detail")

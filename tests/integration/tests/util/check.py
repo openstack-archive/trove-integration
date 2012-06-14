@@ -21,6 +21,7 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_true
+from proboscis.asserts import Check
 
 
 def get_stack_trace_of_caller(level_up):
@@ -103,3 +104,24 @@ class Checker(object):
 
     def true(self, *args, **kwargs):
         self._run_assertion(assert_true, *args, **kwargs)
+
+
+class AttrCheck(Check):
+    """Class for attr checks, links and other common items."""
+
+    def __init__(self):
+        super(AttrCheck, self).__init__()
+
+    def fail(self, msg):
+        self.true(False, msg)
+
+    def attrs_exist(self, list, expected_attrs, msg=None):
+        # Check these attrs only are returned in create response
+        for attr in list:
+            if attr not in expected_attrs:
+                self.fail("%s should not contain '%s'" % (msg, attr))
+
+    def links(self, links):
+        expected_attrs = ['href', 'rel']
+        for link in links:
+            self.attrs_exist(link, expected_attrs, msg="Links")

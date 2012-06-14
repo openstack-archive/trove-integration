@@ -60,6 +60,7 @@ from tests.util import process
 from tests.util.users import Requirements
 from tests.util import string_in_list
 from tests.util import poll_until
+from tests.util.check import AttrCheck
 from tests import TEST_MGMT
 from tests import WHITE_BOX
 
@@ -841,26 +842,12 @@ class VerifyInstanceMgmtInfo(object):
             assert_true('name' in user, "'name' not in users element.")
 
 
-class CheckInstance(Check):
+class CheckInstance(AttrCheck):
     """Class to check various attributes of Instance details"""
 
     def __init__(self, instance):
         super(CheckInstance, self).__init__()
         self.instance = instance
-
-    def fail(self, msg):
-        self.true(False, msg)
-
-    def attrs_exist(self, list, expected_attrs, msg=None):
-        # Check these attrs only are returned in create response
-        for attr in list:
-            if attr not in expected_attrs:
-                self.fail("%s should not contain '%s'" % (msg, attr))
-
-    def links(self, links):
-        expected_attrs = ['href', 'rel']
-        for link in links:
-            self.attrs_exist(link, expected_attrs, msg="Links")
 
     def flavor(self):
         if 'flavor' not in self.instance:
