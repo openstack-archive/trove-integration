@@ -42,8 +42,33 @@
             <holder>Rackspace US, Inc.</holder>
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
-        <pubdate>2012-05-31</pubdate>
+        <pubdate>2012-06-20</pubdate>
+        <legalnotice role="rs-api">
+            <annotation>
+                <remark>Copyright details are filled in by the template.</remark>
+            </annotation>
+        </legalnotice>
         <revhistory>
+            <revision>
+                <date>2012-06-20</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Replaced the deleted API call List
+                                Flavors Details with List Flavors
+                                (refer to <xref linkend="List_Flavors"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Fixed the volume size parameter for
+                                the Create Instance JSON examples to
+                                be an integer (refer to <xref
+                                   linkend="Create_DB_Instance"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-05-31</date>
                 <revdescription>
@@ -367,8 +392,8 @@
             </listitem>
             <listitem>
                 <para> If your account was created via <link
-                        xlink:href="http:/www.rackspace.co.uk"
-                        >http:/www.rackspace.co.uk</link>, it is a
+                        xlink:href="http://www.rackspace.co.uk"
+                        >http://www.rackspace.co.uk</link>, it is a
                     UK-based account. </para>
             </listitem>
         </itemizedlist>
@@ -566,26 +591,26 @@
             flavor size you use, the larger the amount of RAM and
             priority for CPU time your database instance will
             receive.</para>
-        <para>You need to use the List Flavors Details API call
-                (<code>/flavors/detail</code>) to find the available
+        <para>You need to use the List Flavors API call
+                (<code>/flavors</code>) to find the available
             configurations for your database instance, and then decide
             which size you need.</para>
         <para>This operation does not require a request body.</para>
         <para>The following examples show the cURL requests for List
-            Flavors Details:</para>
+            Flavors:</para>
         <example>
-            <title>cURL List Flavors Details Request: XML</title>
+            <title>cURL List Flavors Request: XML</title>
             <programlisting language="bash"><command>curl -i</command> \
 -H 'X-Auth-Token: <emphasis role="bold">your_auth_token</emphasis>' \
 <option>-H 'Accept: application/xml'</option> \
-<uri>'https://ord.databases.api.rackspacecloud.com/v1.0/</uri><emphasis role="bold">your_acct_id</emphasis><uri>/flavors/detail'</uri></programlisting>
+<uri>'https://ord.databases.api.rackspacecloud.com/v1.0/</uri><emphasis role="bold">your_acct_id</emphasis><uri>/flavors'</uri></programlisting>
         </example>
         <example>
-            <title>cURL List Flavors Details Request: JSON</title>
+            <title>cURL List Flavors Request: JSON</title>
             <programlisting language="bash"><command>curl -i</command> \
 -H 'X-Auth-Token: <emphasis role="bold">your_auth_token</emphasis>' \
 <option>-H 'Accept: application/json'</option> \
-<uri>'https://ord.databases.api.rackspacecloud.com/v1.0/</uri><emphasis role="bold">your_acct_id</emphasis><uri>/flavors/detail'</uri></programlisting>
+<uri>'https://ord.databases.api.rackspacecloud.com/v1.0/</uri><emphasis role="bold">your_acct_id</emphasis><uri>/flavors'</uri></programlisting>
         </example>
         <para>Remember to replace the names in the examples above with
             their actual respective values for all the cURL examples
@@ -605,14 +630,14 @@
                 </listitem>
             </itemizedlist></para>
         <para>The following examples show the responses for List
-            Flavors Details:</para>
+            Flavors:</para>
         <example>
-            <title>List Flavors Details Response: XML</title>
-            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-flavors-detail-response.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+            <title>List Flavors Response: XML</title>
+            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-flavors-response.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
         </example>
         <example>
-            <title>List Flavors Details Response: JSON</title>
-            <programlisting language="json"><xi:include href="../../src/resources/samples/db-flavors-detail-response.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+            <title>List Flavors Response: JSON</title>
+            <programlisting language="json"><xi:include href="../../src/resources/samples/db-flavors-response.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
         </example>
         <para>In the previous examples, you can see from the flavor
                 <code>name</code> that there are multiple flavors
@@ -735,7 +760,7 @@
         ],
         "volume": 
             {
-                "size": "2"
+                "size": 2
             }
     }
 }' \

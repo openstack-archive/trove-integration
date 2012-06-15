@@ -60,7 +60,7 @@
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-05-31</pubdate>
+        <pubdate>2012-06-20</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -74,6 +74,49 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-06-20</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Added support for pagination (refer
+                                to <xref linkend="pagination"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Added REBOOT status for database
+                                instance (refer to <xref
+                                   linkend="database_instance_status"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Removed API calls for List All
+                                Database Instances Detail (&GET;
+                                /instances/detail) and List Flavors
+                                Details (&GET;
+                                /flavors/detail).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Changed the name of the API call
+                                Check Root User to List Root-Enabled
+                                Status.</para>
+                        </listitem>
+                        <listitem>
+                            <para>Added note for volume
+                                   <code>used</code> attribute that it
+                                is <emphasis>not</emphasis> returned
+                                in responses for certain instance
+                                statuses (refer to <xref
+                                   linkend="GET_getInstanceById__version___accountId__instances__instanceId__"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Updated all examples to match the
+                                latest software version.</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-05-31</date>
                 <revdescription>
@@ -397,8 +440,8 @@
                     </listitem>
                     <listitem>
                         <para> If your account was created via <link
-                                xlink:href="http:/www.rackspace.co.uk"
-                                >http:/www.rackspace.co.uk</link>, it
+                                xlink:href="http://www.rackspace.co.uk"
+                                >http://www.rackspace.co.uk</link>, it
                             is a UK-based account. </para>
                     </listitem>
                 </itemizedlist>
@@ -478,23 +521,21 @@
                     <programlistingco>
                         <areaspec>
                             <area xml:id="auth.xml.token.expires"
-                                units="linecolumn" coords="10 13"/>
+                                units="linecolumn" coords="9 13"/>
                             <area xml:id="auth.xml.service.catalog"
-                                units="linecolumn" coords="11 18"/>
+                                units="linecolumn" coords="10 18"/>
                             <area xml:id="auth.xml.service.name"
-                                units="linecolumn" coords="12 19"/>
+                                units="linecolumn" coords="11 19"/>
                             <area xml:id="auth.xml.sc.s.e.region"
-                                units="linecolumn" coords="13 24"/>
+                                units="linecolumn" coords="12 24"/>
                             <area xml:id="auth.xml.sc.s.e.v1d"
-                                units="linecolumn" coords="13 40"/>
+                                units="linecolumn" coords="12 40"/>
                             <area xml:id="auth.xml.sc.s.e.pu"
-                                units="linecolumn" coords="14 19"/>
+                                units="linecolumn" coords="13 19"/>
                             <area xml:id="auth.xml.sc.s.e.iu"
-                                units="linecolumn" coords="42 21"/>
+                                units="linecolumn" coords="41 21"/>
                         </areaspec>
-                        <programlisting language="xml">
-<xi:include href="samples/db-auth.xml" parse="text"/>
-                    </programlisting>
+                        <programlisting language="xml"><xi:include href="samples/db-auth.xml" parse="text"/></programlisting>
                     </programlistingco>
                 </example>
               
@@ -1138,38 +1179,32 @@
             </table>
             
         </section>
-        <section xml:id="pagination" security="writeronly">
+        <section xml:id="pagination">
             <title>Pagination</title>
-            <remark>Reviewer: please review and give me your updates
-                for this section. Dev needs to determine which API
-                calls support pagination and then supply examples. I
-                have hidden this entire section for now, since we do
-                not believe that it will be supported for Private
-                Beta. Correct?</remark>
-            <para>To reduce load on the service, list operations will
-                return a maximum of 100 items at a time. This is
-                referred to as <emphasis>pagination</emphasis>.</para>
-            <para> Pagination is the ability to limit the size of the returned data as well as
-                retrieve a specified subset of a large data set. Pagination has two key concepts:
-                limit and offset. <emphasis>Limit</emphasis> is the restriction on the maximum
-                number of items for that type that can be returned. <emphasis>Offset</emphasis> is
-                the starting point for the return data. For example, an offset of 50 specifies that
-                the items that are returned should start with item number 51 (since the numbering is
-                one-based) in the collection. </para>
-            <para>It is important to note that offset <emphasis>must</emphasis> be a multiple of the
-                limit (or zero), otherwise a Bad Request Exception will be thrown. Both limit and
-                offset are specified via request parameters on the URI. The parameters are named
-                    <code>limit</code> and <code>offset</code> respectively, and both apply only to
-                &GET; calls. If unspecified, they default to <code>limit=100</code> and
-                    <code>offset=0</code>. See the examples that follow.</para>
-            <example>
-                <title>Examples of Limits and Offsets for Paging Calls</title>
-                <?dbfo keep-together="always"?>
-                <programlisting language="xml">Reviewer: Need code example.</programlisting>
-            </example>
-            <para>Pagination applies only to the calls listed in the following table: </para>
-            <remark>Reviewer: need to update the table of paginated API
-                calls below:</remark>
+            <para>To reduce load on the service, list operations
+                return a maximum of 20 items at a time. This is
+                referred to as <emphasis>pagination</emphasis>. Cloud
+                Databases has separate paging limits for instances,
+                databases, and users, which are currently all set to
+                20. If a request supplies no limit or one that exceeds
+                the configured default limit, the default is used
+                instead.</para>
+            <para> Pagination provides the ability to limit the size
+                of the returned data as well as retrieve a specified
+                subset of a large data set. Pagination has two key
+                concepts: limit and marker. <emphasis>Limit</emphasis>
+                is the restriction on the maximum number of items for
+                that type that can be returned.
+                    <emphasis>Marker</emphasis> is the ID of the last
+                item in the previous list returned. The ID is the UUID
+                in the case of instances, and the name in the case of
+                databases and users. For example, a query could
+                request the next 10 instances after the instance
+                "1234" as follows:
+                    <code>?limit=10&amp;marker=1234</code>. Items are
+                displayed sorted by ID. </para>
+            <para>Pagination applies only to the calls listed in the
+                following table: </para>
             <informaltable rules="all">
                 <thead>
                     <tr align="center">
@@ -1181,131 +1216,75 @@
                 <tbody>
                     <tr>
                         <td colspan="1">&GET;</td>
-                        <td colspan="2">/URI/</td>
-                        <td colspan="3">List all databases manageable
-                            by the account specified. </td>
+                        <td colspan="2">/instances/</td>
+                        <td colspan="3">Lists the status and
+                            information for all database
+                            instances.</td>
                     </tr>
-                
                     <tr>
                         <td colspan="1">&GET;</td>
-                        <td colspan="2"
-                                >/URI/?name=<replaceable>Name</replaceable></td>
-                        <td colspan="3">Filter databases.</td>
+                        <td colspan="2">
+                            /instances/{instanceId}/databases </td>
+                        <td colspan="3">Lists databases for the
+                            specified instance.</td>
                     </tr>
-               
                     <tr>
                         <td colspan="1">&GET;</td>
-                        <td colspan="2"
-                                >/URI/<replaceable>ID</replaceable></td>
-                        <td colspan="3">List details of the specified
-                            database.</td>
+                        <td colspan="2"> /instances/{instanceId}/users </td>
+                        <td colspan="3">Lists the users in the
+                            specified database instance.</td>
                     </tr>
-               
-                    <tr>
-                        <td colspan="1">&GET;</td>
-                        <td colspan="2"
-                                >/URI/<replaceable>ID</replaceable>/xxx</td>
-                        <td colspan="3">List details xxx.</td>
-                    </tr>
-               
-                    <tr>
-                        <td colspan="1">&GET;</td>
-                        <td colspan="2"
-                                >/URI/<replaceable>ID</replaceable>/yyy</td>
-                        <td colspan="3">List details yyy.</td>
-                    </tr>
-                
-                    
-                    
                 </tbody>
             </informaltable>
-            <para>See the following section for examples of paged List
-                Databases calls.</para>
-            <section xml:id="Pagination_Elements_and_Attributes-d1e1754">
-                <title>Pagination Elements and Attributes</title>
-                <remark>Reviewer: please review and give me your
-                    updates for this section.</remark>
-                <para>For any collection in a result, there is a <code>totalEntries</code> attribute
-                    representing the total number of entries there are for this item type. If the
-                    number of items requested in the &GET; call is less then the total number of
-                    items for this type, then there will be pagination links <code>previous</code>
-                    and/or <code>next</code>, specifying how to get to the previous and/or next set
-                    of records. </para>
-                <note>
-                    <para>The <code>previous</code> and/or <code>next</code> link elements are
-                        displayed only if there are items available in the corresponding link. See
-                        the following examples for details.</para>
-                </note>
-                <example>
-                    <title>List Databases Request with limit:
-                        XML</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Request with limit:
-                        JSON</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Response with totalEntries:
-                        XML</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Response with totalEntries:
-                        JSON</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <para> In the previous two response examples, note that
-                        <code>totalEntries=112</code> and that a link has been provided to retrieve
-                    the next 3 results (<code>limit=3</code>) in the link element identified by the
-                    attribute <code>rel="next"</code> (XML) or <code>"rel":"next"</code> (JSON). </para>
-                <para>The following example shows links to both previous and next results in the
-                    responses, since the request specified to start with the fourth item in the
-                    collection (<code>offset=3</code>):</para>
-                <example>
-                    <title>List Databases Request with limit and
-                        offset: XML</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Request with limit and
-                        offset: JSON</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Response with Links to
-                        previous and next Results: XML</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <example>
-                    <title>List Databases Response with Links to
-                        previous and next Results: JSON</title>
-                    <?dbfo keep-together="always"?>
-                    <programlisting language="xml">Reviewer: Need code example.</programlisting>
-                </example>
-                <para>
-                    <?rax-fo keep-with-next?> In the previous two response examples, note that
-                        <code>totalEntries=112</code> and two links have been provided to:<itemizedlist>
-                        <listitem>
-                            <para>Retrieve the next 3 results (<code>limit=3</code>) via the link
-                                element identified by the attribute <code>rel="next"</code> (XML) or
-                                    <code>"rel":"next"</code> (JSON)</para>
-                        </listitem>
-                        <listitem>
-                            <para>Retrieve the previous 3 results via the link element identified by
-                                the attribute <code>rel="previous"</code> (XML) or
-                                    <code>"rel":"previous"</code> (JSON) </para>
-                        </listitem>
-                    </itemizedlist></para>
-            </section>
+            <para>If the content returned by a call is paginated, the
+                response includes a structured link much like an
+                instance item's links, with the basic structure
+                    <code>{"href": "&lt;url>", "rel": "next"}</code>.
+                Any response that is truncated by pagination will have
+                a <emphasis>next</emphasis> link, which points to the
+                next item in the collection. If there are no more
+                items, no <emphasis>next</emphasis> link is
+                returned.</para>
+            <para>See the examples of paged List Instances calls that
+                follow.</para>
+            <example>
+                <title>List Instances Paged Request: XML</title>
+                <?dbfo keep-together="always"?>
+                <programlisting language="xml">
+<xi:include href="samples/db-instances-index-pagination-request.xml" parse="text"/>
+                    </programlisting>
+            </example>
+            <example>
+                <title>List Instances Paged Request: JSON</title>
+                <?dbfo keep-together="always"?>
+                <programlisting language="json">
+<xi:include href="samples/db-instances-index-pagination-request.json" parse="text"/>
+                    </programlisting>
+            </example>
+            <para>Notice that the paged request examples above set the
+                limit to 2 (<code>?limit=2</code>), so the responses
+                that follow each show 2 instances and return a
+                    <emphasis>marker</emphasis> set to the UUID of the
+                last item in the returned list
+                    (<code>?marker=4137d6a4-03b7-4b66-b0ef-8c7c35c470d3</code>).
+                Also a link is provided to retrieve the next 2 results
+                    (<code>limit=2</code>) in the link element
+                identified by the attribute <code>rel="next"</code>
+                (XML) or <code>"rel":"next"</code> (JSON):</para>
+            <example>
+                <title>List Instances Paged Response: XML</title>
+                <?dbfo keep-together="always"?>
+                <programlisting language="xml">
+<xi:include href="samples/db-instances-index-pagination-response.xml" parse="text"/>
+                    </programlisting>
+            </example>
+            <example>
+                <title>List Instances Paged Response: JSON</title>
+                <?dbfo keep-together="always"?>
+                <programlisting language="json">
+<xi:include href="samples/db-instances-index-pagination-response.json" parse="text"/>
+                    </programlisting>
+            </example>
         </section>
         <section xml:id="efficient_polling_changes_since_parm" security="writeronly">
             <title>Efficient Polling with the
@@ -1497,6 +1476,10 @@
                     <para>BUILD &ndash; The database instance is being provisioned.</para>
                 </listitem>
                 <listitem>
+                    <para>REBOOT &ndash; The database instance is
+                        rebooting.</para>
+                </listitem>
+                <listitem>
                     <para>ACTIVE &ndash; The database instance is
                         online and available to take requests.</para>     
                 </listitem>
@@ -1540,7 +1523,7 @@
                     <listitem>
                         <para>Using the Cloud Databases API, create a
                             database instance. For details see <xref
-                                linkend="POST_createInstance__version___accountId__instances_Database_Instances"
+                                linkend="POST_createInstance__version___accountId__instances_"
                             />.</para>
                     </listitem>
                     <listitem>
@@ -1570,7 +1553,7 @@
                 (with the trailing slash at the end). Rather, use
                 &GET; /instances/detail instead.</para>
         </note>
-        
+        <?hard-pagebreak?>
         <section xml:id="API_Versions">
             <title>API Versions</title>
             <para>This section describes the versions that are
@@ -1582,7 +1565,8 @@
                 <wadl:resource href="../../../xsd/dbaas.wadl#version">
                     <wadl:method href="getVersionInfo" />
                 </wadl:resource>
-            </wadl:resources>               
+            </wadl:resources>
+            
         </section>
         
         <section xml:id="Database_Instances">
@@ -1593,9 +1577,7 @@
                     <wadl:method href="createInstance"/>
                     <wadl:method href="getInstance"/>
                 </wadl:resource>
-                <wadl:resource href="../../../xsd/dbaas.wadl#instanceDetails">
-                    <wadl:method href="getInstanceDetails"/>
-                </wadl:resource>
+
                 <wadl:resource href="../../../xsd/dbaas.wadl#instanceId">
                     <wadl:method href="getInstanceById"/>
                     <wadl:method href="deleteInstance"/>  
@@ -1660,9 +1642,7 @@
                 <wadl:resource href="../../../xsd/dbaas.wadl#flavors">
                     <wadl:method href="getFlavors"/>
                 </wadl:resource>
-                <wadl:resource href="../../../xsd/dbaas.wadl#flavorDetails">
-                    <wadl:method href="getFlavorDetails"/>
-                </wadl:resource>
+
                 <wadl:resource href="../../../xsd/dbaas.wadl#flavorId">
                     <wadl:method href="getFlavorById"/>
                 </wadl:resource>
