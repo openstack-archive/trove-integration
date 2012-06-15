@@ -49,7 +49,9 @@ class ExampleGenerator(object):
         self.tenantID = tenant_id
         self.dbaas_url = "%s/v1.0/%s" % (self.api_url, self.tenantID)
 
-    def http_call(self, name, method, json, xml, output=True):
+    # print_req and print_resp for debugging purposes
+    def http_call(self, name, method, json, xml, 
+                  output=True, print_req=False, print_resp=False):
         name = name.replace('_', '-')
         print "http call for %s" % name
         http = httplib2.Http(disable_ssl_certificate_validation=True)
@@ -58,6 +60,7 @@ class ExampleGenerator(object):
                        'Accept': "application/json"
                       }
         req_headers.update(self.headers)
+
 
         content_type = 'json'
         request_body = json.get('body', None)
@@ -75,6 +78,12 @@ class ExampleGenerator(object):
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
+                if print_req:
+                    print "\tJSON req url:", url
+                    print "\tJSON req method:", method
+                    print "\tJSON req headers:", req_headers
+                    print "\tJSON req body:", request_body
+
         resp, resp_content = http.request(url, method, body=request_body,
                                           headers=req_headers)
         json_resp = resp, resp_content
@@ -90,8 +99,12 @@ class ExampleGenerator(object):
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
+                if print_resp:
+                    print "\tJSON resp:", resp
+                    print "\tJSON resp content:", resp_content
+                    print "\n"
 
-        """
+
         content_type = 'xml'
         req_headers['Accept'] = 'application/xml'
         req_headers['Content-Type'] = 'application/xml'
@@ -109,6 +122,11 @@ class ExampleGenerator(object):
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
+                if print_req:
+                    print "\tXML req url:", url
+                    print "\tXML req method:", method
+                    print "\tXML req headers:", req_headers
+                    print "\tXML req body:", request_body
         resp, resp_content = http.request(url, method, body=request_body,
                                           headers=req_headers)
         xml_resp = resp, resp_content
@@ -123,8 +141,11 @@ class ExampleGenerator(object):
                     post_host = urlparse(self.replace_host).netloc
                     output = output.replace(pre_host_port, post_host)
                 file.write(output)
-        """
-        xml_resp = None
+                if print_resp:
+                    print "\tXML resp:", resp
+                    print "\tXML resp content:", resp_content
+                    print "\n"
+
 
         return json_resp, xml_resp
 
@@ -208,7 +229,8 @@ class ExampleGenerator(object):
         tenant_id = auth['access']['token']['tenant']['id']
         return auth_id, tenant_id
 
-    def wait_for_instances(self, num=1):
+    # default to two for json and xml instances
+    def wait_for_instances(self, num=2):
         example_instances = []
         # wait for instances
         while True:
@@ -655,11 +677,10 @@ class ExampleGenerator(object):
         self.get_flavor_by_id()
 
         self.post_create_instance()
-
         # this will be used later to make instance related calls
-        example_instances = self.wait_for_instances(num=1)
-        # TODO(pdmars): only json, so should not be != 2
-        if len(example_instances) != 1:
+        example_instances = self.wait_for_instances(num=2)
+
+        if len(example_instances) != 2:
             print("-" * 60)
             print("-" * 60)
             print("SOMETHING WENT WRONG CREATING THE INSTANCES FOR THE "
@@ -669,11 +690,8 @@ class ExampleGenerator(object):
             return 1
 
         instance_ids = {"json": example_instances[0],
-                        "xml": None}
-        """
-        instance_ids = {"json": example_instances[0],
                         "xml": example_instances[1]}
-        """
+
         database_name = "exampledb"
         user_name = "testuser"
         print "\nUsing instance id(%s) for JSON calls\n" % instance_ids['json']
@@ -696,11 +714,16 @@ class ExampleGenerator(object):
         # Need to wait after each of these calls for
         # the instance to return back to active
         self.instance_restart(instance_ids)
-        self.wait_for_instances(num=1)
+        self.wait_for_instances(num=2)
         self.instance_resize_volume(instance_ids)
-        self.wait_for_instances()
+        self.wait_for_instances(num=2)
         self.instance_resize_flavor(instance_ids)
-        self.wait_for_instances()
+        self.wait_for_instances(num=2)
+
+        # Test instance pagination
+        # Database and user pagination is tested above (see limit_one methods)
+        self.get_list_instance_index_limit_one()
+
 
         # TODO(pdmars): most of these don't exist yet
         """
@@ -714,7 +737,7 @@ class ExampleGenerator(object):
         self.mgmt_instance_index(False)
         self.mgmt_get_instance_diagnostics(instance_ids)
         self.mgmt_instance_reboot(instance_ids)
-        self.wait_for_instances()
+        self.wait_for_instances(num=2)
 
         # Configs
         config_id = "myconf"
@@ -725,21 +748,7 @@ class ExampleGenerator(object):
         self.mgmt_delete_configs(config_id)
         """
 
-        # Test instance pagination, create a second instance
-        # Database and user pagination is tested above (see limit_one methods)
-        self.post_create_instance()
-
-        example_instances = self.wait_for_instances(num=2)
-
-        self.get_list_instance_index_limit_one()
-
-        # Clean up the instances
-        # TODO(pdmars): this is kind of hacky now that we have multiple json
-        # instances and no xml, should be fixed when xml is added back
-        for i in range(len(example_instances)):
-            instance_ids = {"json": example_instances[i],
-                            "xml": None}
-            self.delete_instance(instance_ids)
+        self.delete_instance(instance_ids)
 
 
 if __name__ == "__main__":

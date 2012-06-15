@@ -9,3 +9,5 @@ After customizing examples/local.conf, run:
     - Updated to work with reddwarf_lite
     - All XML calls are commented out
     - Management calls are also commented out
+2012-06-14
+    - Renabled XML calls 
