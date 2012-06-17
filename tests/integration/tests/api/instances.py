@@ -592,8 +592,7 @@ class TestInstanceListing(object):
 
     @test
     def test_index_list(self):
-        expected_attrs = ['id', 'links', 'hostname', 'name', 'status', 'ip',
-                          'flavor', 'volume']
+        expected_attrs = ['id', 'links', 'name', 'status', 'flavor', 'volume']
         instances = dbaas.instances.list()
         for instance in instances:
             instance_dict = instance._info
