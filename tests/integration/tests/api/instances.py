@@ -463,6 +463,7 @@ class WaitForGuestInstallationToFinish(object):
                     # If its not ACTIVE, anything but BUILD must be
                     # an error.
                     assert_equal("BUILD", instance.status)
+                    assert_equal(instance.volume.get('used', None), None)
                     return False
 
             poll_until(result_is_active)
@@ -617,7 +618,7 @@ class TestInstanceListing(object):
                               msg="Get Instance")
             check.flavor()
             check.links(instance_dict['links'])
-            check.volume()
+            check.used_volume()
 
     @test(enabled=not test_config.values['hostname_not_implemented']
                   and test_config.values['reddwarf_dns_support'])
@@ -645,6 +646,7 @@ class TestInstanceListing(object):
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
         assert_equal(instance_info.volume['size'], instance.volume['size'])
+        assert_true(0.12 < instance.volume['used'] < 0.25)
 
     @test
     def test_instance_not_shown_to_other_user(self):
@@ -870,6 +872,15 @@ class CheckInstance(AttrCheck):
             return
         if self.volume_key_exists():
             expected_attrs = ['size']
+            self.attrs_exist(self.instance['volume'], expected_attrs,
+                             msg="Volumes")
+
+    def used_volume(self):
+        if not test_config.values["reddwarf_can_have_volume"]:
+            return
+        if self.volume_key_exists():
+            expected_attrs = ['size', 'used']
+            print self.instance
             self.attrs_exist(self.instance['volume'], expected_attrs,
                              msg="Volumes")
 
