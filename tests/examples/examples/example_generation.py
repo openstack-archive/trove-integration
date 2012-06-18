@@ -160,13 +160,23 @@ class ExampleGenerator(object):
         my_string = my_re.sub('>\g<1></', my_string)
         return my_string
 
-    def output_request(self, url, output_headers, body, content_type, method):
+    def output_request(self, url, output_headers, body, content_type, method,
+                       static_auth_token=True):
         output_list = []
         parsed = urlparse(url)
-        output_list.append("%s %s HTTP/1.1" % (method, parsed.path))
+        if parsed.query:
+            method_url = parsed.path + '?' + parsed.query
+        else:
+            method_url = parsed.path
+        output_list.append("%s %s HTTP/1.1" % (method, method_url))
         output_list.append("User-Agent: %s" % output_headers['User-Agent'])
         output_list.append("Host: %s" % parsed.netloc)
-        output_list.append("X-Auth-Token: %s" % output_headers['X-Auth-Token'])
+        # static_auth_token option for documentation purposes
+        if static_auth_token:
+            output_token = '87c6033c-9ff6-405f-943e-2deb73f278b7'
+        else:
+            output_token = output_headers['X-Auth-Token']
+        output_list.append("X-Auth-Token: %s" % output_token)
         output_list.append("Accept: %s" % output_headers['Accept'])
         output_list.append("Content-Type: %s" % output_headers['Content-Type'])
         output_list.append("")
@@ -349,9 +359,11 @@ class ExampleGenerator(object):
                     "character_set": "utf8",
                     "collate": "utf8_general_ci"
                 },
-
                     {
                     "name": "anotherdb"
+                },
+                    {
+                    "name": "oneMoreDB"
                 }
             ]
         }
@@ -361,6 +373,7 @@ class ExampleGenerator(object):
                     '<Database name="%s" character_set="utf8" collate='
                     '"utf8_general_ci" />'
                     '<Database name="anotherexampledb" />'
+                    '<Database name="oneMoreExampledb" />'
                     '</Databases>') % database_name
         req_json['body'] = json.dumps(JSON_DATA)
         req_xml['body'] = XML_DATA
@@ -373,12 +386,12 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['xml'])}
         self.http_call("list_databases", 'GET', req_json, req_xml)
 
-    def get_list_databases_limit_one(self, instance_ids):
+    def get_list_databases_limit_two(self, instance_ids):
         req_json = {"url": "%s/instances/%s/databases?limit=1"
                             % (self.dbaas_url, instance_ids['json'])}
-        req_xml = {"url": "%s/instances/%s/databases?limit=1"
+        req_xml = {"url": "%s/instances/%s/databases?limit=2"
                             % (self.dbaas_url, instance_ids['xml'])}
-        self.http_call("list_databases_limit_one", 'GET', req_json, req_xml)
+        self.http_call("list_databases_pagination", 'GET', req_json, req_xml)
 
 
     def delete_databases(self, database_name, instance_ids):
@@ -397,25 +410,30 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['xml'])}
         JSON_DATA = {
             "users": [
-                    {
+                {
                     "name": "dbuser3",
                     "password": "password",
                     "database": "databaseA"
-                },
-                    {
+                    },
+                {
                     "name": "dbuser4",
                     "password": "password",
                     "databases": [
-                            {
+                        {
                             "name": "databaseB"
-                        },
-                            {
+                            },
+                        {
                             "name": "databaseC"
-                        }
-                    ]
-                }
-            ]
-        }
+                            }
+                        ]
+                    },
+                {
+                    "name": "dbuser5",
+                    "password": "password",
+                    "database": "databaseD"
+                    }
+                ]
+            }
         XML_DATA = ('<?xml version="1.0" ?>'
                     '<users xmlns='
                     '"http://docs.openstack.org/database/api/v1.0">'
@@ -425,6 +443,13 @@ class ExampleGenerator(object):
                     '<databases>'
                     '<database name="databaseA"/>'
                     '<database name="databaseB"/>'
+                    '</databases>'
+                    '</user>'
+                    '<user name="userwith3db" password="password">'
+                    '<databases>'
+                    '<database name="databaseD"/>'
+                    '<database name="databaseE"/>'
+                    '<database name="databaseF"/>'
                     '</databases>'
                     '</user>'
                     '</users>') % user_name
@@ -480,12 +505,12 @@ class ExampleGenerator(object):
                             % (self.dbaas_url, instance_ids['xml'])}
         self.http_call("list_users", 'GET', req_json, req_xml)
 
-    def get_list_users_limit_one(self, instance_ids):
-        req_json = {"url": "%s/instances/%s/users?limit=1"
+    def get_list_users_limit_two(self, instance_ids):
+        req_json = {"url": "%s/instances/%s/users?limit=2"
                             % (self.dbaas_url, instance_ids['json'])}
-        req_xml = {"url": "%s/instances/%s/users?limit=1"
+        req_xml = {"url": "%s/instances/%s/users?limit=2"
                             % (self.dbaas_url, instance_ids['xml'])}
-        self.http_call("list_users_limit_one", 'GET', req_json, req_xml)
+        self.http_call("list_users_pagination", 'GET', req_json, req_xml)
 
     def delete_users(self, instance_ids, user_name):
         req_json = {"url": "%s/instances/%s/users/%s"
@@ -513,10 +538,10 @@ class ExampleGenerator(object):
         req_xml = {"url": "%s/instances" % self.dbaas_url}
         self.http_call("instances_index", 'GET', req_json, req_xml)
 
-    def get_list_instance_index_limit_one(self):
-        req_json = {"url": "%s/instances?limit=1" % self.dbaas_url}
-        req_xml = {"url": "%s/instances?limit=1" % self.dbaas_url}
-        self.http_call("instances_index_limit_one", 'GET', req_json, req_xml)
+    def get_list_instance_index_limit_two(self):
+        req_json = {"url": "%s/instances?limit=2" % self.dbaas_url}
+        req_xml = {"url": "%s/instances?limit=2" % self.dbaas_url}
+        self.http_call("instances_index_pagination", 'GET', req_json, req_xml)
 
     def get_list_instance_details(self):
         req_json = {"url": "%s/instances/detail" % self.dbaas_url}
@@ -699,11 +724,11 @@ class ExampleGenerator(object):
 
         self.post_create_databases(database_name, instance_ids)
         self.get_list_databases(instance_ids)
-        self.get_list_databases_limit_one(instance_ids)
+        self.get_list_databases_limit_two(instance_ids)
         self.delete_databases(database_name, instance_ids)
         self.post_create_users(instance_ids, user_name)
         self.get_list_users(instance_ids)
-        self.get_list_users_limit_one(instance_ids)
+        self.get_list_users_limit_two(instance_ids)
         self.delete_users(instance_ids, user_name)
         self.post_enable_root_access(instance_ids)
         self.get_check_root_access(instance_ids)
@@ -720,10 +745,15 @@ class ExampleGenerator(object):
         self.instance_resize_flavor(instance_ids)
         self.wait_for_instances(num=2)
 
-        # Test instance pagination
-        # Database and user pagination is tested above (see limit_one methods)
-        self.get_list_instance_index_limit_one()
-
+        # Test instance pagination.
+        # Database and user pagination is tested above (see limit_two methods).
+        # Since we are limiting to two instances and the create instance method
+        # creates two instances (xml and json), another two instances are 
+        # created. This is very hacky because the two new instances have the 
+        # same names as the previous ones; but they have different ids.
+        self.post_create_instance()
+        example_instances = self.wait_for_instances(num=4)
+        self.get_list_instance_index_limit_two()
 
         # TODO(pdmars): most of these don't exist yet
         """
@@ -748,7 +778,13 @@ class ExampleGenerator(object):
         self.mgmt_delete_configs(config_id)
         """
 
-        self.delete_instance(instance_ids)
+        # Because of the above Test instance pagination hack,
+        # instances must be deleted like so
+        self.delete_instance(instance_ids) # delete initial pair
+        last_example_instances = self.wait_for_instances(num=2)
+        last_instance_ids = {"json": last_example_instances[0],
+                        "xml": last_example_instances[1]}
+        self.delete_instance(last_instance_ids) # delete last pair
 
 
 if __name__ == "__main__":
