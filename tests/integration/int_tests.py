@@ -204,6 +204,7 @@ if __name__ == '__main__':
             "dbaas.api.instances.pagination",
             "dbaas.guest.shutdown",
             versions.GROUP,
+            "dbaas.guest.start.test",
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
