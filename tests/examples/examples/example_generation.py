@@ -116,6 +116,7 @@ class ExampleGenerator(object):
             with open(filename, "w") as file:
                 output = self.output_request(url, req_headers, request_body,
                                              content_type, method)
+                output = output.replace(self.tenantID, '1234')
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
@@ -135,6 +136,7 @@ class ExampleGenerator(object):
                                                 content_type)
             with open(filename, "w") as file:
                 output = self.output_response(resp, resp_content, content_type)
+                output = output.replace(self.tenantID, '1234')
                 if self.replace_host:
                     output = output.replace(self.api_url, self.replace_host)
                     pre_host_port = urlparse(self.api_url).netloc
@@ -298,11 +300,6 @@ class ExampleGenerator(object):
         req_json = {"url": "%s/flavors" % self.dbaas_url}
         req_xml = {"url": "%s/flavors" % self.dbaas_url}
         self.http_call("flavors", 'GET', req_json, req_xml)
-
-    def get_flavor_details(self):
-        req_json = {"url": "%s/flavors/detail" % self.dbaas_url}
-        req_xml = {"url": "%s/flavors/detail" % self.dbaas_url}
-        self.http_call("flavors_detail", 'GET', req_json, req_xml)
 
     def get_flavor_by_id(self):
         req_json = {"url": "%s/flavors/1" % self.dbaas_url}
@@ -543,11 +540,6 @@ class ExampleGenerator(object):
         req_xml = {"url": "%s/instances?limit=2" % self.dbaas_url}
         self.http_call("instances_index_pagination", 'GET', req_json, req_xml)
 
-    def get_list_instance_details(self):
-        req_json = {"url": "%s/instances/detail" % self.dbaas_url}
-        req_xml = {"url": "%s/instances/detail" % self.dbaas_url}
-        self.http_call("instances_detail", 'GET', req_json, req_xml)
-
     def get_instance_details(self, instance_ids):
         req_json = {"url": "%s/instances/%s"
                             % (self.dbaas_url, instance_ids['json'])}
@@ -698,7 +690,6 @@ class ExampleGenerator(object):
         # TODO(pdmars): is this a bug with get_version? the others seem to work
         #self.get_version()
         self.get_flavors()
-        self.get_flavor_details()
         self.get_flavor_by_id()
 
         self.post_create_instance()
@@ -733,7 +724,6 @@ class ExampleGenerator(object):
         self.post_enable_root_access(instance_ids)
         self.get_check_root_access(instance_ids)
         self.get_list_instance_index()
-        self.get_list_instance_details()
         self.get_instance_details(instance_ids)
 
         # Need to wait after each of these calls for
