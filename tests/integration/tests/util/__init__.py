@@ -280,8 +280,7 @@ def wait_for_compute_service():
 
 def should_run_rsdns_tests():
     """If true, then the RS DNS tests should also be run."""
-    dns_driver = test_config.values["reddwarf_dns_support"]
-    return dns_driver == "true"
+    return test_config.values.get("reddwarf_dns_support", False)
 
 
 def string_in_list(str, substr_list):

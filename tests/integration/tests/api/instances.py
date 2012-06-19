@@ -63,6 +63,7 @@ from tests.util import poll_until
 from tests.util.check import AttrCheck
 from tests import TEST_MGMT
 from tests import WHITE_BOX
+from tests import FAKE_MODE
 
 
 if WHITE_BOX:
@@ -619,8 +620,7 @@ class TestInstanceListing(object):
             check.links(instance_dict['links'])
             check.used_volume()
 
-    @test(enabled=not test_config.values['hostname_not_implemented']
-                  and test_config.values['reddwarf_dns_support'])
+    @test(enabled=not FAKE_MODE and test_config.values['reddwarf_dns_support'])
     def test_instance_hostname(self):
         instance = dbaas.instances.get(instance_info.id)
         hostname_prefix = ("%s" % (hashlib.sha1(instance.id).hexdigest()))
