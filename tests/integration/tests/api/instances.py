@@ -558,7 +558,7 @@ class TestVolume(unittest.TestCase):
 
 
 @test(depends_on_classes=[WaitForGuestInstallationToFinish],
-      groups=[GROUP, GROUP_TEST])
+      groups=[GROUP, GROUP_TEST, "dbaas.guest.start.test"])
 class TestAfterInstanceCreatedGuestData(object):
     """
     Test the optional parameters (databases and users) passed in to create
@@ -567,9 +567,10 @@ class TestAfterInstanceCreatedGuestData(object):
 
     @test
     def test_databases(self):
+        databases = dbaas.databases.list(instance_info.id)
+        dbs = [database.name for database in databases]
         for db in instance_info.databases:
-            if not instance_info.check_database(db["name"]):
-                fail("Database '%s' was not created" % db["name"])
+            assert_true(db["name"] in dbs)
 
     @test
     def test_users(self):
