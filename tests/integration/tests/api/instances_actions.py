@@ -283,18 +283,7 @@ class RestartTests(RebootTestBase):
 
     @test(depends_on=[test_ensure_mysql_is_running], enabled=not FAKE_MODE)
     def test_unsuccessful_restart(self):
-        """Restart MySQL via the REST when it should fail, assert it does."""
-        raise SkipTest("This test screws up the next test.")
-        #TODO(tim.simpson): Unskip this!  What is happening is that this test
-        # messed up the ib_logfiles, leading to a situation where MySQL
-        # can't start up again- it hangs. In Sneaky Pete & OVZ, it would time
-        # out and kill MySQL, and then report the failure, and life would go
-        # on. For some reason though that isn't the case here; I'm not sure
-        # if its because Python Pete doesn't kill the stalled MySQL instance
-        # correctly, or because the problem induced by the tests is not
-        # adequeately fixed in this new environment, or both. We need to figure
-        # out though because this is a worth-while bit of functionality
-        # under test which aside from these tangential issues is working.
+        """Restart MySQL via the REST when it should fail, assert it does."""        
         self.unsuccessful_restart()
 
     @test(depends_on=[test_set_up],
