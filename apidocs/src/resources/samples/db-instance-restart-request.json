@@ -1,7 +1,7 @@
-POST /v1.0/1234/instances/0617673d-a280-40c3-8151-29800a8f9d70/action HTTP/1.1
+POST /v1.0/1234/instances/13d940c4-70bb-4ff4-8866-6ee9ab5e5cae/action HTTP/1.1
 User-Agent: python-example-client
 Host: ord.databases.api.rackspacecloud.com
-X-Auth-Token: 73d60021-96e1-4d06-843d-72d20fa5377b
+X-Auth-Token: 87c6033c-9ff6-405f-943e-2deb73f278b7
 Accept: application/json
 Content-Type: application/json
 
