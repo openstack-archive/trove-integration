@@ -82,7 +82,12 @@
                           <enableDisqus>1</enableDisqus>
 			                    <googleAnalyticsId>UA-23102455-4</googleAnalyticsId>
                             <includes>cdb-devguide.xml</includes>
-                          <canonicalUrlBase>http://docs-beta.rackspace.com/cdb/api/v1.0/cdb-devguide/content</canonicalUrlBase>
+                          <canonicalUrlBase>http://docs.rackspace.com/cdb/api/v1.0/cdb-devguide/content</canonicalUrlBase>
+                          <postProcess>
+                            <copy todir="target/docbkx/webhelp/cdb-devguide/content/images">
+                              <fileset dir="src/resources/images" includes="**/*.png"/>
+                            </copy>
+                          </postProcess>
                         </configuration>
                     </execution>
                   <execution>
@@ -101,7 +106,12 @@
                       <pdfUrl>../../../cdb-getting-started.pdf</pdfUrl>
                       <enableDisqus>1</enableDisqus>
                       <googleAnalyticsId>UA-23102455-4</googleAnalyticsId>
-                      <canonicalUrlBase>http://docs-beta.rackspace.com/cdb/api/v1.0/cdb-getting-started/content</canonicalUrlBase>
+                      <canonicalUrlBase>http://docs.rackspace.com/cdb/api/v1.0/cdb-getting-started/content</canonicalUrlBase>
+                      <postProcess>
+                        <copy todir="target/docbkx/webhelp/cdb-getting-started/content/images">
+                          <fileset dir="src/resources/images" includes="**/*.png"/>
+                        </copy>
+                      </postProcess>
                     </configuration>
                   </execution>
                   <!-- MA: added this to generate public release notes -->

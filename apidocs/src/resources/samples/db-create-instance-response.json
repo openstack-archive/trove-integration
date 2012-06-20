@@ -35,7 +35,7 @@ Date: Wed, 25 Jan 2012 21:53:10 GMT
         "status": "BUILD", 
         "updated": "2012-01-25T21:53:10Z", 
         "volume": {
-            "size": "2"
+            "size": 2
         }
     }
 }
