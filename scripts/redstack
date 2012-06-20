@@ -969,6 +969,7 @@ function run_command() {
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
+        "start-fake" ) shift; cmd_start_fake $@;;
         "update-projects" ) cmd_update_projects;;
         "reset-task" ) shift; cmd_reset_task $@;;
         * )
