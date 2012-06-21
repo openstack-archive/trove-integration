@@ -41,6 +41,8 @@ from tests.util.test_config import white_box as WHITE_BOX
 from tests.util.test_config import clean_slate as CLEAN_SLATE
 
 from tests.util.test_config import test_mgmt as TEST_MGMT
+from tests.util.test_config import fake_mode as FAKE_MODE
+
 
 
 # The following decorate a test only if we're doing white box testing.

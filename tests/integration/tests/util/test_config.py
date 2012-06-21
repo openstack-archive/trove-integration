@@ -26,6 +26,7 @@ __all__ = [
     "compute_service",
     "dbaas",
     "dbaas_image",
+    "fake_mode",
     "glance_code_root",
     "glance_image",
     "nova",
@@ -118,6 +119,7 @@ def _setup():
     global dbaas
     global dbaas_image
     global dbaas_url
+    global fake_mode
     global glance_image
     global keystone_service
     global nova
@@ -137,6 +139,7 @@ def _setup():
     values = load_configuration()
     if os.environ.get("FAKE_MODE", "False") == "True":
         values["fake_mode"] = True
+    fake_mode = values.get('fake_mode', False)
     use_venv = values.get("use_venv", True)
     nova_auth_url = str(values.get("nova_auth_url",
                                    "http://localhost:5000/v2.0"))

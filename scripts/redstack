@@ -580,6 +580,11 @@ function fix_rd_configfile() {
     cd $PATH_REDDWARF
     cp etc/reddwarf/reddwarf.conf.sample $USERHOME/reddwarf.conf
     cp etc/reddwarf/reddwarf-taskmanager.conf.sample $USERHOME/reddwarf-taskmanager.conf
+    EXTRA_CONF=$REDSTACK_SCRIPTS/conf/reddwarf.extra.conf
+    if [ -e $EXTRA_CONF ]; then
+        cat $EXTRA_CONF >> $USERHOME/reddwarf.conf
+        cat $EXTRA_CONF >> $USERHOME/reddwarf-taskmanager.conf
+    fi
     # Do some munging to get it a-working
     # Tenant is no longer needed from the config, but we are leaving it in
     # until we have a better example of stuff to sed out.
@@ -592,9 +597,13 @@ function rd_manage() {
 }
 
 function mod_test_conf() {
-
-    cp $REDSTACK_SCRIPTS/conf/test.conf $USERHOME
+    cp $REDSTACK_SCRIPTS/conf/test_begin.conf $USERHOME/test.conf
     sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $USERHOME/test.conf
+    EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
+    if [ -e $EXTRA_CONF ]; then
+        cat $EXTRA_CONF >> $USERHOME/test.conf
+    fi
+    cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $USERHOME/test.conf
 }
 
 function cmd_initialize() {
