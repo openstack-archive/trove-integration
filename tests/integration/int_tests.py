@@ -122,10 +122,10 @@ if __name__ == '__main__':
     # flag files.
 
     from tests import WHITE_BOX
+    from tests.util import test_config
 
     if WHITE_BOX:  # If white-box testing, set up the flags.
         # Set up the flag file values, which we need to call certain Nova code.
-        from tests.util import test_config
         nova_conf = test_config.values["nova_conf"]
 
         from nova import utils
@@ -170,6 +170,7 @@ if __name__ == '__main__':
         from tests.api import versions
         from tests.api import instances
         from tests.api import instances_actions
+        from tests.api import instances_pagination
         from tests.api import databases
         from tests.api import root
         from tests.api import users
@@ -201,14 +202,19 @@ if __name__ == '__main__':
             "dbaas.preinstance",
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
-            "dbaas.api.instances.pagination",
-            "dbaas.api.instances.quotas",
             "dbaas.guest.shutdown",
             versions.GROUP,
             "dbaas.guest.start.test",
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
+
+        heavy_black_box_groups = [
+            "dbaas.api.instances.pagination",
+            "dbaas.api.instances.quotas",
+        ]
+        proboscis.register(groups=["heavy_blackbox"],
+                           depends_on_groups=heavy_black_box_groups)
 
         # This is for the old white-box tests...
         host_ovz_groups = [
