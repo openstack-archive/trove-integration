@@ -126,12 +126,18 @@ class HostsAfterInstanceCreation(object):
             check.true(myresult.usedRAM == diff,
                        "usedRAM should be : %r == %r" %
                        (myresult.usedRAM, diff))
-            calc = int((1.0 * myresult.usedRAM / myresult.totalRAM) * 100)
-            check.true(myresult.percentUsed == calc,
-                       "percentUsed should be : %r == %r" %
-                       (myresult.percentUsed, calc))
+            calc = float((1.0 * myresult.usedRAM / myresult.totalRAM) * 100)
+            low_bound = calc - (calc * 0.25)
+            high_bound = calc + (calc * 0.25)
+            check.true(myresult.percentUsed > low_bound,
+                       "percentUsed should be : %r > %r" %
+                       (myresult.percentUsed, low_bound))
+            check.true(myresult.percentUsed < high_bound,
+                       "percentUsed should be : %r < %r" %
+                       (myresult.percentUsed, high_bound))
             print("test_index_host_list_single result instances: %s" %
                 str(myresult.instances))
             for index, instance in enumerate(myresult.instances, start=1):
                 print("%d instance: %s" % (index, instance))
-                check.equal(['id', 'name', 'status'], sorted(instance.keys()))
+                check.equal(sorted(['id', 'name', 'status', 'server_id']),
+                            sorted(instance.keys()))
