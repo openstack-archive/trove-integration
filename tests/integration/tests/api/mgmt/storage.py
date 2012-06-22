@@ -14,6 +14,8 @@
 
 from reddwarfclient import exceptions
 
+from nose.plugins.skip import SkipTest
+
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
@@ -29,6 +31,7 @@ from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
 
+FAKE_MODE = test_config.values['fake_mode']
 GROUP = "dbaas.api.mgmt.storage"
 
 
@@ -43,19 +46,40 @@ class StorageBeforeInstanceCreation(object):
 
     @test
     def test_storage_on_host(self):
+        if not FAKE_MODE:
+            raise SkipTest("Volume driver currently not working.")
         storage = self.client.storage.index()
         print("storage : %r" % storage)
         for device in storage:
             assert_true(hasattr(device, 'name'),
                         "device.name: %r" % device.name)
-            assert_true(hasattr(device, 'availablesize'),
-                        "device.availablesize: %r" % device.availablesize)
-            assert_true(hasattr(device, 'totalsize'),
-                        "device.totalsize: %r" % device.totalsize)
+            assert_true(hasattr(device, 'type'),
+                        "device.type: %r" % device.name)
+            assert_true(hasattr(device, 'used'),
+                        "device.used: %r" % device.used)
+
+            assert_true(hasattr(device, 'provision'),
+                        "device.provision: %r" % device.provision)
+            provision = device.provision
+            assert_true(provision.has_key('available'),
+                        "provision.available: %r" % provision['available'])
+            assert_true(provision.has_key('percent'),
+                        "provision.percent: %r" % provision['percent'])
+            assert_true(provision.has_key('total'),
+                        "provision.total: %r" % provision['total'])
+
+            assert_true(hasattr(device, 'capacity'),
+                        "device.capacity: %r" % device.capacity)
+            capacity = device.capacity
+            assert_true(capacity.has_key('available'),
+                        "capacity.available: %r" % capacity['available'])
+            assert_true(capacity.has_key('total'),
+                        "capacity.total: %r" % capacity['total'])
         instance_info.storage = storage
 
 
-@test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"])
+@test(groups=[tests.INSTANCES, GROUP],
+      depends_on_groups=["dbaas.listing"])
 class StorageAfterInstanceCreation(object):
 
     @before_class
@@ -65,17 +89,24 @@ class StorageAfterInstanceCreation(object):
 
     @test
     def test_storage_on_host(self):
+        if not FAKE_MODE:
+            raise SkipTest("Volume driver currently not working.")
         storage = self.client.storage.index()
         print("storage : %r" % storage)
         print("instance_info.storage : %r" % instance_info.storage)
-        expected_attrs = ['name', 'availablesize', 'totalsize', 'type']
+        expected_attrs = ['name', 'type', 'used', 'provision', 'capacity']
         for index, device in enumerate(storage):
             CheckInstance(None).attrs_exist(device._info, expected_attrs,
                                             msg="Storage")
             assert_equal(device.name, instance_info.storage[index].name)
-            instance_totalsize = instance_info.storage[index].totalsize
-            assert_equal(device.totalsize, instance_totalsize)
+            assert_equal(device.used, instance_info.storage[index].used)
             assert_equal(device.type, instance_info.storage[index].type)
-            avail = instance_info.storage[index].availablesize
-            avail -= instance_info.volume['size']
-            assert_equal(device.availablesize, avail)
+
+            provision = instance_info.storage[index].provision
+            assert_equal(device.provision['available'], provision['available'])
+            assert_equal(device.provision['percent'], provision['percent'])
+            assert_equal(device.provision['total'], provision['total'])
+
+            capacity = instance_info.storage[index].capacity
+            assert_equal(device.capacity['available'], capacity['available'])
+            assert_equal(device.capacity['total'], capacity['total'])
