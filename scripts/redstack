@@ -689,6 +689,7 @@ function cmd_start() {
 }
 
 function cmd_start_fake() {
+    init_fake_mode
     init_reddwarf_screen
     CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
     screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"

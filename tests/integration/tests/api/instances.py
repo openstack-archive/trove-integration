@@ -648,7 +648,8 @@ class TestInstanceListing(object):
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
         assert_equal(instance_info.volume['size'], instance.volume['size'])
-        assert_true(0.12 < instance.volume['used'] < 0.25)
+        if create_new_instance():
+            assert_true(0.12 < instance.volume['used'] < 0.25)
 
     @test
     def test_instance_not_shown_to_other_user(self):
@@ -874,6 +875,8 @@ class CheckInstance(AttrCheck):
             return
         if self.volume_key_exists():
             expected_attrs = ['size']
+            if not create_new_instance():
+                expected_attrs.append('used')
             self.attrs_exist(self.instance['volume'], expected_attrs,
                              msg="Volumes")
 
