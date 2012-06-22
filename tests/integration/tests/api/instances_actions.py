@@ -170,7 +170,10 @@ def create_user():
     helper = ActionTestBase()
     helper.set_up()
     if USE_IP:
-        helper.create_user()
+        try:
+            helper.create_user()
+        except BadRequest:
+            pass  # Ignore this if the user already exists.
         helper.connection.connect()
         assert_true(helper.connection.is_connected(),
                     "Test user must be able to connect to MySQL.")
