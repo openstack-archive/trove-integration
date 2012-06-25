@@ -812,6 +812,12 @@ function cmd_rd_sql() {
     mysql -u root -p$MYSQL_PASSWORD reddwarf
 }
 
+function cmd_fake_sql() {
+    pushd $PATH_REDDWARF
+    sqlite3 reddwarf_test.sqlite $@
+    popd
+}
+
 function cmd_vagrant_ssh() {
     # Runs a command on a vagrant VM from the host machine.
     VHOST=`vagrant ssh_config host | awk '/HostName/{print $2}'`
@@ -970,6 +976,7 @@ function run_command() {
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
         "wipe-logs" ) cmd_wipe_logs;;
         "rd-sql" ) shift; cmd_rd_sql $@;;
+        "fake-sql" ) shift; cmd_fake_sql $@;;
         "run-ci" ) shift; cmd_run_ci $@;;
         "vagrant-ssh" ) shift; cmd_vagrant_ssh $@;;
         "debug" ) shift; echo "Enabling debugging."; \
