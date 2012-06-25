@@ -552,7 +552,7 @@ class TestGuestProcess(object):
                         assert_false(False, guest_process)
                     break
 
-    @test(enabled=test_config.values['test_mgmt'])
+    @test
     def grab_diagnostics_before_tests(self):
         diagnostics = dbaas_admin.diagnostics.get(instance_info.id)
         diagnostic_tests_helper(diagnostics)
@@ -959,6 +959,12 @@ def diagnostic_tests_helper(diagnostics):
                       'vmPeak', 'threads']
     CheckInstance(None).attrs_exist(diagnostics._info, expected_attrs,
                                     msg="Diagnostics")
+    assert_true(isinstance(diagnostics.fdSize, int))
+    assert_true(isinstance(diagnostics.threads, int))
+    assert_true(isinstance(diagnostics.vmHwm, int))
+    assert_true(isinstance(diagnostics.vmPeak, int))
+    assert_true(isinstance(diagnostics.vmRss, int))
+    assert_true(isinstance(diagnostics.vmSize, int))
     actual_version = diagnostics.version
     update_test_conf = test_config.values.get("guest-update-test", None)
     if update_test_conf is not None:
