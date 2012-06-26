@@ -365,13 +365,13 @@ class ExampleGenerator(object):
             ]
         }
         XML_DATA = ('<?xml version="1.0" ?>'
-                    '<Databases xmlns="'
+                    '<databases xmlns="'
                     'http://docs.openstack.org/database/api/v1.0">'
-                    '<Database name="%s" character_set="utf8" collate='
+                    '<database name="%s" character_set="utf8" collate='
                     '"utf8_general_ci" />'
-                    '<Database name="anotherexampledb" />'
-                    '<Database name="oneMoreExampledb" />'
-                    '</Databases>') % database_name
+                    '<database name="anotherexampledb" />'
+                    '<database name="oneMoreExampledb" />'
+                    '</databases>') % database_name
         req_json['body'] = json.dumps(JSON_DATA)
         req_xml['body'] = XML_DATA
         self.http_call("create_databases", 'POST', req_json, req_xml)
