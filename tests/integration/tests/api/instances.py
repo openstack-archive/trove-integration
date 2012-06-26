@@ -701,13 +701,12 @@ class CheckDiagnosticsAfterTests(object):
 
 @test(depends_on=[WaitForGuestInstallationToFinish],
       depends_on_groups=[GROUP_USERS, GROUP_DATABASES, GROUP_ROOT],
-      runs_after_groups=[GROUP_START, GROUP_TEST, tests.INSTANCES],
       groups=[GROUP, GROUP_STOP])
 class DeleteInstance(object):
     """ Delete the created instance """
 
     @time_out(3 * 60)
-    @test
+    @test(runs_after_groups=[GROUP_START, GROUP_TEST, tests.INSTANCES])
     def test_delete(self):
         if do_not_delete_instance():
             report.log("TESTS_DO_NOT_DELETE_INSTANCE=True was specified, "
@@ -742,7 +741,8 @@ class DeleteInstance(object):
                  "time: %s" % (str(instance_info.id), attempts, str(ex)))
 
     @time_out(30)
-    @test(enabled=test_config.values["reddwarf_can_have_volume"])
+    @test(enabled=test_config.values["reddwarf_can_have_volume"],
+          depends_on=[test_delete])
     def test_volume_is_deleted(self):
         raise SkipTest("Cannot test volume is deleted from db.")
         try:
