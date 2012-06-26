@@ -165,7 +165,7 @@ class InstancePagination50(TestBase):
 
 
 @test(runs_after_groups=["dbaas.guest.shutdown"],
-      groups=['dbaas.api.instances.pagination', 'donut'])
+      groups=['dbaas.api.instances.pagination'])
 class InstancePagination20(TestBase):
 
     max = 20
@@ -223,6 +223,3 @@ class InstancePagination20(TestBase):
         self.test_pagination(requested_limit=20, requested_marker=self.ids[14],
                              expected_length=5,  expected_marker=None,
                              expected_last_item=self.ids[19])
-
-
-
