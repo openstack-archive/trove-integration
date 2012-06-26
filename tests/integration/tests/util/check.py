@@ -125,3 +125,25 @@ class AttrCheck(Check):
         expected_attrs = ['href', 'rel']
         for link in links:
             self.attrs_exist(link, expected_attrs, msg="Links")
+
+
+class TypeCheck(Check):
+
+    def __init__(self, name, instance):
+        self.name = name
+        self.instance = instance
+        super(TypeCheck, self).__init__()
+
+    def _check_type(value, attribute_type):
+        if not isinstance(value, attribute_type):
+            self.fail("%s attribute %s is of type %s (expected %s)."
+                % (self.name, attribute_name, type(value), attribute_type))
+
+    def has_field(self, attribute_name, attribute_type):
+        if not hasattr(self.instance, attribute_name):
+            self.fail("%s missing attribute %s." % (self.name, attribute_name))
+        else:
+            value = getattr(self.instance, attribute_name)
+            if not isinstance(value, attribute_type):
+                self.fail("%s attribute %s is of type %s (expected %s)."
+                    % (self.name, attribute_name, type(value), attribute_type))
