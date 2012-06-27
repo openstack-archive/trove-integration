@@ -1,6 +1,4 @@
 HTTP/1.1 202 Accepted
-Content-Type: text/plain; charset=UTF-8
-Content-Length: 58
-Date: Mon, 27 Feb 2012 19:57:46 GMT
-
-   
+Content-Type: application/json
+Content-Length: 0
+Date: Wed, 27 Jun 2012 23:14:20 GMT
