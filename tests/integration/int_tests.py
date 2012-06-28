@@ -230,6 +230,7 @@ if __name__ == '__main__':
         from tests.api.mgmt import accounts
         from tests.api.mgmt import admin_required
         from tests.api.mgmt import hosts
+        from tests.api.mgmt import update_hosts
         from tests.api.mgmt import instances
         from tests.api.mgmt import storage
         from tests.openvz import dbaas_ovz
@@ -275,6 +276,7 @@ if __name__ == '__main__':
             "dbaas.api.instances.delete",
             "dbaas.api.instances.status",
             "dbaas.api.instances.down",
+            "dbaas.api.mgmt.hosts.update",
         ]
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)
