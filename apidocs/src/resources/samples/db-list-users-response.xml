@@ -1,33 +1,24 @@
 HTTP/1.1 200 OK
 Content-Type: application/xml
-Content-Length: 808
-Date: Wed, 21 Mar 2012 17:46:47 GMT
+Content-Length: 501
+Date: Wed, 27 Jun 2012 21:56:06 GMT
 
-<?xml version="1.0" ?>
 <users xmlns="http://docs.openstack.org/database/api/v1.0">
-	<user name="demouser">
-		<databases>
-			<database>
-				<name>sampledb</name>
-			</database>
-		</databases>
-	</user>
-	<user name="testuser">
-		<databases>
-			<database>
-				<name>databaseC</name>
-			</database>
-		</databases>
-	</user>
-	<user name="userwith2dbs">
-		<databases>
-			<database>
-				<name>databaseA</name>
-			</database>
-			<database>
-				<name>databaseB</name>
-			</database>
-		</databases>
-	</user>
+    <user name="userwith2dbs">
+        <databases>
+            <database name="databaseA"/>
+            <database name="databaseB"/>
+        </databases>
+    </user>
+    <user name="testuser">
+        <databases/>
+    </user>
+    <user name="userwith3dbs">
+        <databases>
+            <database name="databaseD"/>
+            <database name="databaseE"/>
+            <database name="databaseF"/>
+        </databases>
+    </user>
 </users>
 
