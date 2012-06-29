@@ -15,6 +15,8 @@
         <!-- changing authentication endpoints; define entities for US & UK rather than maintaining in text -->
         <!ENTITY ENDPOINT-US "https://identity.api.rackspacecloud.com/v1.1/">
         <!ENTITY ENDPOINT-UK "https://lon.identity.api.rackspacecloud.com/v1.1/">
+        <!ENTITY ENDPOINT-US-20 "https://identity.api.rackspacecloud.com/v2.0/">
+        <!ENTITY ENDPOINT-UK-20 "https://lon.identity.api.rackspacecloud.com/v2.0/">
 
         <!-- Useful for specs -->
         <!ENTITY MAY    '<emphasis xmlns="http://docbook.org/ns/docbook" role="strong">MAY</emphasis>'>
@@ -42,7 +44,7 @@
             <holder>Rackspace US, Inc.</holder>
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
-        <pubdate>2012-06-20</pubdate>
+        <pubdate>2012-07-02</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -50,7 +52,7 @@
         </legalnotice>
         <revhistory>
             <revision>
-                <date>2012-06-20</date>
+                <date>2012-07-02</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
@@ -62,7 +64,10 @@
                         <listitem>
                             <para>Fixed the volume size parameter for
                                 the Create Instance JSON examples to
-                                be an integer (refer to <xref
+                                be an integer; added note at end of
+                                section about waiting for the database
+                                instance to become active before using
+                                it (refer to <xref
                                    linkend="Create_DB_Instance"
                                 />).</para>
                         </listitem>
@@ -284,32 +289,40 @@
                 <?dbfo keep-together="always"?>
                 <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
 '&lt;?xml version="1.0" encoding="UTF-8"?>  
-&lt;credentials xmlns="http://docs.rackspacecloud.com/auth/api/v1.1" 
-             username="<emphasis role="bold">your_username</emphasis>" 
-             key="<emphasis role="bold">your_api_key</emphasis>"/>' \
-<option>-H 'Content-Type: application/xml'</option> \
-<option>-H 'Accept: application/xml'</option> \
-<uri>'https://identity.api.rackspacecloud.com/v1.1/auth'</uri></screen>
+ &lt;auth&gt;   
+    &lt;apiKeyCredentials     
+        xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"     
+        username="<emphasis role="bold">your_username</emphasis>"     
+        apiKey="<emphasis role="bold">your_api_key</emphasis>"/&gt;   
+ &lt;/auth&gt; <option>'</option> \
+<uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
             </example>
             <para>You can see that the lines that are part of the cURL
                 command syntax have all been escaped with a backslash
                 ('\') to indicate that the command continues on the
                 next line:</para>
             <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
- 
-             key="<emphasis role="bold">your_api_key</emphasis>"/>' \
-<option>-H 'Content-Type: application/xml'</option> \
-<option>-H 'Accept: application/xml'</option> \
-<uri>'https://identity.api.rackspacecloud.com/v1.1/auth'</uri></screen>
+  
+   
+(... lines within the xml portion of the message are not shown in this example)
+(... the example only shows lines that are part of cURL syntax)     
+     
+    
+   
+ &lt;/auth&gt;<option>'</option> \
+<uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
             <para>However the lines <emphasis>within</emphasis> the
                 xml portion of the message are
                     <emphasis>not</emphasis> escaped with a backslash
                 ('\') in order to avoid issues with the xml
                 processing:</para>
             <screen language="bash">'&lt;?xml version="1.0" encoding="UTF-8"?>  
-&lt;credentials xmlns="http://docs.rackspacecloud.com/auth/api/v1.1" 
-             username="<emphasis role="bold">your_username</emphasis>" 
-             key="<emphasis role="bold">your_api_key</emphasis>"/>' \
+ &lt;auth&gt;   
+    &lt;apiKeyCredentials     
+        xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"     
+        username="<emphasis role="bold">your_username</emphasis>"     
+        apiKey="<emphasis role="bold">your_api_key</emphasis>"/&gt;   
+ &lt;/auth&gt;<option>'</option> \
 </screen>
             <note>
                 <para>The final line of the xml message is escaped
@@ -336,7 +349,6 @@
         <title>Generate an Authentication Token</title>
         <para>You need to generate a token whether you use cURL or a
             ReST client.</para>
-        
         <para>In order to use the ReST API, you will first need to
             obtain an authentication token, which will need to be
             passed in for each request using the
@@ -347,7 +359,8 @@
             account number when making subsequent Cloud Databases API
             calls.</para>
         <para>Remember to replace the names in the Authenticate
-            Request examples below with their respective values:<itemizedlist spacing="compact">
+            Request examples below with their respective
+                values:<itemizedlist spacing="compact">
                 <listitem>
                     <para><emphasis role="bold"
                             >your_username</emphasis> &mdash; The
@@ -392,8 +405,8 @@
             </listitem>
             <listitem>
                 <para> If your account was created via <link
-                        xlink:href="http://www.rackspace.co.uk"
-                        >http://www.rackspace.co.uk</link>, it is a
+                        xlink:href="http:/www.rackspace.co.uk"
+                        >http:/www.rackspace.co.uk</link>, it is a
                     UK-based account. </para>
             </listitem>
         </itemizedlist>
@@ -429,13 +442,196 @@
     }' \
 <option>-H 'Content-Type: application/json'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v1.1/auth'</uri></screen>
+        </example>
+        <note>
+            <para>For UK-based accounts, you would need to modify the
+                URL shown in the last line of each of the Authenticate
+                Request examples above to be
+                    <code>'https://lon.identity.api.rackspacecloud.com/v1.1/auth'</code>
+                instead.</para>
+        </note>
+        <example>
+            <title>Authenticate Response: XML</title>
+            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-auth.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+        </example>
+        <example>
+            <title>Authenticate Response: JSON</title>
+            <programlisting language="json"><xi:include href="../../src/resources/samples/db-auth.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+        </example>
+        <para>The authentication token <code>id</code> is returned
+            along with an <code>expires</code> attribute that
+            specifies when the token expires. </para>
+        <note>
+            <title>Notes</title>
+            <itemizedlist spacing="compact">
+                <listitem>
+                    <para>The information shown in the Authenticate
+                        Response examples above is for US-based
+                        accounts. If you authenticate against the
+                        UK-endpoint for auth, you will see the service
+                        catalog information for UK-based
+                        accounts.</para>
+                </listitem>
+                <listitem>
+                    <para>For all response examples in this guide, the
+                        field values you receive in your responses
+                        will vary from those shown here since they
+                        will be specific to your account.</para>
+                </listitem>
+                <listitem>
+                    <para>The <code>id</code> attribute in the
+                        Authenticate Response specifies the
+                        authentication token. Tokens are valid for a
+                        finite duration.</para>
+                    <para>Remember to supply your authentication token
+                        wherever you see the field <emphasis
+                            role="bold">your_auth_token</emphasis> in
+                        the examples in this guide.</para>
+                </listitem>
+                <listitem>
+                    <para> The <code>expires</code> attribute denotes
+                        the time after which the token will
+                        automatically become invalid. A token may be
+                        manually revoked before the time identified by
+                        the expires attribute; <code>expires</code>
+                        predicts a token's maximum possible lifespan
+                        but does not guarantee that it will reach that
+                        lifespan. Clients are encouraged to cache a
+                        token until it expires.</para>
+                </listitem>
+                <listitem>
+                    <para>Applications should be designed to
+                        re-authenticate after receiving a 401
+                        (Unauthorized) response from a service
+                        endpoint.</para>
+                </listitem>
+            </itemizedlist>
+        </note>
+        <para>The <code>publicURL</code> endpoints for
+                <code>cloudDatabases</code> (for example
+                <code>https://ord.databases.api.rackspacecloud.com/v1.0/1234</code>)
+            are also returned in the response. </para>
+        <para>You will find the actual account number after the final
+            '/' in the <code>publicURL</code> field. In this example,
+            you can see that the account number is 1234. You need to
+            specify your account number on most of the Cloud Databases
+            API calls, wherever you see the field <emphasis
+                role="bold">your_acct_id</emphasis> specified in the
+            examples in this guide.</para>
+        <para>After authentication, you can use cURL to perform &GET;,
+            &DELETE;, and &POST; requests for the Cloud Databases
+            API.</para>
+    </section>
+    <section xml:id="Generating_Auth_Token" security="writeronly">
+        <title>Generate an Authentication Token</title>
+        <para>You need to generate a token whether you use cURL or a
+            ReST client.</para>
+        
+        <para>In order to use the ReST API, you will first need to
+            obtain an authentication token, which will need to be
+            passed in for each request using the
+                <code>X-Auth-Token</code> header. </para>
+        <para>The following example demonstrates how to use cURL to
+            obtain the authentication token and the account number.
+            You will need to supply the authentication token and
+            account number when making subsequent Cloud Databases API
+            calls.</para>
+        <para>Remember to replace the names in the Authenticate
+            Request examples below with their respective values:<itemizedlist spacing="compact">
+                <listitem>
+                    <para><emphasis role="bold"
+                            >your_username</emphasis> &mdash; The
+                        username is your common Rackspace Cloud
+                        username, as supplied during
+                        registration.</para>
+                </listitem>
+                <listitem>
+                    <para><emphasis role="bold"
+                            >your_api_key</emphasis> &mdash; The key
+                        is your API access key. The key can be
+                        obtained from the Rackspace Cloud Control
+                        Panel in the <guimenu>Your Account</guimenu> /
+                            <guimenuitem>API Access</guimenuitem>
+                        section.</para>
+                </listitem>
+            </itemizedlist></para>
+        <para> To access the Authentication Service, you must know
+            whether your account is US-based or UK-based: </para>
+        <itemizedlist spacing="compact">
+            <listitem>
+                <para> US-based accounts authenticate through <link
+                        xlink:href="&ENDPOINT-US-20;"
+                        >&ENDPOINT-US-20;</link>. </para>
+            </listitem>
+            <listitem>
+                <para> UK-based accounts authenticate through <link
+                        xlink:href="&ENDPOINT-UK-20;"
+                        >&ENDPOINT-UK-20;</link>. </para>
+            </listitem>
+        </itemizedlist>
+        <para> Your account may be based in either the US or the UK;
+            this is not determined by your physical location but by
+            the location of the Rackspace retail site which was used
+            to create your account: </para>
+        <itemizedlist spacing="compact">
+            <listitem>
+                <para> If your account was created via <link
+                        xlink:href="http://www.rackspacecloud.com"
+                        >http://www.rackspacecloud.com</link>, it is a
+                    US-based account. </para>
+            </listitem>
+            <listitem>
+                <para> If your account was created via <link
+                        xlink:href="http://www.rackspace.co.uk"
+                        >http://www.rackspace.co.uk</link>, it is a
+                    UK-based account. </para>
+            </listitem>
+        </itemizedlist>
+        <para> If you are unsure how your account was created, use the
+            Rackspace contact information at either site to ask for
+            help. </para>
+        <para>Notice that you authenticate using a special URL for
+            Cloud authentication services. For example, for US-based
+            accounts, you use
+                <code>https://identity.api.rackspacecloud.com/v2.0/tokens</code>,
+            as shown in the following Authenticate Request
+            examples.</para>
+        <example>
+            <title>cURL Authenticate Request: XML</title>
+            <?dbfo keep-together="always"?>
+            <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
+'&lt;?xml version="1.0" encoding="UTF-8"?>  
+ &lt;auth&gt;   
+    &lt;apiKeyCredentials     
+        xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"     
+        username="<emphasis role="bold">your_username</emphasis>"     
+        apiKey="<emphasis role="bold">your_api_key</emphasis>"/&gt;   
+ &lt;/auth&gt;<option>'</option> \
+<uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
+        </example>
+        <example>
+            <title>cURL Authenticate Request: JSON</title>
+            <?dbfo keep-together="always"?>
+            <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
+'{
+    "auth": 
+    {
+        "RAX-KSKEY:apiKeyCredentials": 
+        {
+             "username": "<emphasis role="bold">your_username</emphasis>",
+             "apiKey": "<emphasis role="bold">your_api_key</emphasis>"
+        }
+    }
+}' \
+<option>-H 'Content-Type: application/json'</option> \
+<uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
             
         </example>
         <note>
             <para>For UK-based accounts, you would need to modify the
                 URL shown in the last line of each of the Authenticate
-                Request  examples above to be
-                    <code>'https://lon.identity.api.rackspacecloud.com/v1.1/auth'</code>
+                Request examples above to be
+                    <code>'https://lon.identity.api.rackspacecloud.com/v2.0/tokens'</code>
                 instead.</para>
         </note>
         <example>
@@ -814,7 +1010,14 @@
             Databases for Instance.</para>
         <para>Note that the database and user are not listed in the
             Create Instance responses. Next you will verify that both
-            were successfully created.</para>
+            were successfully created.<note>
+                <para> The operation of creating the database instance
+                    may take up to several minutes. You will not be
+                    able to perform the operations to List Databases
+                    for Instance and List Users for Instance in the
+                    sections that follow until the instance has ACTIVE
+                    status. </para>
+            </note></para>
         </section>
     <section xml:id="List_DBS_For_Instance">
         <title>List Databases for Instance</title>
@@ -997,8 +1200,7 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
     <section xml:id="Create_Cloud_Server">
         <title>Create a New Cloud Server</title>
         <para>Create a Cloud Server (or use an existing Cloud Server)
-            to access your database with your database
-            instance.</para>
+            to access your database.</para>
         <note>
             <para>If you are using an existing Cloud Server on your
                 account, skip this step and go directly to <xref
@@ -1057,12 +1259,12 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
         <title>Configuring an Application to Use Your Cloud
             Database</title>
         <para>If you are configuring an application to use your
-            database on a Cloud Server with your database instance,
-            you need to configure the application with the hostname
-            and username / password for the database. Refer to the
+            database on a Cloud Server, you need to configure the
+            application with the hostname for the database instance
+            and user name / password for the database. Refer to the
             response examples in <xref linkend="Create_DB_Instance"/>
             for the <code>hostname</code> returned and the request
-            examples for the <code>password</code> you
+            examples for the user name and password you
             specified.</para>
     </section>
     <section xml:id="Configure_Cloud_Server_Routing">

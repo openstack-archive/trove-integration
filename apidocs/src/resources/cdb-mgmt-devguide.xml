@@ -58,7 +58,7 @@
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-06-01</pubdate>
+        <pubdate>2012-07-02</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -74,7 +74,7 @@
         
         <revhistory>
             <revision>
-                <date>2012-06-xx</date>
+                <date>2012-07-xx</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
@@ -124,7 +124,7 @@
             narrow, relating to the needs of a single customer. A
             customer might directly request these operations, however
             only Rackers are authorized to perform them.</para>
-        <para security="writeronly">The following figure shows an
+        <para>The following figure shows an
             overview of Cloud Databases Infrastructure: <informalfigure>
                 <mediaobject>
                     <imageobject role="fo">
@@ -310,7 +310,7 @@
             customer-facing Cloud Databases API may be accessed on
             behalf of a customer. The Cloud Databases Management API
             also extends this functionality to include operations for
-            managing features of the public API <remark>as well as
+            managing features of the public API<remark>as well as
                 additional data fields not available to
                 customers</remark>.</para>
         <section xml:id="Authentication-d1e647">
@@ -1104,6 +1104,10 @@
             <itemizedlist spacing="compact">
                 <listitem>
                     <para>BUILD &ndash; The database instance is being provisioned.</para>
+                </listitem>
+                <listitem>
+                    <para>REBOOT &ndash; The database instance is
+                        rebooting.</para>
                 </listitem>
                 <listitem>
                     <para>ACTIVE &ndash; The database instance is

@@ -61,7 +61,11 @@
                             <includes>cdb-mgmt-devguide.xml</includes>
 			                      <pdfUrl>../../cdb-mgmt-devguide-internal.pdf</pdfUrl>
                             <enableDisqus>intranet</enableDisqus>
-                            <feedbackEmail>mike.asthalter@rackspace.com</feedbackEmail>
+                          <feedbackEmail>mike.asthalter@rackspace.com</feedbackEmail><postProcess>
+                            <copy todir="target/docbkx/webhelp/cdb-mgmt-devguide/content/images">
+                              <fileset dir="src/resources/images" includes="**/*.png"/>
+                            </copy>
+                          </postProcess>
                         </configuration>
                     </execution>
                     <execution>
