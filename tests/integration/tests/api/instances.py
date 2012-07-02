@@ -45,6 +45,9 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_raises
+from proboscis.asserts import assert_is
+from proboscis.asserts import assert_is_none
+from proboscis.asserts import assert_is_not
 from proboscis.asserts import assert_true
 from proboscis.asserts import Check
 from proboscis.asserts import fail
@@ -61,6 +64,7 @@ from tests.util.users import Requirements
 from tests.util import string_in_list
 from tests.util import poll_until
 from tests.util.check import AttrCheck
+from tests.util import rpc
 from tests import TEST_MGMT
 from tests import WHITE_BOX
 from tests import FAKE_MODE
@@ -546,6 +550,15 @@ class TestGuestProcess(object):
         diagnostics = dbaas_admin.diagnostics.get(instance_info.id)
         diagnostic_tests_helper(diagnostics)
 
+    @test(enabled=rpc.DIRECT_ACCESS and not FAKE_MODE)
+    def queue_must_exist(self):
+        """Makes sure the queue exists."""
+        rabbit = rpc.Rabbit()
+        queue_name = "guestagent.%s" % instance_info.id
+        count = rabbit.get_queue_items(queue_name)
+        assert_is_not(count, None)
+        assert_equal(count, 0)
+
 
 @test(depends_on_classes=[CreateInstance],
       groups=[GROUP, GROUP_START, GROUP_TEST, "nova.volumes.instance"],
@@ -752,6 +765,14 @@ class DeleteInstance(object):
                 time.sleep(1)
         except backend_exception.VolumeNotFound:
             pass
+
+    @test(enabled=rpc.DIRECT_ACCESS and not FAKE_MODE)
+    def queue_is_deleted(self):
+        """Makes sure the queue is cleaned up."""
+        rabbit = rpc.Rabbit()
+        queue_name = "guestagent.%s" % instance_info.id
+        count = rabbit.get_queue_items(queue_name)
+        assert_is_none(count)
 
     #TODO: make sure that the actual instance, volume, guest status, and DNS
     #      entries are deleted.

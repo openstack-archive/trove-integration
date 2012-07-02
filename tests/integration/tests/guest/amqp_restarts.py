@@ -46,6 +46,7 @@ from tests.util import test_config
 from tests.util.services import Service
 from tests.util.services import start_proc
 from tests import WHITE_BOX
+from tests.util.rpc import Rabbit
 
 
 if WHITE_BOX:
@@ -58,51 +59,6 @@ if WHITE_BOX:
 
 def topic_name():
     return "guest.%s" % test_config.values['host_name']
-
-
-class Rabbit(object):
-
-    def declare_queue(self, topic):
-        """Call this to declare a queue from Python."""
-        with ConnectionContext() as conn:
-            consumer = conn.declare_topic_consumer(topic=topic)
-
-    def get_queue_items(self):
-        """Returns a count of the queued messages the host has sent."""
-        proc = start_proc(["/usr/bin/sudo", "rabbitmqctl", "list_queues"],
-                          shell=False)
-        for line in iter(proc.stdout.readline, ""):
-            print("LIST QUEUES:" + line)
-            m = re.search("""guest.%s\s+([0-9]+)"""
-                          % test_config.values['host_name'], line)
-            if m:
-                return int(m.group(1))
-        return 0
-
-    @property
-    def is_alive(self):
-        """Calls list_queues, should fail."""
-        try:
-            self.run(0, "rabbitmqctl", "list_queues")
-            return True
-        except ProcessExecutionError:
-            return False
-
-    def reset(self):
-        self.run(0, "rabbitmqctl", "reset")
-
-    def run(self, check_exit_code, *cmd):
-        return utils.execute(*cmd, run_as_root=True)
-
-    def start(self):
-        print("Calling rabbitmqctl start_app")
-        out = self.run(0, "rabbitmqctl", "start_app")
-        print(out)
-
-    def stop(self):
-        print("Calling rabbitmqctl stop_app")
-        out = self.run(0, "rabbitmqctl", "stop_app")
-        print(out)
 
 
 @test(groups=["agent", "amqp.restarts"])
@@ -120,7 +76,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
         self.agent.stop()
 
     def _send(self):
-        original_queue_count = self.rabbit.get_queue_items()
+        original_queue_count = self.rabbit.get_queue_items(topic_name()) or 0
 
         @time_out(5)
         def send_msg_with_timeout():
@@ -140,8 +96,9 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
             # fault or Sneaky Petes.
             print("Error making RPC call: %s" % e)
             print("Original queue count = %d, "
-                  "current count = %d" % (original_queue_count,
-                                          self.rabbit.get_queue_items()))
+                  "current count = %d"
+                  % (original_queue_count,
+                     self.rabbit.get_queue_items(topic_name()) or 0))
 
             # In the Kombu driver there is a bug where after restarting rabbit
             # the first message to be sent fails with a broken pipe. So here we
@@ -151,7 +108,8 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
                 errors = self.send_after_reconnect_errors
                 if errors > self.tolerated_send_errors:
                     fail("Exception while making RPC call: %s" % e)
-            if self.rabbit.get_queue_items() > original_queue_count:
+            if ((self.rabbit.get_queue_items(topic_name()) or 0)
+                > original_queue_count):
                 return {"status": "bad", "blame": "agent"}
             else:
                 return {"status": "bad", "blame": "host"}
