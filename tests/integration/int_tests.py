@@ -262,6 +262,7 @@ if __name__ == '__main__':
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
             "dbaas.api.instances.actions.stop",
+            "dbaas.api.instances.actions.reboot",
             "dbaas.guest.shutdown",
             versions.GROUP,
             "dbaas.guest.start.test",
