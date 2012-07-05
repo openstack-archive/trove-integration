@@ -11,6 +11,7 @@
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
+REDDWARF_SOURCE=/opt/stack/reddwarf_lite
 
 USERHOME=$HOME
 
@@ -626,7 +627,7 @@ function cmd_initialize() {
     fix_rd_configfile
 
     exclaim "Initializing the Reddwarf Database..."
-    rd_manage db_sync repo_path=/opt/stack/reddwarf_lite/reddwarf_test.sqlite
+    rd_manage db_sync repo_path=$REDDWARF_SOURCE/reddwarf_test.sqlite
 
     # Incredibly useful for testing resize in a VM.
     set +e
@@ -740,6 +741,11 @@ function cmd_int_tests() {
     python $args
 }
 
+function cmd_int_tests_white_box() {
+    export PYTHONPATH=$PYTHONPATH:$REDDWARF_SOURCE
+    cmd_int_tests --test-config white_box=True \
+        --config-file=$USERHOME/reddwarf.conf $@
+}
 
 ###############################################################################
 # Misc. tools
@@ -853,6 +859,12 @@ function cmd_run_ci() {
     FAKE_MODE=False cmd_int_tests
 }
 
+function cmd_wipe_queues() {
+    # Obliterate rabbit.
+    for i in stop_app reset start_app "change_password guest $RABBIT_PASSWORD"; \
+    do sudo rabbitmqctl $i; done
+}
+
 function cmd_clear() {
     cmd_int_tests --group=dbaas.api.instances.delete
     clean_instances
@@ -860,9 +872,7 @@ function cmd_clear() {
     mysql_nova "DELETE FROM instances;"
     mysql_reddwarf "DELETE FROM instances;"
     mysql_reddwarf "DELETE FROM service_statuses;"
-    # Obliterate rabbit.
-    for i in stop_app reset start_app "change_password guest $RABBIT_PASSWORD"; \
-    do sudo rabbitmqctl $i; done
+    cmd_wipe_queues
 }
 
 function cmd_kick_start() {
@@ -948,6 +958,7 @@ function print_usage() {
           run-fake        - Runs the server in fake mode.
           update-projects - Git pull on all the daemons reddwarf dependencies.
           reset-task      - Sets an instance task to NONE.
+          wipe-queues     - Resets RabbitMQ queues.
     "
     exit 1
 }
@@ -968,6 +979,7 @@ function run_command() {
         "stop-deps" ) cmd_stop_deps;;
         "start" ) cmd_start;;
         "int-tests" ) shift; cmd_int_tests $@;;
+        "int-tests-wb" ) shift; cmd_int_tests_white_box $@;;
         "stop" ) cmd_stop;;
         "glance-client" ) shift; cmd_glance_client;;
         "nova-client" ) shift; cmd_nova_client $@;;
@@ -989,6 +1001,7 @@ function run_command() {
         "start-fake" ) shift; cmd_start_fake $@;;
         "update-projects" ) cmd_update_projects;;
         "reset-task" ) shift; cmd_reset_task $@;;
+        "wipe-queues" ) shift; cmd_wipe_queues $@;;
         * )
             echo "'$1' not a valid command"
             exit 1

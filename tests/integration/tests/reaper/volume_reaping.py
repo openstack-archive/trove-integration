@@ -36,16 +36,19 @@ from tests.util import wait_for_compute_service
 from tests.util.instance import InstanceTest
 
 if WHITE_BOX:
-    from nova import context
-    from nova import flags
-    from nova import volume
-    from nova import utils
-    from nova.db import api as db_api
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import context
+    # from nova import flags
+    # from nova import volume
+    # from nova import utils
+    # from nova.db import api as db_api
 
-    from reddwarf.compute.manager import ReddwarfInstanceInitializer
-    from reddwarf.reaper import driver  # Do this to get the FLAG values.
+    # from reddwarf.compute.manager import ReddwarfInstanceInitializer
+    # from reddwarf.reaper import driver  # Do this to get the FLAG values.
 
-    FLAGS = flags.FLAGS
+    # FLAGS = flags.FLAGS
 
 GROUP = 'reddwarf.reaper'
 

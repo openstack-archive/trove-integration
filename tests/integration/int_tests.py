@@ -74,6 +74,30 @@ def add_support_for_localization():
 MAIN_RUNNER = None
 
 
+def initialize_rdl_config(config_file):
+    import optparse
+    from reddwarf.common import config
+    from reddwarf import version
+
+    def create_options(parser):
+        parser.add_option('-p', '--port', dest="port", metavar="PORT",
+                          type=int, default=9898,
+                          help="Port the Reddwarf API host listens on. "
+                         "Default: %default")
+        config.add_common_options(parser)
+        config.add_log_options(parser)
+
+    def usage():
+        usage = ""
+    oparser = optparse.OptionParser(version="%%prog %s"
+        % version.version_string(),
+        usage=usage())
+    create_options(oparser)
+    (options, args) = config.parse_options(oparser, cli_args=[config_file])
+    conf = config.Config.load_paste_config('reddwarf', options, args)
+    config.setup_logging(options, conf)
+
+
 def _clean_up():
     """Shuts down any services this program has started and shows results."""
     from tests.util import report
@@ -101,7 +125,11 @@ if __name__ == '__main__':
     show_elapsed = True
     groups = []
     print("RUNNING TEST ARGS :  " + str(sys.argv))
-    for arg in sys.argv[1:]:
+    extra_test_conf_lines = []
+    rdl_config_file = None
+    index = 0
+    while index < len(sys.argv):
+        arg = sys.argv[index]
         if arg[:2] == "-i" or arg == 'repl':
             repl = True
         if arg[:7] == "--conf=":
@@ -110,30 +138,49 @@ if __name__ == '__main__':
             os.environ["TEST_CONF"] = conf_file
         elif arg[:8] == "--group=":
             groups.append(arg[8:])
+        elif arg == "--test-config":
+            if index >= len(sys.argv) - 1:
+                print('Expected an argument to follow "--test-conf".')
+                sys.exit()
+            conf_line = sys.argv[index + 1]
+            extra_test_conf_lines.append(conf_line)
         elif arg[:11] == "--flagfile=":
             pass  # Don't append this...
+        elif arg[:14] == "--config-file=":
+            rdl_config_file = arg[14:]
         elif arg.startswith('--hide-elapsed'):
             show_elapsed = False
         else:
             nose_args.append(arg)
+        index += 1
 
     # Many of the test decorators depend on configuration values, so before
     # start importing modules we have to load the test config followed by the
     # flag files.
+    from tests.config import CONFIG
+
+    # Find config file.
+    if not "TEST_CONF" in os.environ:
+        raise RuntimeError("Please define an environment variable named " +
+                           "TEST_CONF with the location to a conf file.")
+    file_path = os.path.expanduser(os.environ["TEST_CONF"])
+    if not os.path.exists(file_path):
+        raise RuntimeError("Could not find TEST_CONF at " + file_path + ".")
+    # Load config file and then any lines we read from the arguments.
+    CONFIG.load_from_file(file_path)
+    for line in extra_test_conf_lines:
+        CONFIG.load_from_line(line)
+
+    # Reset values imported into tests/__init__.
+    # TODO(tim.simpson): Stop importing them from there.
+    from tests import initialize_globals
+    initialize_globals()
 
     from tests import WHITE_BOX
-    from tests.util import test_config
-
     if WHITE_BOX:  # If white-box testing, set up the flags.
-        # Set up the flag file values, which we need to call certain Nova code.
-        nova_conf = test_config.values["nova_conf"]
+        # Handle loading up RDL's config file madness.
+        initialize_rdl_config(rdl_config_file)
 
-        from nova import utils
-        utils.default_flagfile(str(nova_conf))
-
-        from nova import flags
-        FLAGS = flags.FLAGS
-        FLAGS(sys.argv)
 
     # Set up the report, and print out how we're running the tests.
     from tests.util import report
@@ -144,7 +191,7 @@ if __name__ == '__main__':
     report.log("Test conf file = %s" % os.environ["TEST_CONF"])
     if WHITE_BOX:
         report.log("")
-        report.log("Test FLAG file = %s" % nova_conf)
+        report.log("Test config file = %s" % rdl_config_file)
     report.log("")
     report.log("sys.path:")
     for path in sys.path:
@@ -156,9 +203,11 @@ if __name__ == '__main__':
     # Now that all configurations are loaded its time to import everything.
 
     import proboscis
-    from tests.dns import check_domain
-    from tests.dns import concurrency
-    from tests.dns import conversion
+    # TODO(tim.simpson): Import these again once white box test functionality
+    #                    is restored.
+    # from tests.dns import check_domain
+    # from tests.dns import concurrency
+    # from tests.dns import conversion
 
     # The DNS stuff is problematic. Not loading the other tests allow us to
     # run its functional tests only.

@@ -47,20 +47,23 @@ from tests import WHITE_BOX
 
 
 if WHITE_BOX:
-    from nova.exception import VolumeNotFound
-    from nova.scheduler.driver import Scheduler
-    from nova import context
-    from nova import utils
-    from nova.compute import power_state
-    from nova.compute import vm_states
-    from nova.notifier import api as notifier
-    from reddwarf.api.common import dbaas_mapping
-    from reddwarf.db import api as dbapi
-    from reddwarf.utils import poll_until
-    from reddwarf.scheduler import simple  # import used for FLAG values
-    from nova import flags
-    from reddwarf.compute.manager import ReddwarfInstanceMetaData
-    FLAGS = flags.FLAGS
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova.exception import VolumeNotFound
+    # from nova.scheduler.driver import Scheduler
+    # from nova import context
+    # from nova import utils
+    # from nova.compute import power_state
+    # from nova.compute import vm_states
+    # from nova.notifier import api as notifier
+    # from reddwarf.api.common import dbaas_mapping
+    # from reddwarf.db import api as dbapi
+    # from reddwarf.utils import poll_until
+    # from reddwarf.scheduler import simple  # import used for FLAG values
+    # from nova import flags
+    # from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    # FLAGS = flags.FLAGS
 
 VOLUME_TIME_OUT = 30
 

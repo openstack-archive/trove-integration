@@ -1,7 +1,6 @@
 from reddwarfclient.instances import InstanceStatus
 from proboscis.asserts import assert_equal
 from proboscis import test
-from tests.util.test_config import instance_create_time
 from tests.util.generation import InstanceGenerator
 from proboscis import before_class
 from tests.util import create_client

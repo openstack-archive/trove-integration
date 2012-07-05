@@ -35,7 +35,9 @@ if test_config.values.get('rabbit_runs_locally', False) == True:
 
         def declare_queue(self, topic):
             """Call this to declare a queue from Python."""
-            with ConnectionContext() as conn:
+            #from reddwarf.rpc.impl_kombu import Connection
+            from reddwarf.rpc import create_connection
+            with create_connection() as conn:
                 consumer = conn.declare_topic_consumer(topic=topic)
 
         def get_queue_items(self, queue_name):
@@ -61,21 +63,35 @@ if test_config.values.get('rabbit_runs_locally', False) == True:
         def is_alive(self):
             """Calls list_queues, should fail."""
             try:
-                self.run(0, "rabbitmqctl", "list_queues")
+                stdout, stderr = self.run(0, "rabbitmqctl", "list_queues")
+                for lines in stdout, stderr:
+                    for line in lines:
+                        if "no_exists" in line:
+                            return False
                 return True
             except ProcessExecutionError:
                 return False
 
         def reset(self):
-            self.run(0, "rabbitmqctl", "reset")
+            out, err = self.run(0, "rabbitmqctl", "reset")
+            print(out)
+            print(err)
 
         def run(self, check_exit_code, *cmd):
-            return utils.execute(*cmd, run_as_root=True)
+            cmds = ["/usr/bin/sudo"] + list(cmd)
+            proc = start_proc(cmds)
+            lines = proc.stdout.readlines()
+            err_lines = proc.stderr.readlines()
+            return lines, err_lines
 
         def start(self):
             print("Calling rabbitmqctl start_app")
             out = self.run(0, "rabbitmqctl", "start_app")
             print(out)
+            out, err = self.run(0, "rabbitmqctl", "change_password", "guest",
+                                test_config.values['rabbit_password'])
+            print(out)
+            print(err)
 
         def stop(self):
             print("Calling rabbitmqctl stop_app")

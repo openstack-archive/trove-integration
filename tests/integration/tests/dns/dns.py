@@ -14,14 +14,17 @@ from tests import WHITE_BOX
 
 
 if WHITE_BOX:
-    import rsdns
-    from nova import flags
-    from nova import utils
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # import rsdns
+    # from nova import flags
+    # from nova import utils
 
-    from reddwarf import exception
-    from reddwarf.utils import poll_until
+    # from reddwarf import exception
+    # from reddwarf.utils import poll_until
 
-    FLAGS = flags.FLAGS
+    # FLAGS = flags.FLAGS
 
 dns_driver = None
 

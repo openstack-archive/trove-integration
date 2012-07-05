@@ -49,23 +49,26 @@ from tests.util.users import Requirements
 from tests import WHITE_BOX
 
 if WHITE_BOX:
-    from nova import context
-    from nova import flags
-    from nova import utils
-    from nova.compute import power_state
-    from nova.compute import vm_states
-    from nova.exception import VolumeNotFound
-    from nova.notifier import api as notifier
-    from nova.scheduler.driver import Scheduler
-    from nova.virt import openvz_conn
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import context
+    # from nova import flags
+    # from nova import utils
+    # from nova.compute import power_state
+    # from nova.compute import vm_states
+    # from nova.exception import VolumeNotFound
+    # from nova.notifier import api as notifier
+    # from nova.scheduler.driver import Scheduler
+    # from nova.virt import openvz_conn
 
-    from reddwarf.api.common import dbaas_mapping
-    from reddwarf.db import api as dbapi
-    from reddwarf.utils import poll_until
-    from reddwarf.scheduler import simple  # import used for FLAG values
-    from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    # from reddwarf.api.common import dbaas_mapping
+    # from reddwarf.db import api as dbapi
+    # from reddwarf.utils import poll_until
+    # from reddwarf.scheduler import simple  # import used for FLAG values
+    # from reddwarf.compute.manager import ReddwarfInstanceMetaData
 
-    FLAGS = flags.FLAGS
+    # FLAGS = flags.FLAGS
 
 
 @test(depends_on_groups=[GROUP_START], groups=[GROUP_TEST, GROUP])

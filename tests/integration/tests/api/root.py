@@ -35,8 +35,11 @@ from tests.util import test_config
 from tests import WHITE_BOX
 
 if WHITE_BOX:
-    from sqlalchemy.sql.expression import text
-    from reddwarf.guest.dbaas import LocalSqlClient
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from sqlalchemy.sql.expression import text
+    # from reddwarf.guest.dbaas import LocalSqlClient
 
 GROUP = "dbaas.api.root"
 

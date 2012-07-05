@@ -36,12 +36,19 @@ from proboscis import before_class
 from proboscis import test
 # True if we can "see" the internals, such as the database, or can import
 # nova and reddwarf code.
-from tests.util.test_config import white_box as WHITE_BOX
-# True if we're positive we've started from a clean slate.
-from tests.util.test_config import clean_slate as CLEAN_SLATE
+from tests.config import CONFIG
 
-from tests.util.test_config import test_mgmt as TEST_MGMT
-from tests.util.test_config import fake_mode as FAKE_MODE
+#TODO(tim.simpson): Stop using these globals and instead just use CONFIG.
+def initialize_globals():
+    global WHITE_BOX
+    WHITE_BOX = CONFIG.white_box
+    global CLEAN_SLATE
+    CLEAN_SLATE = CONFIG.clean_slate
+    global TEST_MGMT
+    TEST_MGMT = CONFIG.test_mgmt
+    global FAKE_MODE
+    FAKE_MODE = CONFIG.fake_mode
+
 
 
 

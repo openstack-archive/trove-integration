@@ -71,13 +71,16 @@ from tests import FAKE_MODE
 
 
 if WHITE_BOX:
-    from nova import context
-    from nova import db
-    from nova import exception as backend_exception
-    from reddwarf.api.common import dbaas_mapping
-    from reddwarf.api.instances import FLAGS as dbaas_FLAGS
-    from nova.compute import power_state
-    from reddwarf.db import api as dbapi
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import context
+    # from nova import db
+    # from nova import exception as backend_exception
+    # from reddwarf.api.common import dbaas_mapping
+    # from reddwarf.api.instances import FLAGS as dbaas_FLAGS
+    # from nova.compute import power_state
+    # from reddwarf.db import api as dbapi
 
 
 FAKE_MODE = test_config.values['fake_mode']

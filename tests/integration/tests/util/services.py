@@ -138,7 +138,7 @@ class Service(object):
             raise RuntimeError('Cannot kill process, PID=' +
                                str(self.proc.pid))
 
-    def is_service_alive(self):
+    def is_service_alive(self, proc_name_index=1):
         """Searches for the process to see if its alive.
 
          This function will return true even if this class has not started
@@ -151,7 +151,7 @@ class Service(object):
         # The cmd[1] signifies the executable python script. It gets invoked
         # as python /path/to/executable args, so the entry is
         # /path/to/executable
-        actual_command = self.cmd[1].split("/")[-1]
+        actual_command = self.cmd[proc_name_index].split("/")[-1]
         print actual_command
         proc_command = ["/usr/bin/pgrep", "-f", actual_command]
         print proc_command
@@ -218,6 +218,13 @@ class Service(object):
             if self.is_service_alive():
                 return True
         return False
+
+
+class NativeService(Service):
+
+    def is_service_alive(self):
+        return super(NativeService, self).is_service_alive(proc_name_index=0)
+
 
 
 class WebService(Service):
