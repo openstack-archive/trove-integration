@@ -34,7 +34,6 @@ GROUP_DATABASES = "dbaas.api.databases"
 from datetime import datetime
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
-from novaclient import exceptions as nova_exceptions
 
 from reddwarfclient import exceptions
 
@@ -230,7 +229,7 @@ class InstanceSetup(object):
         config = {'key': key, 'value': value, 'description': description}
         try:
             dbaas_admin.configs.create([config])
-        except nova_exceptions.ClientException as e:
+        except exceptions.ClientException as e:
             # configs.create will throw an exception if the config already
             # exists we will check the value after to make sure it is correct
             # and set
@@ -251,7 +250,7 @@ class InstanceSetup(object):
 def test_delete_instance_not_found(self):
     """Deletes an instance that does not exist."""
     # Looks for a random UUID that (most probably) does not exist.
-    assert_raises(nova_exceptions.NotFound, dbaas.instances.delete,
+    assert_raises(exceptions.NotFound, dbaas.instances.delete,
                   "7016efb6-c02c-403e-9628-f6f57d0920d0")
 
 
@@ -268,7 +267,7 @@ class CreateInstance(unittest.TestCase):
     def test_instance_size_too_big(self):
         if 'reddwarf_max_accepted_volume_size' in test_config.values:
             too_big = test_config.values['reddwarf_max_accepted_volume_size']
-            assert_raises(nova_exceptions.OverLimit, dbaas.instances.create,
+            assert_raises(exceptions.OverLimit, dbaas.instances.create,
                           "way_too_large", instance_info.dbaas_flavor_href,
                           {'size': too_big + 1}, [])
         #else:
@@ -340,7 +339,7 @@ class CreateInstance(unittest.TestCase):
             instance_name = "instance-failure-with-no-volume-size"
             databases = []
             volume = {}
-            assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
+            assert_raises(exceptions.BadRequest, dbaas.instances.create,
                           instance_name, instance_info.dbaas_flavor_href,
                           volume, databases)
 
@@ -349,7 +348,7 @@ class CreateInstance(unittest.TestCase):
             instance_name = "instance-failure-with-no-volume-size"
             databases = []
             volume = {'size': None}
-            assert_raises(nova_exceptions.BadRequest, dbaas.instances.create,
+            assert_raises(exceptions.BadRequest, dbaas.instances.create,
                           instance_name, instance_info.dbaas_flavor_href,
                           volume, databases)
 
@@ -655,7 +654,7 @@ class TestInstanceListing(object):
 
     @test
     def test_get_legacy_status_notfound(self):
-        assert_raises(nova_exceptions.NotFound, dbaas.instances.get, -2)
+        assert_raises(exceptions.NotFound, dbaas.instances.get, -2)
 
     @test(enabled=test_config.values["reddwarf_main_instance_has_volume"])
     def test_volume_found(self):
@@ -671,16 +670,16 @@ class TestInstanceListing(object):
         admin_ids = [instance.id for instance in dbaas.instances.list()]
         assert_equal(len(daffy_ids), 0)
         assert_not_equal(sorted(admin_ids), sorted(daffy_ids))
-        assert_raises(nova_exceptions.NotFound,
+        assert_raises(exceptions.NotFound,
                       self.other_client.instances.get, instance_info.id)
         for id in admin_ids:
             assert_equal(daffy_ids.count(id), 0)
 
     @test
     def test_instance_not_deleted_by_other_user(self):
-        assert_raises(nova_exceptions.NotFound,
+        assert_raises(exceptions.NotFound,
                       self.other_client.instances.get, instance_info.id)
-        assert_raises(nova_exceptions.NotFound,
+        assert_raises(exceptions.NotFound,
                       self.other_client.instances.delete, instance_info.id)
 
     @test(enabled=test_config.values['test_mgmt'])
@@ -747,7 +746,7 @@ class DeleteInstance(object):
                 attempts += 1
                 result = dbaas.instances.get(instance_info.id)
                 assert_equal("SHUTDOWN", result.status)
-        except nova_exceptions.NotFound:
+        except exceptions.NotFound:
             pass
         except Exception as ex:
             fail("A failure occured when trying to GET instance %s for the %d "
@@ -801,7 +800,7 @@ class VerifyInstanceMgmtInfo(object):
     def test_bogus_instance_mgmt_data(self):
         # Make sure that a management call to a bogus API 500s.
         # The client reshapes the exception into just an OpenStackException.
-        assert_raises(nova_exceptions.NotFound,
+        assert_raises(exceptions.NotFound,
                       dbaas_admin.management.show, -1)
 
     @test
@@ -955,7 +954,7 @@ class InstanceQuotas(object):
                                                   flavor,
                                                   instance_info.volume)
             # This one better fail, because we just reached our quota.
-            assert_raises(nova_exceptions.OverLimit,
+            assert_raises(exceptions.OverLimit,
                           dbaas.instances.create,
                           "too_many", flavor,
                           {'size': 1})
@@ -969,7 +968,7 @@ class InstanceQuotas(object):
                     dbaas.instances.delete(id)
                 except exceptions.UnprocessableEntity:
                     continue
-                except nova_exceptions.NotFound:
+                except exceptions.NotFound:
                     break
 
 def diagnostic_tests_helper(diagnostics):

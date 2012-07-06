@@ -30,7 +30,6 @@ from proboscis.asserts import fail
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from novaclient.exceptions import NotFound
 from tests.util import test_config
 from tests.util import test_config
 from tests.util import check_database

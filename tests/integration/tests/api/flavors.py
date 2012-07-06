@@ -18,7 +18,7 @@ import os
 from nose.tools import assert_equal
 from nose.tools import assert_false
 from nose.tools import assert_true
-from novaclient import exceptions as nova_exceptions
+from reddwarfclient import exceptions
 
 from proboscis import before_class
 from proboscis import test
@@ -145,5 +145,5 @@ class Flavors(object):
 
     @test
     def test_flavor_not_found(self):
-        assert_raises(nova_exceptions.NotFound,
+        assert_raises(exceptions.NotFound,
                       self.rd_client.flavors.get, "detail")

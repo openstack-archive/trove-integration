@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from novaclient import exceptions
+from reddwarfclient import exceptions
 
 from proboscis import before_class
 from proboscis import test

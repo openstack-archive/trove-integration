@@ -17,7 +17,7 @@ from datetime import timedelta
 
 from nose.tools import assert_raises
 
-from novaclient.exceptions import NotFound
+from reddwarfclient.exceptions import NotFound
 
 from proboscis import after_class
 from proboscis import before_class

@@ -780,15 +780,15 @@ function cmd_glance_client() {
 
 function cmd_rd_client() {
     # This serves as an example of how to call the Reddwarf client script.
-    reddwarf-cli auth login radmin radmin reddwarf \
-        http://localhost:35357/v2.0
+    reddwarf-cli --username=radmin --apikey=radmin --tenant=reddwarf \
+        --auth_url=http://localhost:35357/v2.0/tokens auth login
     reddwarf-cli $@
 }
 
 function cmd_rd_mgmt_client() {
     # This serves as an example of how to call the Reddwarf managment client script.
-    reddwarf-cli auth login radmin radmin reddwarf \
-        http://localhost:35357/v2.0
+    reddwarf-cli --username=radmin --apikey=radmin --tenant=reddwarf \
+        --auth_url=http://localhost:35357/v2.0/tokens auth login
     reddwarf-mgmt-cli $@
 }
 
