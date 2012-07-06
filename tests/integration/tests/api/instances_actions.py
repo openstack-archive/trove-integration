@@ -29,7 +29,7 @@ from proboscis import SkipTest
 
 import tests
 from tests.util.check import Checker
-from novaclient.exceptions import BadRequest
+from reddwarfclient.exceptions import BadRequest
 from reddwarfclient.exceptions import UnprocessableEntity
 from tests.api.instances import GROUP as INSTANCE_GROUP
 from tests.api.instances import GROUP_START

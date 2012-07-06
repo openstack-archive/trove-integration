@@ -18,8 +18,6 @@ from tests import util
 
 GROUP = 'dbaas.compute.reboot.vz'
 
-from novaclient.exceptions import NotFound
-
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test

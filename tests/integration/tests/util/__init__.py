@@ -42,7 +42,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from novaclient.v1_1.client import Client
-from novaclient import exceptions
+from reddwarfclient import exceptions
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -195,14 +195,14 @@ def create_dbaas_client(user):
     set_optional('region_name', 'reddwarf_client_region_name')
     set_optional('service_url', 'override_reddwarf_api_url')
 
-    dbaas = Dbaas(user.auth_user, user.auth_key, user.tenant,
-                  test_config.reddwarf_auth_url, **kwargs)
+    dbaas = Dbaas(user.auth_user, user.auth_key, tenant=user.tenant,
+                  auth_url=test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()
     with Check() as check:
         check.is_not_none(dbaas.client.auth_token, "Auth token not set!")
         if not force_url and user.requirements.is_admin:
             expected_prefix = test_config.dbaas_url
-            actual = dbaas.client.management_url
+            actual = dbaas.client.service_url
             msg = "Dbaas management url was expected to start with %s, but " \
                   "was %s." % (expected_prefix, actual)
             check.true(actual.startswith(expected_prefix), msg)

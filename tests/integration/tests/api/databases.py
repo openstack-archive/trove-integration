@@ -14,7 +14,7 @@
 
 import time
 
-from novaclient import exceptions as nova_exceptions
+from reddwarfclient import exceptions
 
 from proboscis import before_class
 from proboscis import test
@@ -86,7 +86,7 @@ class TestDatabases(object):
                           "collate": "latin2_general_ci"})
         databases.append({"name": self.dbname2})
 
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
 
     @test
@@ -104,7 +104,7 @@ class TestDatabases(object):
     def test_create_database_on_missing_instance(self):
         databases = [{"name": "invalid_db", "charset": "latin2",
                       "collate": "latin2_general_ci"}]
-        assert_raises(nova_exceptions.NotFound, self.dbaas.databases.create,
+        assert_raises(exceptions.NotFound, self.dbaas.databases.create,
                       -1, databases)
 
     @test(runs_after=[test_create_database])
@@ -119,7 +119,7 @@ class TestDatabases(object):
 
     @test(runs_after=[test_delete_database])
     def test_delete_database_on_missing_instance(self):
-        assert_raises(nova_exceptions.NotFound, self.dbaas.databases.delete,
+        assert_raises(exceptions.NotFound, self.dbaas.databases.delete,
                       -1, self.dbname_urlencoded)
 
     @test
@@ -128,14 +128,14 @@ class TestDatabases(object):
         name = ("aasdlkhaglkjhakjdkjgfakjgadgfkajsg"
                 "34523dfkljgasldkjfglkjadsgflkjagsdd")
         databases.append({"name": name})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
 
     @test
     def test_invalid_database_name(self):
         databases = []
         databases.append({"name": "sdfsd,"})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.databases.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
 
     @test

@@ -15,7 +15,7 @@
 import time
 import re
 
-from novaclient import exceptions as nova_exceptions
+from reddwarfclient import exceptions
 
 from proboscis import after_class
 from proboscis import before_class
@@ -70,7 +70,7 @@ class TestUsers(object):
                      {"name": self.db2}]
         try:
             self.dbaas.databases.create(instance_info.id, databases)
-        except nova_exceptions.BadRequest:
+        except exceptions.BadRequest:
             pass  # If the db already exists that's OK.
         if not FAKE:
             time.sleep(5)
@@ -116,7 +116,7 @@ class TestUsers(object):
                       "databases": [{"name": self.db1}]})
         users.append({"name": self.username1, "password": self.password1,
                      "databases": [{"name": self.db1}, {"name": self.db2}]})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
 
     @test(depends_on=[test_create_users_list])
@@ -172,7 +172,7 @@ class TestUsers(object):
         users = []
         users.append({"name": "1233asdwer345tyg56", "password": self.password,
                       "database": self.db1})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
 
     @test
@@ -180,7 +180,7 @@ class TestUsers(object):
         users = []
         users.append({"name": "user,", "password": self.password,
                       "database": self.db1})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
 
     @test(enabled=False)
@@ -204,7 +204,7 @@ class TestUsers(object):
         users = []
         users.append({"name": "anouser", "password": "sdf,;",
                       "database": self.db1})
-        assert_raises(nova_exceptions.BadRequest, self.dbaas.users.create,
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
 
     @test
