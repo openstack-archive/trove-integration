@@ -30,6 +30,7 @@ from tests.util.check import TypeCheck
 
 from tests.api.instances import CreateInstance
 from tests.api.instances import instance_info
+from tests.api.instances import GROUP_START
 from tests.api.instances import GROUP_TEST
 
 
@@ -43,7 +44,7 @@ def mgmt_index_requires_admin_account():
 
 
 
-@test(depends_on_classes=[CreateInstance], groups=[GROUP, GROUP_TEST])
+@test(depends_on_groups=[GROUP_START], groups=[GROUP, GROUP_TEST])
 def mgmt_instance_get():
     """ Tests the mgmt instances index method. """
     client = create_client(is_admin=True)
