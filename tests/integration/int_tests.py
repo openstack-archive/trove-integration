@@ -278,6 +278,7 @@ if __name__ == '__main__':
             "dbaas.api.instances.status",
             "dbaas.api.instances.down",
             "dbaas.api.mgmt.hosts.update",
+            "fake.dbaas.api.mgmt.instances",
         ]
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)

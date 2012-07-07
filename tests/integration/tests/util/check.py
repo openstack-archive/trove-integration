@@ -127,7 +127,48 @@ class AttrCheck(Check):
             self.attrs_exist(link, expected_attrs, msg="Links")
 
 
+class CollectionCheck(Check):
+    """Checks for elements in a dictionary."""
+
+    def __init__(self, name, collection):
+        self.name = name
+        self.collection = collection
+        super(CollectionCheck, self).__init__()
+
+
+    def element_equals(self, key, expected_value):
+        if key not in self.collection:
+            message = 'Element "%s.%s" does not exist.' % (self.name, key)
+            self.fail(message)
+        else:
+            value = self.collection[key]
+            self.equal(value, expected_value)
+
+    def has_element(self, key, element_type):
+        if key not in self.collection:
+            message = 'Element "%s.%s" does not exist.' % (self.name, key)
+            self.fail(message)
+        else:
+            value = self.collection[key]
+            match = False
+            if not isinstance(element_type, tuple):
+                type_list = [element_type]
+            else:
+                type_list = element_type
+            for possible_type in type_list:
+                if possible_type is None:
+                    if value is None:
+                        match = True
+                if isinstance(value, possible_type):
+                    match = True
+            if not match:
+                self.fail('Element "%s.%s" does not match any of these '
+                          'expected types: %s' % (self.name, key, type_list))
+
+
+
 class TypeCheck(Check):
+    """Checks for attributes in an object."""
 
     def __init__(self, name, instance):
         self.name = name
@@ -139,11 +180,27 @@ class TypeCheck(Check):
             self.fail("%s attribute %s is of type %s (expected %s)."
                 % (self.name, attribute_name, type(value), attribute_type))
 
-    def has_field(self, attribute_name, attribute_type):
+    def has_field(self, attribute_name, attribute_type,
+                  additional_checks=None):
         if not hasattr(self.instance, attribute_name):
             self.fail("%s missing attribute %s." % (self.name, attribute_name))
         else:
             value = getattr(self.instance, attribute_name)
-            if not isinstance(value, attribute_type):
-                self.fail("%s attribute %s is of type %s (expected %s)."
-                    % (self.name, attribute_name, type(value), attribute_type))
+            match = False
+            if isinstance(attribute_type, tuple):
+                type_list = attribute_type
+            else:
+                type_list = [attribute_type]
+            for possible_type in type_list:
+                if possible_type is None:
+                    if value is None:
+                        match = True
+                else:
+                    if isinstance(value, possible_type):
+                        match = True
+            if not match:
+                self.fail("%s attribute %s is of type %s (expected one of "
+                      "the following: %s)." % (self.name, attribute_name,
+                      type(value), attribute_type))
+            if match and additional_checks:
+                additional_checks(value)

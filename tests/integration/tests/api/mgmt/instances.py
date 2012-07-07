@@ -22,17 +22,19 @@ from proboscis.asserts import assert_true
 from proboscis.check import Check
 
 import tests
+from tests import FAKE_MODE
 from tests.util import test_config
 from tests.util import create_client
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
+from tests.util.check import CollectionCheck
 from tests.util.check import TypeCheck
 
 from tests.api.instances import CreateInstance
 from tests.api.instances import instance_info
 from tests.api.instances import GROUP_START
 from tests.api.instances import GROUP_TEST
-
+from tests.util import poll_until
 
 GROUP = "dbaas.api.mgmt.instances"
 
@@ -43,33 +45,100 @@ def mgmt_index_requires_admin_account():
     assert_raises(exceptions.Unauthorized, client.management.index)
 
 
+# These functions check some dictionaries in the returned response.
+def flavor_check(flavor):
+    with CollectionCheck("flavor", flavor) as check:
+        check.has_element("id", basestring)
+        check.has_element("links", list)
+
+def guest_status_check(guest_status):
+    with CollectionCheck("guest_status", guest_status) as check:
+        check.has_element("state_description", basestring)
+
+def volume_check(volume):
+    with CollectionCheck("volume", volume) as check:
+        check.has_element("id", basestring)
+        check.has_element("size", int)
+
 
 @test(depends_on_groups=[GROUP_START], groups=[GROUP, GROUP_TEST])
 def mgmt_instance_get():
     """ Tests the mgmt instances index method. """
-    client = create_client(is_admin=True)
+    reqs = Requirements(is_admin=True)
+    user = test_config.users.find_user(reqs)
+    client = create_dbaas_client(user)
     mgmt = client.management
     # Grab the info.id created by the main instance test which is stored in
     # a global.
     id = instance_info.id
     instance = mgmt.show(id)
+
     # Print out all fields for extra info if the test fails.
     for name in dir(instance):
         print(str(name) + "=" + str(getattr(instance, name)))
     with TypeCheck("instance", instance) as instance:
-        #TODO: Figure out why we no longer have the commented out fields.
+        instance.has_field('created', basestring)
         instance.has_field('deleted', bool)
-        #instance.has_field('deleted_at', basestring) #???
+        # If the instance hasn't been deleted, this should be false... but
+        # lets avoid creating more ordering work.
+        instance.has_field('deleted_at', (basestring, None))
+        instance.has_field('flavor', dict, flavor_check)
+        instance.has_field('guest_status', dict, guest_status_check)
         instance.has_field('host', basestring)
-        #instance.has_field('hostname', basestring)
         instance.has_field('id', basestring)
+        instance.has_field('links', list)
+        instance.has_field('local_id', int)
         instance.has_field('name', basestring)
         instance.has_field('server_id', basestring)
         #instance.has_field('server_status', basestring)
         instance.has_field('status', basestring)
         instance.has_field('tenant_id', basestring)
         instance.has_field('updated', basestring)
+        # Can be None if no volume is given on this instance.
+        if test_config.values['reddwarf_main_instance_has_volume']:
+            instance.has_field('volume', dict, volume_check)
+        else:
+            instance.has_field('volume', None)
         #TODO: Validate additional fields, assert no extra fields exist.
+
+
+@test(groups=["fake." + GROUP])
+class WhenMgmtInstanceGetIsCalledButServerIsNotReady(object):
+
+    @before_class
+    def set_up(self):
+        if not FAKE_MODE:
+            raise SkipTest("This test only works in fake mode.")
+        self.client = create_client(is_admin=True)
+        self.mgmt = self.client.management
+        # Fake nova will fail a server ending with 'server_fail'."
+        response = self.client.instances.create('server_fail', 1,
+                                                {'size': 1}, [])
+        poll_until(lambda: self.client.instances.get(response.id),
+                   lambda instance: instance.status == 'ERROR',
+                   time_out=10)
+        self.id = response.id
+
+    @test
+    def mgmt_instance_get(self):
+        """Tests the mgmt get call works when the Nova server isn't ready."""
+        instance = self.mgmt.show(self.id)
+        # Print out all fields for extra info if the test fails.
+        for name in dir(instance):
+            print(str(name) + "=" + str(getattr(instance, name)))
+        with TypeCheck("instance", instance) as instance:
+            #TODO: Figure out why we no longer have the commented out fields.
+            instance.has_field('deleted', bool)
+            instance.has_field('host', basestring)
+            instance.has_field('id', basestring)
+            instance.has_field('local_id', None)
+            instance.has_field('name', basestring)
+            instance.has_field('server_id', None)
+            #instance.has_field('server_status', basestring)
+            instance.has_field('status', basestring)
+            instance.has_field('tenant_id', basestring)
+            instance.has_field('updated', basestring)
+            #TODO: Validate additional fields, assert no extra fields exist.
 
 
 @test(depends_on_classes=[CreateInstance], groups=[GROUP], enabled=False)
