@@ -172,6 +172,7 @@ if __name__ == '__main__':
         from tests.api import instances_actions
         from tests.api import instances_pagination
         from tests.api import instances_delete
+        from tests.api import instances_quotas
         from tests.api import instances_states
         from tests.api import databases
         from tests.api import root
