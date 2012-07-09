@@ -28,6 +28,7 @@ class InstanceQuotas(object):
                 response = self.client.instances.create('too_many_%d' % i,
                                                   flavor,
                                                   {'size': 1})
+                self.created_instances.append(response)
             # This one better fail, because we just reached our quota.
             assert_raises(exceptions.OverLimit,
                           self.client.instances.create,
