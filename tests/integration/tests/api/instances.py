@@ -936,41 +936,6 @@ class CheckInstance(AttrCheck):
                          msg="Volume")
 
 
-@test(enabled=FAKE_MODE, runs_after=[DeleteInstance],
-      groups=['dbaas.api.instances.quotas'])
-class InstanceQuotas(object):
-
-    created_instances = []
-
-    @test
-    def test_too_many_instances(self):
-        self.created_instances = []
-        if 'reddwarf_max_instances_per_user' in test_config.values:
-            too_many = test_config.values['reddwarf_max_instances_per_user']
-            already_there = len(dbaas.instances.list())
-            flavor = instance_info.dbaas_flavor_href
-            for i in range(too_many - already_there):
-                response = dbaas.instances.create('too_many_%d' % i,
-                                                  flavor,
-                                                  instance_info.volume)
-            # This one better fail, because we just reached our quota.
-            assert_raises(exceptions.OverLimit,
-                          dbaas.instances.create,
-                          "too_many", flavor,
-                          {'size': 1})
-
-    @test(runs_after=[test_too_many_instances])
-    def delete_excessive_entries(self):
-        # Delete all the instances called too_many*.
-        for id in self.created_instances:
-            while True:
-                try:
-                    dbaas.instances.delete(id)
-                except exceptions.UnprocessableEntity:
-                    continue
-                except exceptions.NotFound:
-                    break
-
 def diagnostic_tests_helper(diagnostics):
     print("diagnostics : %r" % diagnostics._info)
     expected_attrs = ['version', 'fdSize', 'vmSize', 'vmHwm', 'vmRss',
