@@ -43,22 +43,20 @@ from proboscis import test
 
 from tests import util as test_utils
 from tests.util import test_config
-from tests.util.services import Service
+from tests.util.services import NativeService
 from tests.util.services import start_proc
 from tests import WHITE_BOX
 from tests.util.rpc import Rabbit
 
 
 if WHITE_BOX:
-    from nova import context
-    from nova import rpc
-    from nova import utils
-    from nova.exception import ProcessExecutionError
-    from nova.rpc.impl_kombu import ConnectionContext
+    from reddwarf.common.context import ReddwarfContext
+    from reddwarf import rpc
 
 
 def topic_name():
-    return "guest.%s" % test_config.values['host_name']
+    # -99 is the guest_id argument.s
+    return "guestagent.-99"
 
 
 @test(groups=["agent", "amqp.restarts"])
@@ -75,20 +73,29 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
     def stop_agent(self):
         self.agent.stop()
 
-    def _send(self):
+    def _send_successfully(self):
+        """Sends a message successfully."""
+        result = self._send_msg_with_timeout()
+        assert_equal(result['status'], 'good')
+        return result['version']
+
+    @time_out(25)
+    def _send_msg_with_timeout(self):
+        self.rabbit.declare_queue(topic_name())
+        context = ReddwarfContext(is_admin=True, limit=5, marker=None)
+        version = rpc.call(context,
+                           topic_name(),
+                {"method": "version",
+                 "args": {"package_name": "dpkg"}
+            })
+        return {"status": "good", "version": version}
+
+    def _send_unsuccessfully(self):
         original_queue_count = self.rabbit.get_queue_items(topic_name()) or 0
 
-        @time_out(5)
-        def send_msg_with_timeout():
-            self.rabbit.declare_queue(topic_name())
-            version = rpc.call(context.get_admin_context(),
-                               topic_name(),
-                    {"method": "version",
-                     "args": {"package_name": "dpkg"}
-                })
-            return {"status": "good", "version": version}
         try:
-            return send_msg_with_timeout()
+            self._send_msg_with_timeout()
+            fail("Expected the message to fail, but it succeeded.")
         except Exception as e:
             # If the Python side works, we should at least see an item waiting
             # in the queue.
@@ -100,6 +107,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
                   % (original_queue_count,
                      self.rabbit.get_queue_items(topic_name()) or 0))
 
+            #TODO: Erase the commented section below:
             # In the Kombu driver there is a bug where after restarting rabbit
             # the first message to be sent fails with a broken pipe. So here we
             # tolerate one such bug but no more.
@@ -114,35 +122,25 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
             else:
                 return {"status": "bad", "blame": "host"}
 
-    def _send_allow_for_host_bug(self):
-        while True:
-            result = self._send()
-            if result['status'] == "good":
-                return result["version"]
-            else:
-                if result['blame'] == "agent":
-                    fail("Nova Host put a message on the queue but the agent "
-                         "never responded.")
-
     @test
     def check_agent_path_is_correct(self):
         """Make sure the agent binary listed in the config is correct."""
         self.agent_bin = str(test_config.values["agent_bin"])
-        nova_conf = str(test_config.values["nova_conf"])
+        nova_conf = str(test_config.values["agent_conf"])
         assert_true(path.exists(self.agent_bin),
                     "Agent not found at path: %s" % self.agent_bin)
-        self.agent = Service(cmd=[self.agent_bin,  "--flagfile=%s" % nova_conf,
+        self.agent = NativeService(cmd=[self.agent_bin,
+                                  "--flagfile=%s" % nova_conf,
                                   "--rabbit_reconnect_wait_time=1",
-                                  "--preset_instance_id=-99"])
+                                  "--guest_id=-99"])
 
     @test(depends_on=[check_agent_path_is_correct])
     @time_out(60)
     def send_agent_a_message(self):
         self.rabbit.start()
         self.agent.start(time_out=30)
-        result = self._send()
+        result = self._send_successfully
         print("RESULT:%s" % result)
-        assert_equal(result['status'], "good")
 
     @test(depends_on=[send_agent_a_message])
     @time_out(30)
@@ -154,7 +152,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
         # message and the agent never answers it this test can identify that
         # and fail.
         self.agent.stop()
-        result = self._send()
+        result = self._send_unsuccessfully()
         assert_equal(result['status'], 'bad')
         assert_equal(result['blame'], 'agent')
 
@@ -162,7 +160,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
     def stop_rabbit(self):
         if self.rabbit.is_alive:
             self.rabbit.stop()
-        assert_false(self.rabbit.is_alive)
+        assert_false(self.rabbit.is_alive, "Rabbit did not shut down.")
         self.rabbit.reset()
 
     @test(depends_on=[check_agent_path_is_correct, stop_rabbit])
@@ -226,7 +224,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
     @time_out(30)
     def send_message(self):
         """Tests that the agent auto-connects to rabbit and gets a message."""
-        version = self._send_allow_for_host_bug()
+        version = self._send_successfully()
         assert_true(version is not None)
         matches = re.search("(\\w+)\\.(\\w+)\\.(\\w+)\\.(\\w+)", version)
         assert_true(matches is not None)

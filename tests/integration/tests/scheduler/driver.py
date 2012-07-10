@@ -37,14 +37,17 @@ from tests.util.users import Requirements
 from tests.volumes import VOLUMES_DRIVER
 
 if WHITE_BOX:
-    from nova import db
-    from nova import exception
-    from nova import flags
-    from nova.notifier import api as notifier
-    from nova.utils import LoopingCall
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import db
+    # from nova import exception
+    # from nova import flags
+    # from nova.notifier import api as notifier
+    # from nova.utils import LoopingCall
 
-    from reddwarf.utils import poll_until
-    FLAGS = flags.FLAGS
+    # from reddwarf.utils import poll_until
+    # FLAGS = flags.FLAGS
 
 GROUP = SCHEDULER_DRIVER_GROUP
 

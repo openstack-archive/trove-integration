@@ -1,4 +1,5 @@
 # Paths inside the VM.
+REDDWARF_SOURCE=/opt/stack/reddwarf_lite
 PATH_INTEGRATION_CONF="/tmp/integration"
 
 # devstack is either a shared folder or is downloaded by reddwarf-ci install.

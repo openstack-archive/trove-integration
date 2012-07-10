@@ -26,6 +26,11 @@
 .. moduleauthor:: Tim Simpson <tim.simpson@rackspace.com>
 """
 
+# This emulates the old way we did things, which was to load the config
+# as a module.
+# TODO(tim.simpson): Change all references from "test_config" to CONFIG.
+from tests.config import CONFIG as test_config
+
 import re
 import subprocess
 import sys
@@ -60,16 +65,6 @@ from tests.util.users import Requirements
 
 
 WHITE_BOX = test_config.white_box
-
-
-if WHITE_BOX:
-    from nova import flags
-    from nova import utils
-    from reddwarf import dns  # import for flag values
-    from reddwarf.common import utils
-    from reddwarf.notifier import logfile_notifier  # Here so flags are loaded
-    from reddwarf import exception
-    FLAGS = flags.FLAGS
 
 
 def assert_mysql_failure_msg_was_permissions_issue(msg):
@@ -225,7 +220,6 @@ def create_dns_entry(id, uuid):
 
 def create_nova_client(user, service_type="nova_service_type"):
     """Creates a rich client for the Nova API using the test config."""
-    test_config.nova.ensure_started()
     openstack = Client(user.auth_user, user.auth_key,
                        user.tenant, test_config.nova_auth_url,
                        service_type=test_config.values[service_type])

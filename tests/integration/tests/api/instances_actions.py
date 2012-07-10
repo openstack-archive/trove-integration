@@ -46,11 +46,14 @@ from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy.sql.expression import text
 
 if WHITE_BOX:
-    from nova import context
-    from nova import db
-    from nova.compute import power_state
-    from reddwarf.api.common import dbaas_mapping
-    from reddwarf.utils import poll_until
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import context
+    # from nova import db
+    # from nova.compute import power_state
+    # from reddwarf.api.common import dbaas_mapping
+    # from reddwarf.utils import poll_until
 
 
 GROUP = "dbaas.api.instances.actions"

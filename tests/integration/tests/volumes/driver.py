@@ -36,16 +36,19 @@ from tests import WHITE_BOX
 
 
 if WHITE_BOX:
-    from nova import context
-    from nova import exception
-    from nova import flags
-    from nova import utils
-    from reddwarf import exception as reddwarf_exception
-    from reddwarf.utils import poll_until
-    from reddwarf import volume
-    from reddwarf.tests.volume import driver as test_driver
+    # TODO(tim.simpson): Restore this once white box functionality can be
+    #                    added back to this test module.
+    pass
+    # from nova import context
+    # from nova import exception
+    # from nova import flags
+    # from nova import utils
+    # from reddwarf import exception as reddwarf_exception
+    # from reddwarf.utils import poll_until
+    # from reddwarf import volume
+    # from reddwarf.tests.volume import driver as test_driver
 
-    FLAGS = flags.FLAGS
+    # FLAGS = flags.FLAGS
 
 
 UUID_PATTERN = re.compile('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-'
@@ -112,7 +115,7 @@ class VolumeTest(unittest.TestCase):
         self.assertEqual(self.story.context.project_id, volume["project_id"])
 
 
-@test(groups=[VOLUMES_DRIVER], depends_on_classes=[initialize.Volume])
+@test(groups=[VOLUMES_DRIVER], depends_on_classes=[initialize.start_volume])
 class SetUp(VolumeTest):
 
     def test_05_create_story(self):
