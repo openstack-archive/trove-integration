@@ -14,6 +14,8 @@
 
 import time
 
+from reddwarfclient import exceptions
+
 from nose.plugins.skip import SkipTest
 from proboscis import before_class
 from proboscis import test
@@ -92,6 +94,18 @@ class TestRoot(object):
         """Test that root is disabled"""
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
         assert_false(enabled, "Root SHOULD NOT be enabled.")
+
+    @test
+    def test_create_user_os_admin_failure(self):
+        users = []
+        users.append({"name": "os_admin", "password": "12345"})
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
+                      instance_info.id, users)
+
+    @test
+    def test_delete_user_os_admin_failure(self):
+        assert_raises(exceptions.BadRequest, self.dbaas.users.delete,
+                      instance_info.id, "os_admin")
 
     @test(depends_on=[test_root_initially_disabled],
           enabled=not test_config.values['root_removed_from_instance_api'])
