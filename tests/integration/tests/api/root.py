@@ -125,6 +125,16 @@ class TestRoot(object):
         self._verify_root_timestamp(instance_info.id)
 
     @test(depends_on=[test_root_initially_disabled_details])
+    def test_create_user_root_does_not_enable_root(self):
+        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_false(enabled, "Root SHOULD NOT be enabled.")
+        users = []
+        users.append({"name": "root", "password": "12345"})
+        self.dbaas.users.create(instance_info.id, users)
+        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_false(enabled, "Root SHOULD NOT be enabled.")
+
+    @test(depends_on=[test_create_user_root_does_not_enable_root])
     def test_enable_root(self):
         self._root()
 
@@ -199,3 +209,11 @@ class TestRoot(object):
             found = False
         assert_not_equal(self.root_enabled_timestamp, 'Never')
         self._verify_root_timestamp(instance_info.id)
+
+    @test(depends_on=[test_reset_root_user_enabled])
+    def test_root_enabled_after_delete_user_root(self):
+        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_true(enabled, "Root SHOULD be enabled.")
+        self.dbaas.users.delete(instance_info.id, "root")
+        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_true(enabled, "Root SHOULD be enabled.")
