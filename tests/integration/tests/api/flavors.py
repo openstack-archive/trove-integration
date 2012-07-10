@@ -66,7 +66,7 @@ def assert_link_list_is_equal(flavor):
     for link in flavor.links:
         href = link['href']
         if "self" in link['rel']:
-            expected_href = os.path.join(test_config.dbaas.url, "flavors",
+            expected_href = os.path.join(test_config.dbaas_url, "flavors",
                                              str(flavor.id))
             url = test_config.dbaas_url.replace('http:', 'https:', 1)
             msg = ("REL HREF %s doesn't start with %s" %
