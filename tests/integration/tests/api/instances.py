@@ -270,6 +270,7 @@ class CreateInstance(unittest.TestCase):
             assert_raises(exceptions.OverLimit, dbaas.instances.create,
                           "way_too_large", instance_info.dbaas_flavor_href,
                           {'size': too_big + 1}, [])
+            assert_equal(413, dbaas.last_http_code)
         #else:
         #    raise SkipTest("N/A: No max accepted volume size defined.")
 
@@ -294,6 +295,7 @@ class CreateInstance(unittest.TestCase):
                                                instance_info.dbaas_flavor_href,
                                                instance_info.volume,
                                                databases, users)
+            assert_equal(200, dbaas.last_http_code)
         else:
             id = existing_instance()
             instance_info.initial_result = dbaas.instances.get(id)
@@ -342,6 +344,7 @@ class CreateInstance(unittest.TestCase):
             assert_raises(exceptions.BadRequest, dbaas.instances.create,
                           instance_name, instance_info.dbaas_flavor_href,
                           volume, databases)
+            assert_equal(400, dbaas.last_http_code)
 
     def test_create_failure_with_no_volume_size(self):
         if test_config.values['reddwarf_must_have_volume']:
@@ -351,6 +354,7 @@ class CreateInstance(unittest.TestCase):
             assert_raises(exceptions.BadRequest, dbaas.instances.create,
                           instance_name, instance_info.dbaas_flavor_href,
                           volume, databases)
+            assert_equal(400, dbaas.last_http_code)
 
     def test_mgmt_get_instance_on_create(self):
         if TEST_MGMT:
@@ -384,6 +388,7 @@ def assert_unprocessable(func, *args):
             fail("When an instance is being built, this function should "
                  "always raise UnprocessableEntity.")
     except exceptions.UnprocessableEntity:
+        assert_equal(422, dbaas.last_http_code)
         pass  # Good
 
 
@@ -611,6 +616,7 @@ class TestInstanceListing(object):
     def test_index_list(self):
         expected_attrs = ['id', 'links', 'name', 'status', 'flavor', 'volume']
         instances = dbaas.instances.list()
+        assert_equal(200, dbaas.last_http_code)
         for instance in instances:
             instance_dict = instance._info
             with CheckInstance(instance_dict) as check:
@@ -626,6 +632,7 @@ class TestInstanceListing(object):
         expected_attrs = ['created', 'databases', 'flavor', 'hostname', 'id',
                           'links', 'name', 'status', 'updated', 'volume', 'ip']
         instance = dbaas.instances.get(instance_info.id)
+        assert_equal(200, dbaas.last_http_code)
         instance_dict = instance._info
         print("instance_dict=%s" % instance_dict)
         with CheckInstance(instance_dict) as check:
@@ -638,6 +645,7 @@ class TestInstanceListing(object):
     @test(enabled=not FAKE_MODE and test_config.values['reddwarf_dns_support'])
     def test_instance_hostname(self):
         instance = dbaas.instances.get(instance_info.id)
+        assert_equal(200, dbaas.last_http_code)
         hostname_prefix = ("%s" % (hashlib.sha1(instance.id).hexdigest()))
         instance_hostname_prefix = instance.hostname.split('.')[0]
         assert_equal(hostname_prefix, instance_hostname_prefix)
@@ -645,11 +653,13 @@ class TestInstanceListing(object):
     @test
     def test_get_instance_status(self):
         result = dbaas.instances.get(instance_info.id)
+        assert_equal(200, dbaas.last_http_code)
         assert_equal("ACTIVE", result.status)
 
     @test
     def test_get_legacy_status(self):
         result = dbaas.instances.get(instance_info.id)
+        assert_equal(200, dbaas.last_http_code)
         assert_true(result is not None)
 
     @test
@@ -667,7 +677,9 @@ class TestInstanceListing(object):
     def test_instance_not_shown_to_other_user(self):
         daffy_ids = [instance.id for instance in
                      self.other_client.instances.list()]
+        assert_equal(200, self.other_client.last_http_code)
         admin_ids = [instance.id for instance in dbaas.instances.list()]
+        assert_equal(200, dbaas.last_http_code)
         assert_equal(len(daffy_ids), 0)
         assert_not_equal(sorted(admin_ids), sorted(daffy_ids))
         assert_raises(exceptions.NotFound,
@@ -706,6 +718,7 @@ class CheckDiagnosticsAfterTests(object):
     @test
     def test_check_diagnostics_on_instance_after_tests(self):
         diagnostics = dbaas_admin.diagnostics.get(instance_info.id)
+        assert_equal(200, dbaas.last_http_code)
         diagnostic_tests_helper(diagnostics)
         msg = "Fat Pete has emerged. size (%s > 30MB)" % diagnostics.vmPeak
         assert_true(diagnostics.vmPeak < (30 * 1024), msg)
@@ -745,6 +758,7 @@ class DeleteInstance(object):
             while result is not None:
                 attempts += 1
                 result = dbaas.instances.get(instance_info.id)
+                assert_equal(200, dbaas.last_http_code)
                 assert_equal("SHUTDOWN", result.status)
         except exceptions.NotFound:
             pass

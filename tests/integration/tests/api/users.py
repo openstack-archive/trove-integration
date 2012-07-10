@@ -88,6 +88,7 @@ class TestUsers(object):
         users.append({"name": self.username1, "password": self.password1,
                      "databases": [{"name": self.db1}, {"name": self.db2}]})
         self.dbaas.users.create(instance_info.id, users)
+        assert_equal(202, self.dbaas.last_http_code)
         # Do we need this?
         if not FAKE:
             time.sleep(5)
@@ -101,6 +102,7 @@ class TestUsers(object):
     def test_create_users_list(self):
         #tests for users that should be listed
         users = self.dbaas.users.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         found = False
         for user in self.created_users:
             for result in users:
@@ -118,11 +120,13 @@ class TestUsers(object):
                      "databases": [{"name": self.db1}, {"name": self.db2}]})
         assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test(depends_on=[test_create_users_list])
     def test_create_users_list_system(self):
         #tests for users that should not be listed
         users = self.dbaas.users.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         found = False
         for user in self.system_users:
             found = any(result.name == user for result in users)
@@ -134,7 +138,9 @@ class TestUsers(object):
           runs_after=[test_fails_when_creating_user_twice])
     def test_delete_users(self):
         self.dbaas.users.delete(instance_info.id, self.username_urlencoded)
+        assert_equal(202, self.dbaas.last_http_code)
         self.dbaas.users.delete(instance_info.id, self.username1_urlendcoded)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
 
@@ -161,6 +167,7 @@ class TestUsers(object):
                     fail("No match for db %s in dblist. %s :(" % (db, dblist))
         # Confirm via API.
         result = self.dbaas.users.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         for item in result:
             if item.name == user:
                 break
@@ -174,6 +181,7 @@ class TestUsers(object):
                       "database": self.db1})
         assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test
     def test_invalid_username(self):
@@ -182,6 +190,7 @@ class TestUsers(object):
                       "database": self.db1})
         assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test(enabled=False)
     #TODO(hub_cap): Make this test work once python-routes is updated, if ever.
@@ -192,12 +201,14 @@ class TestUsers(object):
         users.append({"name": username_with_period, "password": self.password,
                       "databases": [{"name": self.db1}]})
         self.dbaas.users.create(instance_info.id, users)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
 
         self.check_database_for_user(username_with_period, self.password,
                                      [self.db1])
         self.dbaas.users.delete(instance_info.id, username_with_period)
+        assert_equal(202, self.dbaas.last_http_code)
 
     @test
     def test_invalid_password(self):
@@ -206,6 +217,7 @@ class TestUsers(object):
                       "database": self.db1})
         assert_raises(exceptions.BadRequest, self.dbaas.users.create,
                       instance_info.id, users)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test
     def test_pagination(self):
@@ -218,10 +230,12 @@ class TestUsers(object):
                       "databases": [{"name": "Sprockets"}]})
 
         self.dbaas.users.create(instance_info.id, users)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
         limit = 2
         users = self.dbaas.users.list(instance_info.id, limit=limit)
+        assert_equal(200, self.dbaas.last_http_code)
         marker = users.next
 
         # Better get only as many as we asked for
@@ -233,10 +247,12 @@ class TestUsers(object):
         # I better get new users if I use the marker I was handed.
         users = self.dbaas.users.list(instance_info.id, limit=limit,
                                       marker=marker)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(marker not in [user.name for user in users])
 
         # Now fetch again with a larger limit.
         users = self.dbaas.users.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(users.next is None)
 
     def _check_connection(self, username, password):
@@ -245,6 +261,7 @@ class TestUsers(object):
                                                instance_info.get_address())
         # Also determine the db is gone via API.
         result = self.dbaas.users.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         for item in result:
             if item.name == username:
                 fail("User %s was not deleted." % user)

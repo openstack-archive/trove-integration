@@ -267,6 +267,7 @@ class RestartTests(RebootTestBase):
 
     def call_reboot(self):
         self.instance.restart()
+        assert_equal(202, self.dbaas.last_http_code)
 
     @before_class
     def test_set_up(self):
@@ -389,6 +390,8 @@ class ResizeInstanceTest(ActionTestBase):
         self.obtain_flavor_ids()
         self.dbaas.instances.resize_instance(self.instance_id,
             self.get_flavor_href(flavor_id=self.expected_new_flavor_id))
+        assert_equal(202, self.dbaas.last_http_code)
+
         #(WARNING) IF THE RESIZE IS WAY TOO FAST THIS WILL FAIL
         assert_unprocessable(self.dbaas.instances.resize_instance,
             self.instance_id,
@@ -428,6 +431,7 @@ class ResizeInstanceTest(ActionTestBase):
     def test_resize_down(self):
         self.dbaas.instances.resize_instance(self.instance_id,
             self.get_flavor_href(flavor_id=self.expected_old_flavor_id))
+        assert_equal(202, self.dbaas.last_http_code)
         self.wait_for_resize()
         assert_equal(str(self.instance.flavor['id']),
                      str(self.expected_old_flavor_id))
