@@ -90,7 +90,7 @@ class TestConfig(object):
         else:
             return self._values[name]
 
-    def python_cmd_list():
+    def python_cmd_list(self):
         """The start of a command list to use when running Python scripts."""
         commands = []
         if self.use_venv:
