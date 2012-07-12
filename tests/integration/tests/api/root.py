@@ -71,6 +71,7 @@ class TestRoot(object):
         global root_password
         host = "%"
         user, password = self.dbaas.root.create(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         reh = self.dbaas_admin.management.root_enabled_history
         self.root_enabled_timestamp = reh(instance_info.id).enabled
 
@@ -93,6 +94,7 @@ class TestRoot(object):
     def test_root_initially_disabled(self):
         """Test that root is disabled"""
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_false(enabled, "Root SHOULD NOT be enabled.")
 
     @test
@@ -148,6 +150,7 @@ class TestRoot(object):
     def test_root_now_enabled(self):
         """Test that root is now enabled."""
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(enabled, "Root SHOULD be enabled.")
 
     @test(depends_on=[test_root_now_enabled],
@@ -174,6 +177,7 @@ class TestRoot(object):
     def test_root_still_enabled(self):
         """Test that after root was reset it's still enabled."""
         enabled = self.dbaas.root.is_root_enabled(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(enabled, "Root SHOULD still be enabled.")
 
     @test(depends_on=[test_root_still_enabled],

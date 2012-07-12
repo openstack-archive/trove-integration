@@ -65,12 +65,14 @@ class TestDatabases(object):
         databases.append({"name": self.dbname2})
 
         self.dbaas.databases.create(instance_info.id, databases)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
 
     @test(depends_on=[test_create_database])
     def test_create_database_list(self):
         databases = self.dbaas.databases.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         found = False
         for db in self.created_dbs:
             for result in databases:
@@ -88,11 +90,13 @@ class TestDatabases(object):
 
         assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test
     def test_create_database_list_system(self):
         #Databases that should not be returned in the list
         databases = self.dbaas.databases.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         found = False
         for db in self.system_dbs:
             found = any(result.name == db for result in databases)
@@ -106,13 +110,16 @@ class TestDatabases(object):
                       "collate": "latin2_general_ci"}]
         assert_raises(exceptions.NotFound, self.dbaas.databases.create,
                       -1, databases)
+        assert_equal(404, self.dbaas.last_http_code)
 
     @test(runs_after=[test_create_database])
     def test_delete_database(self):
         self.dbaas.databases.delete(instance_info.id, self.dbname_urlencoded)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
         dbs = self.dbaas.databases.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         found = any(result.name == self.dbname_urlencoded for result in dbs)
         assert_false(found, "Database '%s' SHOULD NOT be found in result" %
                      self.dbname_urlencoded)
@@ -121,6 +128,7 @@ class TestDatabases(object):
     def test_delete_database_on_missing_instance(self):
         assert_raises(exceptions.NotFound, self.dbaas.databases.delete,
                       -1, self.dbname_urlencoded)
+        assert_equal(404, self.dbaas.last_http_code)
 
     @test
     def test_database_name_too_long(self):
@@ -130,6 +138,7 @@ class TestDatabases(object):
         databases.append({"name": name})
         assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test
     def test_invalid_database_name(self):
@@ -137,6 +146,7 @@ class TestDatabases(object):
         databases.append({"name": "sdfsd,"})
         assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
                       instance_info.id, databases)
+        assert_equal(400, self.dbaas.last_http_code)
 
     @test
     def test_pagination(self):
@@ -147,10 +157,12 @@ class TestDatabases(object):
         databases.append({"name": "Widgets"})
 
         self.dbaas.databases.create(instance_info.id, databases)
+        assert_equal(202, self.dbaas.last_http_code)
         if not FAKE:
             time.sleep(5)
         limit = 2
         databases = self.dbaas.databases.list(instance_info.id, limit=limit)
+        assert_equal(200, self.dbaas.last_http_code)
         marker = databases.next
 
         # Better get only as many as we asked for
@@ -162,8 +174,10 @@ class TestDatabases(object):
         # I better get new databases if I use the marker I was handed.
         databases = self.dbaas.databases.list(instance_info.id, limit=limit,
                                               marker=marker)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(marker not in [database.name for database in databases])
 
         # Now fetch again with a larger limit.
         databases = self.dbaas.databases.list(instance_info.id)
+        assert_equal(200, self.dbaas.last_http_code)
         assert_true(databases.next is None)
