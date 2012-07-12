@@ -187,7 +187,7 @@ class InstanceSetup(object):
         if WHITE_BOX:
             instance_info.nova_client = create_nova_client(instance_info.user)
             instance_info.volume_client = create_nova_client(instance_info.user,
-                                            service_type="volume_service_type")
+                    service_type=test_config.nova_client['volume_service_type'])
 
         dbaas = instance_info.dbaas
 
@@ -250,7 +250,7 @@ class InstanceSetup(object):
 
 
 @test(depends_on_classes=[InstanceSetup], groups=[GROUP])
-def test_delete_instance_not_found(self):
+def test_delete_instance_not_found():
     """Deletes an instance that does not exist."""
     # Looks for a random UUID that (most probably) does not exist.
     assert_raises(exceptions.NotFound, dbaas.instances.delete,

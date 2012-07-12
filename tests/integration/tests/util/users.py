@@ -27,6 +27,8 @@ class Requirements(object):
     def __init__(self, is_admin, services=None):
         self.is_admin = is_admin
         self.services = services or ["reddwarf"]
+        # Make sure they're all the same kind of string.
+        self.services = [str(service) for service in self.services]
 
     def satisfies(self, reqs):
         """True if these requirements conform to the given requirements."""
@@ -61,6 +63,17 @@ class ServiceUser(object):
         self.requirements = requirements
         self.test_count = 0
 
+    def __str__(self):
+        return "{ user_name=%s, tenant_id=%s, reqs=%s, tests=%d }" % (
+            self.auth_user, self.tenant_id, self.requirements, self.test_count)
+        self.auth_key = auth_key
+        self.tenant = tenant
+        self.tenant_id = tenant_id
+        self.requirements = requirements
+        self.test_count = 0
+
+
+
 
 class Users(object):
     """Collection of users with methods to find them via requirements."""
@@ -79,6 +92,15 @@ class Users(object):
     def find_all_users_who_satisfy(self, requirements, black_list=None):
         """Returns a list of all users who satisfy the given requirements."""
         black_list = black_list or []
+        print("Searching for a user who meets requirements %s in our list..."
+              % requirements)
+        print("Users:")
+        for user in self.users:
+            print("\t" + str(user))
+        print("Black list")
+        for item in black_list:
+            print("\t" + str(item))
+        black_list = black_list or []
         return (user for user in self.users
                 if user.auth_user not in black_list and
                 user.requirements.satisfies(requirements))
@@ -88,7 +110,7 @@ class Users(object):
         users = self.find_all_users_who_satisfy(requirements, black_list)
         try:
             user = min(users, key=lambda user: user.test_count)
-        except ValueError:
+        except ValueError:  # Raised when "users" is empty.
             raise RuntimeError("The test configuration data lacks a user "
                  "who meets these requirements: %s" % requirements)
         user.test_count += 1

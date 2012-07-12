@@ -23,6 +23,7 @@ from reddwarfclient import exceptions
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_raises
+from proboscis import SkipTest
 
 import tests
 from tests.util import create_dbaas_client
@@ -90,6 +91,9 @@ class Flavors(object):
 
     @before_class
     def setUp(self):
+        if test_config.nova_client is None:
+            raise SkipTest("Skipping this test as no info to communicate with "
+                           "Nova was found in the test config.")
         nova_user = test_config.users.find_user(
             Requirements(is_admin=False, services=["nova"]))
         rd_user = test_config.users.find_user(

@@ -47,7 +47,7 @@ def dbaas_url():
     return str(CONFIG.values.get("dbaas_url"))
 
 def nova_url():
-    return str(CONFIG.values.get("nova_url"))
+    return str(CONFIG.values.get("nova_client")['url'])
 
 
 
