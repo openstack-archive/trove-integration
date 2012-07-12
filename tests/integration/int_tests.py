@@ -243,6 +243,8 @@ if __name__ == '__main__':
         from tests.openvz import compute_reboot_vz as compute_reboot
         from tests import util
         from tests.smoke import instance
+        from tests.recreates import create_11
+        from tests.recreates import login
 
         black_box_groups = [
             flavors.GROUP,
