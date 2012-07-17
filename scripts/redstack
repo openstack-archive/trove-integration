@@ -671,12 +671,22 @@ EOF
 }
 
 function init_fake_mode() {
-    CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
+    # Create a test conf which, unlike the conf which runs on a user's machine,
+    # takes advantage of the running keystone service we have in our VM.
+    # You could think of this fake mode, which runs in the VM as being
+    # slightly less fake than the default one which runs outside of it.
+    CONF_FILE=/tmp/reddwarf.conf.test
+    cp $PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test $CONF_FILE
+    # Switch keystone from the fake class to the real one.
+    sed -i \
+        "s/%reddwarf.tests.fakes.keystone%/keystone.middleware.auth_token/g" \
+        $CONF_FILE
     cd $PATH_REDDWARF
     set -e
     rm -f reddwarf_test.sqlite
     set +e
-    bin/reddwarf-manage --config-file=$CONF_FILE db_sync \
+    bin/reddwarf-manage --config-file=$CONF_FILE \
+        db_sync \
         repo_path=reddwarf_test.sqlite
     sqlite3 reddwarf_test.sqlite \
         "INSERT INTO service_images VALUES('1','mysql','fake');"
@@ -692,7 +702,7 @@ function cmd_start() {
 function cmd_start_fake() {
     init_fake_mode
     init_reddwarf_screen
-    CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
+    CONF_FILE=/tmp/reddwarf.conf.test
     screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
 }
 
@@ -703,7 +713,7 @@ function cmd_run() {
 
 function cmd_run_fake() {
     init_fake_mode
-    CONF_FILE=$PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test
+    CONF_FILE=/tmp/reddwarf.conf.test
     bin/reddwarf-api --config-file=$CONF_FILE $@ \
         repo_path=reddwarf_test.sqlite
 }

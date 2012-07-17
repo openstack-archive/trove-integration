@@ -46,7 +46,6 @@ except ImportError:
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from novaclient.v1_1.client import Client
 from reddwarfclient import exceptions
 
 from proboscis import test
@@ -56,6 +55,7 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
+from proboscis import SkipTest
 from reddwarfclient import Dbaas
 from reddwarfclient.client import ReddwarfHTTPClient
 from tests.util import test_config
@@ -190,6 +190,26 @@ def create_dbaas_client(user):
     set_optional('region_name', 'reddwarf_client_region_name')
     set_optional('service_url', 'override_reddwarf_api_url')
 
+    if test_config.values.get('auth_strategy', '') == 'fake':
+        from reddwarfclient import auth
+        class FakeAuth(auth.Authenticator):
+
+            def authenticate(self):
+                class FakeCatalog(object):
+                    def __init__(self, auth):
+                        self.auth = auth
+
+                    def get_public_url(self):
+                        return "%s/%s" % (test_config.dbaas_url,
+                                          self.auth.tenant)
+
+                    def get_token(self):
+                        return self.auth.tenant
+
+                return FakeCatalog(self)
+
+        kwargs['auth_strategy'] = FakeAuth
+
     dbaas = Dbaas(user.auth_user, user.auth_key, tenant=user.tenant,
                   auth_url=test_config.reddwarf_auth_url, **kwargs)
     dbaas.authenticate()
@@ -218,11 +238,17 @@ def create_dns_entry(id, uuid):
     return entry
 
 
-def create_nova_client(user, service_type="nova_service_type"):
+def create_nova_client(user, service_type=None):
     """Creates a rich client for the Nova API using the test config."""
+    if test_config.nova_client is None:
+        raise SkipTest("No nova_client info specified in the Test Config "
+                       "so this test will be skipped.")
+    from novaclient.v1_1.client import Client
+    if not service_type:
+        service_type = test_config.nova_client['nova_service_type']
     openstack = Client(user.auth_user, user.auth_key,
-                       user.tenant, test_config.nova_auth_url,
-                       service_type=test_config.values[service_type])
+                       user.tenant, test_config.nova_client['auth_url'],
+                       service_type=service_type)
     openstack.authenticate()
     return TestClient(openstack)
 
