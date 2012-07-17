@@ -692,7 +692,7 @@ function init_fake_mode() {
     cp $PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test $CONF_FILE
     # Switch keystone from the fake class to the real one.
     sed -i \
-        "s/%reddwarf.tests.fakes.keystone%/keystone.middleware.auth_token/g" \
+        "s/reddwarf.tests.fakes.keystone/keystone.middleware.auth_token/g" \
         $CONF_FILE
     cd $PATH_REDDWARF
     set -e
