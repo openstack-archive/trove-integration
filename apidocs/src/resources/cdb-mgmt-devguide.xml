@@ -58,7 +58,7 @@
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-07-02</pubdate>
+        <pubdate>2012-07-18</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -74,12 +74,12 @@
         
         <revhistory>
             <revision>
-                <date>2012-07-xx</date>
+                <date>2012-07-18</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Updated syntax highlighting for all
-                                examples.</para>
+                            <para>Initial Unlimited Access (UA)
+                                release.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
