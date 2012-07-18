@@ -97,7 +97,7 @@ class ErroredInstanceDelete(TestBase):
 
     @test
     @time_out(20)
-    def delete_eod_instance(self):
+    def delete_error_on_delete_instance(self):
         id = self.delete_error
         self.wait_for_instance_status(id, 'ACTIVE')
         self.wait_for_instance_task_status(id, 'No tasks for the instance.')
