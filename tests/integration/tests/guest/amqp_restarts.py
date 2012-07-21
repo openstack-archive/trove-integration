@@ -51,7 +51,7 @@ from tests.util.rpc import Rabbit
 
 if WHITE_BOX:
     from reddwarf.common.context import ReddwarfContext
-    from reddwarf import rpc
+    from reddwarf.openstack.common import rpc
 
 
 def topic_name():
