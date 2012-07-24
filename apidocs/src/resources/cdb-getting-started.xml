@@ -34,7 +34,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml"
          xml:id="cdb-getting-started"
          class="specification">
-    <?rax status.bar.text="Early Access"?>
+    <?rax status.bar.text="Early Access"?>   
     <info>
         <title>Getting Started with Rackspace Cloud Databases and
             Servers</title>
@@ -44,13 +44,30 @@
             <holder>Rackspace US, Inc.</holder>
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
-        <pubdate>2012-07-02</pubdate>
+        <pubdate>2012-07-18</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
             </annotation>
         </legalnotice>
         <revhistory>
+            <revision>
+                <date>2012-07-18</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Updated for Auth 2.0 (refer to <xref
+                                   linkend="Generating_Auth_Token"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Removed section on configuring
+                                routing for your existing Cloud Server
+                                since it is no longer needed.</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-07-02</date>
                 <revdescription>
@@ -294,7 +311,7 @@
         xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"     
         username="<emphasis role="bold">your_username</emphasis>"     
         apiKey="<emphasis role="bold">your_api_key</emphasis>"/&gt;   
- &lt;/auth&gt; <option>'</option> \
+ &lt;/auth&gt;<option>'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
             </example>
             <para>You can see that the lines that are part of the cURL
@@ -373,9 +390,12 @@
                             >your_api_key</emphasis> &mdash; The key
                         is your API access key. The key can be
                         obtained from the Rackspace Cloud Control
-                        Panel in the <guimenu>Your Account</guimenu> /
-                            <guimenuitem>API Access</guimenuitem>
-                        section.</para>
+                        Panel in the <guimenu>&lt;Your
+                            Account></guimenu> / <guimenuitem>API
+                            Keys</guimenuitem> section (login here:
+                            <link
+                            xlink:href="http://mycloud.rackspace.com/"
+                            >Control Panel Login</link>).</para>
                 </listitem>
             </itemizedlist></para>
         <para> To access the Authentication Service, you must know
@@ -383,13 +403,13 @@
         <itemizedlist spacing="compact">
             <listitem>
                 <para> US-based accounts authenticate through <link
-                        xlink:href="&ENDPOINT-US;"
-                        >&ENDPOINT-US;</link>. </para>
+                    xlink:href="&ENDPOINT-US-20;"
+                        >&ENDPOINT-US-20;</link>. </para>
             </listitem>
             <listitem>
                 <para> UK-based accounts authenticate through <link
-                        xlink:href="&ENDPOINT-UK;"
-                        >&ENDPOINT-UK;</link>. </para>
+                    xlink:href="&ENDPOINT-UK-20;"
+                    >&ENDPOINT-UK-20;</link>. </para>
             </listitem>
         </itemizedlist>
         <para> Your account may be based in either the US or the UK;
@@ -416,197 +436,23 @@
         <para>Notice that you authenticate using a special URL for
             Cloud authentication services. For example, for US-based
             accounts, you use
-                <code>https://identity.api.rackspacecloud.com/v1.1/auth</code>),
-            as shown in the following Authenticate Request
-            examples.</para>
+                <code>https://identity.api.rackspacecloud.com/v2.0/tokens</code>,
+            as shown in the following Authenticate Request examples.
+            Note that the <code>v2.0</code> component in the URL
+            indicates that you are using version 2.0 of the Cloud Auth
+            API.</para>
         <example>
             <title>cURL Authenticate Request: XML</title>
             <?dbfo keep-together="always"?>
             <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
 '&lt;?xml version="1.0" encoding="UTF-8"?>  
-&lt;credentials xmlns="http://docs.rackspacecloud.com/auth/api/v1.1" 
-             username="<emphasis role="bold">your_username</emphasis>" 
-             key="<emphasis role="bold">your_api_key</emphasis>"/>' \
+&lt;auth>
+   &lt;apiKeyCredentials
+      xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"
+         username="<emphasis role="bold">your_username</emphasis>" 
+         apiKey="<emphasis role="bold">your_api_key</emphasis>"/>' \
 <option>-H 'Content-Type: application/xml'</option> \
 <option>-H 'Accept: application/xml'</option> \
-<uri>'https://identity.api.rackspacecloud.com/v1.1/auth'</uri></screen>
-        </example>
-        <example>
-            <title>cURL Authenticate Request: JSON</title>
-            <?dbfo keep-together="always"?>
-            <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
-'{ 
-    "credentials": {  
-        "username": "<emphasis role="bold">your_username</emphasis>",  
-        "key": "<emphasis role="bold">your_api_key</emphasis>"}  
-    }' \
-<option>-H 'Content-Type: application/json'</option> \
-<uri>'https://identity.api.rackspacecloud.com/v1.1/auth'</uri></screen>
-        </example>
-        <note>
-            <para>For UK-based accounts, you would need to modify the
-                URL shown in the last line of each of the Authenticate
-                Request examples above to be
-                    <code>'https://lon.identity.api.rackspacecloud.com/v1.1/auth'</code>
-                instead.</para>
-        </note>
-        <example>
-            <title>Authenticate Response: XML</title>
-            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-auth.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
-        </example>
-        <example>
-            <title>Authenticate Response: JSON</title>
-            <programlisting language="json"><xi:include href="../../src/resources/samples/db-auth.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
-        </example>
-        <para>The authentication token <code>id</code> is returned
-            along with an <code>expires</code> attribute that
-            specifies when the token expires. </para>
-        <note>
-            <title>Notes</title>
-            <itemizedlist spacing="compact">
-                <listitem>
-                    <para>The information shown in the Authenticate
-                        Response examples above is for US-based
-                        accounts. If you authenticate against the
-                        UK-endpoint for auth, you will see the service
-                        catalog information for UK-based
-                        accounts.</para>
-                </listitem>
-                <listitem>
-                    <para>For all response examples in this guide, the
-                        field values you receive in your responses
-                        will vary from those shown here since they
-                        will be specific to your account.</para>
-                </listitem>
-                <listitem>
-                    <para>The <code>id</code> attribute in the
-                        Authenticate Response specifies the
-                        authentication token. Tokens are valid for a
-                        finite duration.</para>
-                    <para>Remember to supply your authentication token
-                        wherever you see the field <emphasis
-                            role="bold">your_auth_token</emphasis> in
-                        the examples in this guide.</para>
-                </listitem>
-                <listitem>
-                    <para> The <code>expires</code> attribute denotes
-                        the time after which the token will
-                        automatically become invalid. A token may be
-                        manually revoked before the time identified by
-                        the expires attribute; <code>expires</code>
-                        predicts a token's maximum possible lifespan
-                        but does not guarantee that it will reach that
-                        lifespan. Clients are encouraged to cache a
-                        token until it expires.</para>
-                </listitem>
-                <listitem>
-                    <para>Applications should be designed to
-                        re-authenticate after receiving a 401
-                        (Unauthorized) response from a service
-                        endpoint.</para>
-                </listitem>
-            </itemizedlist>
-        </note>
-        <para>The <code>publicURL</code> endpoints for
-                <code>cloudDatabases</code> (for example
-                <code>https://ord.databases.api.rackspacecloud.com/v1.0/1234</code>)
-            are also returned in the response. </para>
-        <para>You will find the actual account number after the final
-            '/' in the <code>publicURL</code> field. In this example,
-            you can see that the account number is 1234. You need to
-            specify your account number on most of the Cloud Databases
-            API calls, wherever you see the field <emphasis
-                role="bold">your_acct_id</emphasis> specified in the
-            examples in this guide.</para>
-        <para>After authentication, you can use cURL to perform &GET;,
-            &DELETE;, and &POST; requests for the Cloud Databases
-            API.</para>
-    </section>
-    <section xml:id="Generating_Auth_Token" security="writeronly">
-        <title>Generate an Authentication Token</title>
-        <para>You need to generate a token whether you use cURL or a
-            ReST client.</para>
-        
-        <para>In order to use the ReST API, you will first need to
-            obtain an authentication token, which will need to be
-            passed in for each request using the
-                <code>X-Auth-Token</code> header. </para>
-        <para>The following example demonstrates how to use cURL to
-            obtain the authentication token and the account number.
-            You will need to supply the authentication token and
-            account number when making subsequent Cloud Databases API
-            calls.</para>
-        <para>Remember to replace the names in the Authenticate
-            Request examples below with their respective values:<itemizedlist spacing="compact">
-                <listitem>
-                    <para><emphasis role="bold"
-                            >your_username</emphasis> &mdash; The
-                        username is your common Rackspace Cloud
-                        username, as supplied during
-                        registration.</para>
-                </listitem>
-                <listitem>
-                    <para><emphasis role="bold"
-                            >your_api_key</emphasis> &mdash; The key
-                        is your API access key. The key can be
-                        obtained from the Rackspace Cloud Control
-                        Panel in the <guimenu>Your Account</guimenu> /
-                            <guimenuitem>API Access</guimenuitem>
-                        section.</para>
-                </listitem>
-            </itemizedlist></para>
-        <para> To access the Authentication Service, you must know
-            whether your account is US-based or UK-based: </para>
-        <itemizedlist spacing="compact">
-            <listitem>
-                <para> US-based accounts authenticate through <link
-                        xlink:href="&ENDPOINT-US-20;"
-                        >&ENDPOINT-US-20;</link>. </para>
-            </listitem>
-            <listitem>
-                <para> UK-based accounts authenticate through <link
-                        xlink:href="&ENDPOINT-UK-20;"
-                        >&ENDPOINT-UK-20;</link>. </para>
-            </listitem>
-        </itemizedlist>
-        <para> Your account may be based in either the US or the UK;
-            this is not determined by your physical location but by
-            the location of the Rackspace retail site which was used
-            to create your account: </para>
-        <itemizedlist spacing="compact">
-            <listitem>
-                <para> If your account was created via <link
-                        xlink:href="http://www.rackspacecloud.com"
-                        >http://www.rackspacecloud.com</link>, it is a
-                    US-based account. </para>
-            </listitem>
-            <listitem>
-                <para> If your account was created via <link
-                        xlink:href="http://www.rackspace.co.uk"
-                        >http://www.rackspace.co.uk</link>, it is a
-                    UK-based account. </para>
-            </listitem>
-        </itemizedlist>
-        <para> If you are unsure how your account was created, use the
-            Rackspace contact information at either site to ask for
-            help. </para>
-        <para>Notice that you authenticate using a special URL for
-            Cloud authentication services. For example, for US-based
-            accounts, you use
-                <code>https://identity.api.rackspacecloud.com/v2.0/tokens</code>,
-            as shown in the following Authenticate Request
-            examples.</para>
-        <example>
-            <title>cURL Authenticate Request: XML</title>
-            <?dbfo keep-together="always"?>
-            <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
-'&lt;?xml version="1.0" encoding="UTF-8"?>  
- &lt;auth&gt;   
-    &lt;apiKeyCredentials     
-        xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"     
-        username="<emphasis role="bold">your_username</emphasis>"     
-        apiKey="<emphasis role="bold">your_api_key</emphasis>"/&gt;   
- &lt;/auth&gt;<option>'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
         </example>
         <example>
@@ -614,18 +460,15 @@
             <?dbfo keep-together="always"?>
             <screen language="bash"><command>curl</command> <option>-i</option> <option>-d</option> \
 '{
-    "auth": 
+    "auth":
     {
-        "RAX-KSKEY:apiKeyCredentials": 
-        {
-             "username": "<emphasis role="bold">your_username</emphasis>",
-             "apiKey": "<emphasis role="bold">your_api_key</emphasis>"
-        }
-    }
-}' \
+       "RAX-KSKEY:apiKeyCredentials":
+       {  
+          "username": "<emphasis role="bold">your_username</emphasis>",  
+          "apiKey": "<emphasis role="bold">your_api_key</emphasis>"}  
+    }' \
 <option>-H 'Content-Type: application/json'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
-            
         </example>
         <note>
             <para>For UK-based accounts, you would need to modify the
@@ -636,11 +479,11 @@
         </note>
         <example>
             <title>Authenticate Response: XML</title>
-            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-auth.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+            <programlisting language="xml"><xi:include href="../../src/resources/samples/db-auth-20.xml" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
         </example>
         <example>
             <title>Authenticate Response: JSON</title>
-            <programlisting language="json"><xi:include href="../../src/resources/samples/db-auth.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
+            <programlisting language="json"><xi:include href="../../src/resources/samples/db-auth-20.json" parse="text"><xi:fallback>Missing code sample! <?rax fail?></xi:fallback></xi:include></programlisting>
         </example>
         <para>The authentication token <code>id</code> is returned
             along with an <code>expires</code> attribute that
@@ -649,18 +492,18 @@
             <title>Notes</title>
             <itemizedlist spacing="compact">
                 <listitem>
+                    <para>For all response examples in this guide, the
+                        field values you receive in your responses
+                        will vary from those shown here since they
+                        will be specific to your account.</para>
+                </listitem>
+                <listitem>
                     <para>The information shown in the Authenticate
                         Response examples above is for US-based
                         accounts. If you authenticate against the
                         UK-endpoint for auth, you will see the service
                         catalog information for UK-based
                         accounts.</para>
-                </listitem>
-                <listitem>
-                    <para>For all response examples in this guide, the
-                        field values you receive in your responses
-                        will vary from those shown here since they
-                        will be specific to your account.</para>
                 </listitem>
                 <listitem>
                     <para>The <code>id</code> attribute in the
@@ -693,19 +536,18 @@
         </note>
         <para>The <code>publicURL</code> endpoints for
                 <code>cloudDatabases</code> (for example
-                <code>https://ord.databases.api.rackspacecloud.com/v1.0/1234</code>)
+                <code>https://ord.databases.api.rackspacecloud.com/v1.0/1100111</code>)
             are also returned in the response. </para>
         <para>You will find the actual account number after the final
             '/' in the <code>publicURL</code> field. In this example,
-            you can see that the account number is 1234. You need to
-            specify your account number on most of the Cloud Databases
-            API calls, wherever you see the field <emphasis
+            you can see that the account number is 1100111. You need
+            to specify your account number on most of the Cloud
+            Databases API calls, wherever you see the field <emphasis
                 role="bold">your_acct_id</emphasis> specified in the
             examples in this guide.</para>
         <para>After authentication, you can use cURL to perform &GET;,
             &DELETE;, and &POST; requests for the Cloud Databases
             API.</para>
-        
     </section>
     <section xml:id="Service_Access_Endpoints-d1e753">
         <title>Service Access/Endpoints</title>
@@ -1207,20 +1049,23 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
                     linkend="Configure_Cloud_Server_DB"/>.</para>
         </note>
         <para>Create a Cloud Server using the Cloud Servers section of
-            the Control Panel (login here: <link
-                xlink:href="https://manage.rackspacecloud.com/pages/Login.jsp;jsessionid=9AA14CFBD45D76A627F75FD95A854642.cp-n01"
+            the Cloud Control Panel (login here: <link
+                xlink:href="http://mycloud.rackspace.com/"
                 >Control Panel Login</link>).</para>
         <procedure>
-            <title>To create a Cloud Server using the Control
+            <title>To create a Cloud Server using the Cloud Control
                 Panel:</title>
             <step>
-                <para>Open the <guimenu>Hosting</guimenu> section,
-                    then click <guimenuitem>Cloud
-                        Servers</guimenuitem>.</para>
+                <para>Click <guimenuitem>Servers</guimenuitem> to view
+                    the Cloud Servers page.</para>
             </step>
             <step>
-                <para>To create a new server, click <guibutton>Add
-                        Server</guibutton>.</para>
+                <para> Using the <guimenu>Region</guimenu> drop-down
+                    menu, select the appropriate region, depending on
+                    whether you want to create a first generation
+                    Cloud Server or a next generation Cloud Server.
+                    (The type of Cloud Server does not matter for this
+                    exercise.)</para>
             </step>
             <step>
                 <para> Select an image from a list of different
@@ -1229,29 +1074,23 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
                 <para><inlinemediaobject>
                          <imageobject>
                             <imagedata
-                                fileref="images/Choose_CS_Image.png"
+                                fileref="images/Choose_CS_Image_CCP.png"
                                 contentwidth="6in"/>
                          </imageobject>
                     </inlinemediaobject></para>
             </step>
             <step>
-                <para> Specify a name and select a size for your Cloud
-                    Server, then click <guibutton>Create
+                <para> Specify the <guilabel>Server Name</guilabel>
+                    and select a <guilabel>Size</guilabel> for your
+                    Cloud Server, then click <guibutton>Create
                         Server</guibutton>. </para>
-                <para><inlinemediaobject>
-                        <imageobject>
-                            <imagedata
-                                fileref="images/Create_CS.png"
-                                contentwidth="6in"/>
-                        </imageobject>
-                    </inlinemediaobject></para>
             </step>
         </procedure>
         <note>
             <para>You can also create a Cloud Server using the Cloud
                 Servers API. Refer to the <link
-                    xlink:href="http://docs.rackspace.com/">Cloud
-                    Servers API Developer Guide</link> for
+                    xlink:href="http://docs.rackspace.com/">Next Generation Cloud
+                    Servers Developer Guide</link> for
                 details.</para>
         </note>
     </section>
@@ -1266,72 +1105,6 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
             for the <code>hostname</code> returned and the request
             examples for the user name and password you
             specified.</para>
-    </section>
-    <section xml:id="Configure_Cloud_Server_Routing">
-        <title>Configuring Routing for Your Existing Cloud
-            Server</title>
-        <para>Attempt to access your database instances. If you can
-            access your database instances, then skip the remainder of
-            this section and go directly to <xref
-                linkend="MySQL_GUI_Admin"/>, since the routing for
-            your Cloud Server does not need to be configured.</para>
-        <para>Otherwise, if you cannot access your database instances,
-            you need to modify routes on your existing Cloud Server
-            instances. Refer to the appropriate procedure below,
-            depending on your environment, to create the routing
-            instructions.</para>
-        <procedure>
-            <title>To create routing instructions on a Debian-based
-                Cloud Server distribution (Ubuntu):</title>
-            <step>
-                <para> Edit the file
-                        <filename>/etc/network/interfaces</filename>
-                    and change the following lines from:</para>
-                <para><code>up route add -net 10.176.0.0 netmask
-                        255.248.0.0 gw {instance
-                    specific}</code></para>
-                <para><code>down route del -net 10.176.0.0 netmask
-                        255.248.0.0 gw {instance
-                    specific}</code></para>
-                <para>to:</para>
-                <para><code>up route add -net 10.176.0.0 netmask
-                        255.240.0.0 gw {instance
-                    specific}</code></para>
-                <para><code>down route del -net 10.176.0.0 netmask
-                        255.240.0.0 gw {instance
-                    specific}</code></para>
-                <note>
-                    <para>Replace <code>{instance specific}</code>
-                        with whatever is currently in the file.</para>
-                </note>
-            </step>
-            <step>
-                <para> Reboot your Cloud Server so that the updated
-                    routing information takes effect. </para>
-            </step>
-        </procedure>
-        <procedure>
-            <title>To create routing instructions on a Redhat-based
-                Cloud Server distribution (Redhat, CentOS):</title>
-            <step>
-                <para> Edit the file
-                        <filename>/etc/sysconfig/static-routes</filename>
-                    and change the following line from:</para>
-                <para><code>any net 10.176.0.0 netmask 255.248.0.0 gw
-                        {instance specific}</code></para>
-                <para>to:</para>
-                <para><code>any net 10.176.0.0 netmask 255.240.0.0 gw
-                        {instance specific}</code></para>
-                <note>
-                    <para>Replace <code>{instance specific}</code>
-                        with whatever is currently in the file.</para>
-                </note>
-            </step>
-            <step>
-                <para> Reboot your Cloud Server so that the updated
-                    routing information takes effect. </para>
-            </step>
-        </procedure>
     </section>
     <section xml:id="MySQL_GUI_Admin">
         <title>MySQL GUI Administration</title>

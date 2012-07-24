@@ -26,7 +26,7 @@
 		</copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
     	<productname>Rackspace Cloud Databases</productname>
-	<pubdate>2012-07-02</pubdate>
+	<pubdate>2012-07-18</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -40,13 +40,31 @@
         </abstract>
     	<revhistory>
 			<revision>
+				<date>2012-07-18</date>
+				<revdescription>
+					<para xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
+						>Updated for v1.0.5.</para>
+				</revdescription>
+			</revision>
+			<revision>
+				<date>2012-07-12</date>
+				<revdescription>
+					<para xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
+						>Updated for v1.0.4.</para>
+				</revdescription>
+			</revision>
+			<revision>
 				<date>2012-07-02</date>
 				<revdescription>
 					<para xmlns:svg="http://www.w3.org/2000/svg"
 						xmlns:m="http://www.w3.org/1998/Math/MathML"
 						xmlns:html="http://www.w3.org/1999/xhtml">This
 						document lists the contract breaking changes
-						for v1.0.2.</para>
+						for v1.0.3.</para>
 				</revdescription>
 			</revision>
 			<revision>
@@ -63,13 +81,62 @@
     </info>
 	<chapter xml:id="doc_change_history">
 		<title>Document Change History</title>
-		<para>This version of the Developer Guide replaces and obsoletes all
+		<para>This version of the Release Notes replaces and obsoletes all
 			previous versions. The most recent changes are described
 			in the table below:</para>
 		<?rax revhistory?>
 	</chapter>
-	<chapter xml:id="cdbv1.0.2">
-		<title>v1.0.2, July 2, 2012 </title>
+	<chapter xml:id="cdbv1.0.5" security="internal">
+		<title>v1.0.5, July 18, 2012 </title>
+		<itemizedlist spacing="compact">
+			<title>Resolved Issues</title>
+			<listitem>
+				<para>ERROR instances can now be deleted.</para>
+			</listitem>
+			<listitem>
+				<para>Password check bug was fixed for ignore users (root,
+					os_admin).</para>
+			</listitem>
+			<listitem>
+				<para>Update to the client to list mgmt instances (from the last
+					release).</para>
+			</listitem>
+			<listitem>
+				<para>Sneaky is no longer staying in the build forever.</para>
+			</listitem>
+		</itemizedlist>
+	</chapter>
+	<chapter xml:id="cdbv1.0.4" security="internal">
+		<title>v1.0.4, July 12, 2012 </title>
+		<itemizedlist spacing="compact">
+			<title>Resolved Issues</title>
+			<listitem>
+				<para>Better support to handle errors when calling
+					nova to create servers</para>
+			</listitem>
+			<listitem>
+				<para>Usage initial deployment</para>
+			</listitem>
+			<listitem>
+				<para>Mgmt fixing default dict bugs</para>
+			</listitem>
+			<listitem>
+				<para>Mgmt xml serialization for accounts</para>
+			</listitem>
+			<listitem>
+				<para>Mgmt reboot instances</para>
+			</listitem>
+			<listitem>
+				<para>Mgmt instance bugfix when nova instance doesnt
+					exist</para>
+			</listitem>
+			<listitem>
+				<para>Mgmt list accounts non deleted instances</para>
+			</listitem>
+		</itemizedlist>
+	</chapter>
+	<chapter xml:id="cdbv1.0.3">
+		<title>v1.0.3, July 2, 2012 </title>
 		<para>As expected during Early Access, our API contract is not yet
 			complete. Please be advised that we are introducing
 			contract breaking changes, as described below, in this

@@ -62,7 +62,7 @@
         </copyright>
         <releaseinfo>API v1.0 EAP</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-07-02</pubdate>
+        <pubdate>2012-07-18</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -76,6 +76,24 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-07-18</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Updated for Auth 2.0 (refer to <xref
+                                   linkend="Authentication-d1e647"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Updated absolute limits (refer to
+                                   <xref
+                                   linkend="Absolute_Limits-d1e1397"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-07-02</date>
                 <revdescription>
@@ -417,51 +435,6 @@
                 <itemizedlist spacing="compact">
                     <listitem>
                         <para> US-based accounts authenticate through
-                                <link
-                                    xlink:href="&ENDPOINT-US;"
-                                    >&ENDPOINT-US;</link>.
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para> UK-based accounts authenticate through
-                                <link
-                                    xlink:href="&ENDPOINT-UK;"
-                                    >&ENDPOINT-UK;</link>.
-                        </para>
-                    </listitem>
-                </itemizedlist>
-                <para> Your account may be based in either the US or
-                    the UK; this is not determined by your physical
-                    location but by the location of the Rackspace
-                    retail site which was used to create your account: </para>
-                <itemizedlist spacing="compact">
-                    <listitem>
-                        <para> If your account was created via <link
-                                xlink:href="http://www.rackspacecloud.com"
-                                >http://www.rackspacecloud.com</link>,
-                            it is a US-based account. </para>
-                    </listitem>
-                    <listitem>
-                        <para> If your account was created via <link
-                                xlink:href="http://www.rackspace.co.uk"
-                                >http://www.rackspace.co.uk</link>, it
-                            is a UK-based account. </para>
-                    </listitem>
-                </itemizedlist>
-                <para> If you are unsure how your account was created,
-                    use the Rackspace contact information at either
-                    site to ask for help. </para>
-            </section>
-            <section xml:id="Geographic_Endpoints" security="writeronly">
-                <title>Geographic Endpoints</title>
-                <para> The Rackspace Cloud Authentication Service
-                    serves as the entry point to all Rackspace Cloud
-                    APIs and is itself a ReSTful web service. </para>
-                <para> To access the Authentication Service, you must
-                    know whether your account is US-based or UK-based: </para>
-                <itemizedlist spacing="compact">
-                    <listitem>
-                        <para> US-based accounts authenticate through
                                 <link xlink:href="&ENDPOINT-US-20;"
                                 >&ENDPOINT-US-20;</link>. </para>
                     </listitem>
@@ -499,242 +472,6 @@
                     <tbody>
                         <tr>
                             <td colspan="1">&POST; </td>
-                            <td colspan="1">/auth</td>
-                            <td colspan="4"> Authenticate to receive a
-                                token and a service catalog. </td>
-                        </tr>
-                    </tbody>
-                </informaltable>
-                <simpara> Normal Response Code(s):
-                        <returnvalue>200</returnvalue>,
-                        <returnvalue>203</returnvalue>
-                </simpara>
-                <simpara> Error Response Code(s): unauthorized
-                        (<errorcode>401</errorcode>), userDisabled
-                        (<errorcode>403</errorcode>), badRequest
-                        (<errorcode>400</errorcode>), authFault
-                        (<errorcode>500</errorcode>),
-                    serviceUnavailable (<errorcode>503</errorcode>) </simpara>
-                <para> The authenticate operation provides clients
-                    with an authentication token and a list of
-                    regional cloud endpoints. </para>
-                <example>
-                    <title>Auth Request: XML</title>
-                    <programlistingco>
-                        <areaspec>
-                            <area xml:id="credentials.xml.user"
-                                units="linecolumn" coords="11 23"/>
-                            <area xml:id="credentials.xml.key"
-                                units="linecolumn" coords="12 18"/>
-                        </areaspec>
-                        <programlisting language="xml">
-<xi:include href="samples/db-credentials.xml" parse="text"/>
-                    </programlisting>
-                    </programlistingco>
-                </example>
-                <example>
-                    <title>Auth Request: JSON</title>
-                    <programlistingco>
-                        <areaspec>
-                            <area xml:id="credentials.json.user"
-                                units="linecolumn" coords="11 22"/>
-                            <area xml:id="credentials.json.key"
-                                units="linecolumn" coords="12 18"/>
-                        </areaspec>
-                        <programlisting language="json">
-<xi:include href="samples/db-credentials.json" parse="text"/>
-                    </programlisting>
-                    </programlistingco>
-                </example>
-                <calloutlist>
-                    <callout arearefs="credentials.xml.user">
-                        <para> The username supplied here is your
-                            common Rackspace Cloud username. </para>
-                    </callout>
-                    <callout arearefs="credentials.xml.key">
-                        <para> The key is your API access key. The key
-                            can be obtained from the Rackspace Cloud
-                            Control Panel in the <guimenu>Your
-                                Account</guimenu>/<guimenuitem>API
-                                Access</guimenuitem> section. </para>
-                    </callout>
-                </calloutlist>
-                <example>
-                    <title>Auth Response: XML</title>
-                    <?dbfo keep-together="always"?>
-                    <programlistingco>
-                        <areaspec>
-                            <area xml:id="auth.xml.token.expires"
-                                units="linecolumn" coords="9 13"/>
-                            <area xml:id="auth.xml.service.catalog"
-                                units="linecolumn" coords="10 18"/>
-                            <area xml:id="auth.xml.service.name"
-                                units="linecolumn" coords="11 19"/>
-                            <area xml:id="auth.xml.sc.s.e.region"
-                                units="linecolumn" coords="12 24"/>
-                            <area xml:id="auth.xml.sc.s.e.v1d"
-                                units="linecolumn" coords="12 40"/>
-                            <area xml:id="auth.xml.sc.s.e.pu"
-                                units="linecolumn" coords="13 19"/>
-                            <area xml:id="auth.xml.sc.s.e.iu"
-                                units="linecolumn" coords="41 21"/>
-                        </areaspec>
-                        <programlisting language="xml"><xi:include href="samples/db-auth.xml" parse="text"/></programlisting>
-                    </programlistingco>
-                </example>
-                <example xml:id="auth-response-example-json">
-                    <title>Auth Response: JSON</title>
-                    <programlistingco>
-                        <areaspec>
-                            <area xml:id="auth.json.token.expires"
-                                units="linecolumn" coords="69 24"/>
-                            <area xml:id="auth.json.service.catalog"
-                                units="linecolumn" coords="9 25"/>
-                            <area xml:id="auth.json.service.name"
-                                units="linecolumn" coords="15 29"/>
-                            <area xml:id="auth.json.sc.s.e.region"
-                                units="linecolumn" coords="18 31"/>
-                            <area xml:id="auth.json.sc.s.e.v1d"
-                                units="linecolumn" coords="30 34"/>
-                            <area xml:id="auth.json.sc.s.e.pu"
-                                units="linecolumn" coords="17 34"/>
-                            <area xml:id="auth.json.sc.s.e.iu"
-                                units="linecolumn" coords="27 36"/>
-                        </areaspec>
-                        <programlisting language="json">
-<xi:include href="samples/db-auth.json" parse="text"/>
-                    </programlisting>
-                    </programlistingco>
-                </example>
-                <note>
-                    <para>The information shown in the Auth Response
-                        examples is for US-based accounts. If you
-                        authenticate against the UK-endpoint for auth,
-                        you will see the service catalog information
-                        for UK-based accounts.</para>
-                </note>
-                <calloutlist>
-                    <callout arearefs="auth.xml.token.expires">
-                        <para>This token can be presented to a service
-                            as evidence of authentication. Tokens are
-                            valid for a finite duration.</para>
-                        <para>The <code>expires</code> attribute
-                            denotes the time after which the token
-                            will automatically become invalid. A token
-                            may be manually revoked before the time
-                            identified by the <code>expires</code>
-                            attribute; <code>expires</code> predicts a
-                            token's maximum possible lifespan but does
-                            not guarantee that it will reach that
-                            lifespan. Clients are encouraged to cache
-                            a token until it expires. </para>
-                    </callout>
-                    <callout arearefs="auth.xml.service.catalog">
-                        <para>The service catalog lists the services
-                            this user can access. In this example, the
-                            user can access two compute services
-                            (Cloud Servers OpenStack and Cloud
-                            Servers) and two object storage services
-                            (Cloud Files Content Distribution Network
-                            (CDN), and Cloud Files). The catalog
-                            listing for each service provides at least
-                            one endpoint URL for that service. Other
-                            information, such as regions and versions
-                            and tenants, is provided if it's relevant
-                            to this user's access to this service.
-                        </para>
-                    </callout>
-                    <callout arearefs="auth.xml.service.name">
-                        <para>The service name attribute identifies
-                            each unique service in the catalog. Once a
-                            service is created, its name does not
-                            change. </para>
-                    </callout>
-                    <callout arearefs="auth.xml.sc.s.e.region">
-                        <para>A service may expose endpoints in
-                            different regions. Regional endpoints
-                            allow clients to provision resources in a
-                            manner that provides high
-                            availability.</para>
-                        <para>Some services are not region-specific.
-                            These services supply a single
-                            non-regional endpoint and do not provide
-                            access to internal URLs. </para>
-                    </callout>
-                    <callout arearefs="auth.xml.sc.s.e.v1d">
-                        <para>The <code>v1Default</code> attribute
-                            denotes that an endpoint is being returned
-                            in version 1.0 of the Cloud Authentication
-                            Service. The default value of
-                                <code>v1Default</code> is
-                                <code>false</code>; clients should
-                            assume the value is <code>false</code>
-                            when the attribute is missing. Auth 1.0
-                            does not offer support for regional
-                            endpoints and therefore only returns one
-                            endpoint per service. Resources stored in
-                            endpoints where <code>v1Default</code> is
-                                <code>false</code> will not be seen by
-                            Auth 1.0 clients. </para>
-                    </callout>
-                    <callout
-                        arearefs="auth.xml.sc.s.e.pu auth.xml.sc.s.e.iu">
-                        <para>An endpoint can be assigned public and
-                            internal URLs. A public URL is accessible
-                            from anywhere. Access to a public URL
-                            usually incurs traffic charges. Internal
-                            URLs are only accessible to services
-                            within the same region. Access to an
-                            internal URL is free of charge. </para>
-                    </callout>
-                </calloutlist>
-                <para>Authentication tokens are typically valid for 24
-                    hours. Applications should be designed to
-                    re-authenticate after receiving a 401
-                    (Unauthorized) response from a service endpoint. </para>
-                <important>
-                    <para>If you are programmatically parsing an
-                        authentication response, please be aware that
-                        service names are stable for the life of the
-                        particular service and can be used as keys.
-                        You should also be aware that a user's service
-                        catalog can include multiple uniquely-named
-                        services which perform similar functions. For
-                        example, cloudServersOpenStack is the
-                        OpenStack version of compute whereas
-                        cloudServers is the legacy version of compute;
-                        the same user can have access to both
-                        services. In Auth 2.0, the service type
-                        attribute can be used as a key by which to
-                        recognize similar services; see the tip
-                        below.</para>
-                </important>
-                <tip>
-                    <para>Beginning with Auth 2.0, the service catalog
-                        includes a service type attribute to identify
-                        services that perform similar functions but
-                        have different names; for example,
-                            <code>type="compute"</code> identifies
-                        compute services such as cloudServers and
-                        cloudServersOpenStack. Some developers have
-                        found the service type attribute to be useful
-                        in parsing the service catalog. For Auth 2.0
-                        (also known as the Cloud Identity Service),
-                        you can see the service type attribute in the
-                        "Service Catalog in Authentication Response"
-                        samples in the <citetitle>Cloud Identity
-                            Client Developer Guide</citetitle> at
-                            <link
-                            xlink:href="http://docs.rackspace.com/auth/api/v2.0/auth-client-devguide/content/Sample_Request_Response-d1e64.html"
-                            >http://docs.rackspace.com/auth/api/v2.0/auth-client-devguide/content/Sample_Request_Response-d1e64.html</link>.</para>
-                </tip>
-            </section>
-            <section xml:id="Retrieving_Auth_Token" security="writeronly">
-                <title>Retrieving the Authentication Token</title>
-                <informaltable rules="all">
-                    <tbody>
-                        <tr>
-                            <td colspan="1">&POST; </td>
                             <td colspan="1"> v2.0/tokens </td>
                             <td colspan="4"> Authenticate to receive a
                                 token and a service catalog. </td>
@@ -753,7 +490,16 @@
                     serviceUnavailable (<errorcode>503</errorcode>) </simpara>
                 <para> The authenticate operation provides clients
                     with an authentication token and a list of
-                    regional cloud endpoints. </para>
+                    regional cloud endpoints. The sample requests and
+                    responses in this section illustrate a general
+                    case. In your authentication request, use your own
+                    credentials rather than the sample values shown
+                    here for <code>username</code> and
+                        <code>apiKey</code>. When you authenticate
+                    successfully, the response to your authentication
+                    request will include a catalog of the services to
+                    which you have subscribed rather than the sample
+                    values shown here.</para>
                 <example>
                     <title>Auth Request: XML</title>
                     <programlistingco>
@@ -790,32 +536,30 @@
                     <callout arearefs="credentials.xml.key">
                         <para> The key is your API access key. The key
                             can be obtained from the Rackspace Cloud
-                            Control Panel in the <guimenu>Your
-                                Account</guimenu>/<guimenuitem>API
-                                Access</guimenuitem> section. </para>
+                            Control Panel in the <guimenu>&lt;Your
+                                Account></guimenu>/<guimenuitem>API
+                                Access</guimenuitem> section (login
+                            here: <link
+                                xlink:href="http://mycloud.rackspace.com/"
+                                >Control Panel Login</link>). </para>
                     </callout>
                 </calloutlist>
                 <example>
                     <title>Auth Response: XML</title>
-                    <?dbfo keep-together="always"?>
+                    
                     <programlistingco>
                         <areaspec>
-                            <area xml:id="auth.xml.token.expires"
-                                units="linecolumn" coords="9 13"/>
-                            <area xml:id="auth.xml.service.catalog"
-                                units="linecolumn" coords="10 18"/>
-                            <area xml:id="auth.xml.service.name"
-                                units="linecolumn" coords="11 19"/>
-                            <area xml:id="auth.xml.sc.s.e.region"
-                                units="linecolumn" coords="12 24"/>
-                            <area xml:id="auth.xml.sc.s.e.v1d"
-                                units="linecolumn" coords="12 40"/>
-                            <area xml:id="auth.xml.sc.s.e.pu"
-                                units="linecolumn" coords="13 19"/>
-                            <area xml:id="auth.xml.sc.s.e.iu"
-                                units="linecolumn" coords="41 21"/>
+                            <area xml:id="response.xml.namespaces" units="linecolumn" coords="7 9"/>
+                            <area xml:id="response.xml.token" units="linecolumn" coords="12 10"/>
+                            <area xml:id="response.xml.role" units="linecolumn" coords="14 12"/>
+                            <area xml:id="response.xml.catalog" units="linecolumn" coords="19 21"/>
+                            <area xml:id="response.xml.servicetype" units="linecolumn" coords="43 34"/>
+                            <area xml:id="response.xml.servicename" units="linecolumn" coords="43 54"/>
+                            <area xml:id="response.xml.region" units="linecolumn" coords="44 30"/>
+                            <area xml:id="response.xml.tenant" units="linecolumn" coords="45 66"/>
+                            <area xml:id="response.xml.url" units="linecolumn" coords="46 9"/>
                         </areaspec>
-                        <programlisting language="xml"><xi:include href="samples/db-auth.xml" parse="text"/></programlisting>
+                        <programlisting language="xml"><xi:include href="samples/db-auth-20.xml" parse="text"/></programlisting>
                     </programlistingco>
                 </example>
               
@@ -825,23 +569,17 @@
                     
                     <programlistingco>
                         <areaspec>
-                            <area xml:id="auth.json.token.expires"
-                                units="linecolumn" coords="69 24"/>
-                            <area xml:id="auth.json.service.catalog"
-                                units="linecolumn" coords="9 25"/>
-                            <area xml:id="auth.json.service.name"
-                                units="linecolumn" coords="15 29"/>
-                            <area xml:id="auth.json.sc.s.e.region"
-                                units="linecolumn" coords="18 31"/>
-                            <area xml:id="auth.json.sc.s.e.v1d"
-                                units="linecolumn" coords="30 34"/>
-                            <area xml:id="auth.json.sc.s.e.pu"
-                                units="linecolumn" coords="17 34"/>
-                            <area xml:id="auth.json.sc.s.e.iu"
-                                units="linecolumn" coords="27 36"/>
-                        </areaspec>
-                        <programlisting language="json">
-<xi:include href="samples/db-auth.json" parse="text"/>
+                            <area xml:id="response.json.namespaces" units="linecolumn" coords="200 1"/>
+                            <area xml:id="response.json.token" units="linecolumn" coords="9 8"/>
+                            <area xml:id="response.json.role" units="linecolumn" coords="16 12"/>
+                            <area xml:id="response.json.catalog" units="linecolumn" coords="29 8"/>
+                            <area xml:id="response.json.servicetype" units="linecolumn" coords="102 16"/>
+                            <area xml:id="response.json.servicename" units="linecolumn" coords="101 16"/>
+                            <area xml:id="response.json.region" units="linecolumn" coords="94 24"/>
+                            <area xml:id="response.json.tenant" units="linecolumn" coords="91 24"/>
+                            <area xml:id="response.json.url" units="linecolumn" coords="92 24"/>
+                        </areaspec>	
+                        <programlisting language="json"><xi:include href="samples/db-auth-20.json" parse="text"/>
                     </programlisting>
                     </programlistingco>
                 </example>
@@ -853,78 +591,125 @@
                         for UK-based accounts.</para>
                 </note>
                 <calloutlist>
-                    <callout arearefs="auth.xml.token.expires">
-                        <para>This token can be presented to a service
-                            as evidence of authentication. Tokens are
-                            valid for a finite duration.</para>
-                        <para>The <code>expires</code> attribute
-                            denotes the time after which the token
-                            will automatically become invalid. A token
-                            may be manually revoked before the time
-                            identified by the <code>expires</code>
-                            attribute; <code>expires</code> predicts a
-                            token's maximum possible lifespan but does
-                            not guarantee that it will reach that
-                            lifespan. Clients are encouraged to cache
-                            a token until it expires. </para>
-                    </callout>
-                    <callout arearefs="auth.xml.service.catalog">
-                        <para>The service catalog lists the services
-                            this user can access. In this example, the
-                            user can access two compute services
-                            (Cloud Servers OpenStack and Cloud
-                            Servers) and two object storage services
-                            (Cloud Files Content Distribution Network
-                            (CDN), and Cloud Files). The catalog
-                            listing for each service provides at least
-                            one endpoint URL for that service. Other
-                            information, such as regions and versions
-                            and tenants, is provided if it's relevant
-                            to this user's access to this service.
+                    <callout arearefs="response.xml.namespaces">
+                        <para>
+                            In XML responses only,
+                            a list of namespaces identifies API extensions that add functionality to the core API.
                         </para>
+                        <para> </para>
                     </callout>
-                    <callout arearefs="auth.xml.service.name">
-                        <para>The service name attribute identifies
-                            each unique service in the catalog. Once a
-                            service is created, its name does not
-                            change. </para>
+                    <callout arearefs="response.xml.token">
+                        <para> This token can be presented to a service as evidence of authentication.
+                            Tokens are valid for a finite duration; a token's default lifespan is twenty-four hours.
+                        </para>
+                        <para> The token's <code>expires</code> attribute denotes the time
+                            after which the token will automatically become
+                            invalid. A token may be manually revoked before
+                            the time identified by the <code>expires</code>
+                            attribute; <code>expires</code> predicts a token's
+                            maximum possible lifespan but does not guarantee
+                            that it will reach that lifespan. Clients are
+                            encouraged to cache a token until it expires. </para>
+                        <para> </para>
                     </callout>
-                    <callout arearefs="auth.xml.sc.s.e.region">
-                        <para>A service may expose endpoints in
-                            different regions. Regional endpoints
-                            allow clients to provision resources in a
-                            manner that provides high
-                            availability.</para>
-                        <para>Some services are not region-specific.
-                            These services supply a single
-                            non-regional endpoint and do not provide
-                            access to internal URLs. </para>
+                    <callout arearefs="response.xml.role">
+                        <para> Users can be assigned multiple roles,
+                            with each role providing specific
+                            privileges. In this example,
+                                <code>jsmith</code> is the
+                            administrative user for the account,
+                            holding the fully-privileged
+                                <code>identity:admin</code> role.
+                            Other users might hold other roles with
+                            different privileges. Roles need not be
+                            associated with actual job functions such
+                            as Administrator, Operator, Developer,
+                            Tester, or Trainer. </para>
+                        <para> </para>
                     </callout>
-                    <callout arearefs="auth.xml.sc.s.e.v1d">
-                        <para>The <code>v1Default</code> attribute
-                            denotes that an endpoint is being returned
-                            in version 1.0 of the Cloud Authentication
-                            Service. The default value of
-                                <code>v1Default</code> is
-                                <code>false</code>; clients should
-                            assume the value is <code>false</code>
-                            when the attribute is missing. Auth 1.0
-                            does not offer support for regional
-                            endpoints and therefore only returns one
-                            endpoint per service. Resources stored in
-                            endpoints where <code>v1Default</code> is
-                                <code>false</code> will not be seen by
-                            Auth 1.0 clients. </para>
+                    <callout arearefs="response.xml.catalog">
+                        <para> The service catalog lists the services
+                            this user can access. In this example, the
+                            user can access one database service, one
+                            loadbalancing service, two compute
+                            services (Cloud Servers OpenStack and
+                            Cloud Servers), two object storage
+                            services (Cloud Files Content Distribution
+                            Network (CDN), and Cloud Files),  and one
+                            DNS service. The catalog listing for each
+                            service provides at least one endpoint URL
+                            for that service. Other information, such
+                            as regions, versions, and tenants, is
+                            provided if it's relevant to this user's
+                            access to this service. </para>
+                        <para> </para>
                     </callout>
-                    <callout
-                        arearefs="auth.xml.sc.s.e.pu auth.xml.sc.s.e.iu">
-                        <para>An endpoint can be assigned public and
-                            internal URLs. A public URL is accessible
-                            from anywhere. Access to a public URL
-                            usually incurs traffic charges. Internal
-                            URLs are only accessible to services
-                            within the same region. Access to an
-                            internal URL is free of charge. </para>
+                    <callout arearefs="response.xml.servicetype">
+                        <para>
+                            The service type attribute identifies services that perform similar functions, whatever those services might be named.
+                            In this example, the services named cloudServers and cloudServersOpenstack are both identified as <code>type="compute"</code>,
+                            identifying them as compute services even though the word "compute" does not appear in their names.
+                        </para>
+                        <important>
+                            <para>Use service type as the primary value for
+                                locating a service. If multiple endpoints of the
+                                same service type exist in the same region, use
+                                service name as the tiebreaker.</para>
+                        </important>
+                        <para> </para>
+                    </callout>
+                    <callout arearefs="response.xml.servicename">
+                        <para>
+                            The service name attribute identifies each unique service in the catalog.
+                            Once a service is created, its name does not change. However, new services of the same service type may be added to the catalog with new names.
+                        </para>
+                        <important>
+                            <para> If you are programmatically parsing an authentication
+                                response, use service type rather than service name as
+                                the basis for determining whether a user has access to
+                                a particular kind of service. Service type is stable
+                                across all releases; new service types may be developed,
+                                but existing service types are not renamed.
+                                In this example,
+                                <code>type="compute"</code> identifies all the
+                                available compute services, one of which is named
+                                cloudServers and one of which is named
+                                cloudServersOpenStack. New compute service names may be added
+                                in future releases; whatever the compute services are
+                                named, you can always
+                                recognize them by parsing for
+                                <code>type="compute"</code> in the authentication
+                                response's service catalog. </para>
+                        </important>
+                        <para> </para>
+                    </callout>
+                    <callout arearefs="response.xml.region">
+                        <para> A service may expose endpoints in different regions.
+                            Regional endpoints allow clients to provision
+                            resources in a manner that provides high
+                            availability. </para>
+                        <para> Some services are not region-specific. These services supply a single
+                            non-regional endpoint and do not provide access to internal URLs. </para>
+                        <para> </para>
+                    </callout>
+                    <callout arearefs="response.xml.tenant">
+                        <para> Some services recognize specification of a tenant. If a
+                            service does recognize tenants, the format of the
+                            tenant specification is defined only by the
+                            service; for details about whether and how to
+                            specify a tenant, check the documentation for the
+                            service you are using.</para>
+                        <para> </para>
+                    </callout>
+                    <callout arearefs="response.xml.url">
+                        <para>
+                            An endpoint can be assigned public and internal URLs. A
+                            public URL is accessible from anywhere. Access to a public
+                            URL usually incurs traffic charges. Internal URLs are only
+                            accessible to services within the same region. Access to
+                            an internal URL is free of charge.
+                        </para>
+                        <para> </para>
                     </callout>
                 </calloutlist>
                 <para>Authentication tokens are typically valid for 24
@@ -957,11 +742,22 @@
                         compute services such as cloudServers and
                         cloudServersOpenStack. Some developers have
                         found the service type attribute to be useful
-                        in parsing the service catalog. For Auth 2.0
-                        (also known as the Cloud Identity Service),
-                        you can see the service type attribute in the
-                        Auth Response examples.</para>
+                        in parsing the service catalog. For additional
+                        information on Auth 2.0 (also known as the
+                        Cloud Identity Service), refer to the
+                            <citetitle>Cloud Identity Client Developer
+                            Guide</citetitle> at <link
+                            xlink:href="docs.rackspace.com"
+                            >http://docs.rackspace.com/</link>.</para>
                 </tip>
+                <para>Databases service endpoints are published in the
+                    service catalog in the Auth response with the
+                    account number, which is a required element of the
+                    service endpoints. The examples shown here are for
+                    authentication for US customers. Customers with
+                    UK-based accounts will see different values in the
+                    service catalog. Refer to the next section for
+                    more information about service endpoints. </para>
             </section>
         </section>
         <section xml:id="Service_Access_Endpoints-d1e753">
@@ -1014,8 +810,9 @@
                     linkend="auth-response-example-json"/> you can see
                 from the <code>publicURL</code> field for
                     <code>cloudServers</code>
-                    ("https://servers.api.rackspacecloud.com/v1.0/<emphasis role="bold">1234</emphasis>")
-                that the account number is 1234.</para>
+                    ("https://servers.api.rackspacecloud.com/v1.0/<emphasis
+                    role="bold">1100111</emphasis>") that the account
+                number is 1100111.</para>
         </section>
         <section xml:id="DB_service_versions">
             <title>Cloud Databases Service Versions</title>
@@ -1313,36 +1110,31 @@
                         <tr>
                             <td colspan="1">&GET; changes-since</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">3/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&POST;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">10/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&POST; instances</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">50/day</td>
                         </tr>
                         <tr>
                             <td colspan="1">&PUT;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">10/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&DELETE;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">100/minute</td>
                         </tr>
                     </tbody>
@@ -1379,14 +1171,14 @@
                             <td colspan="1">Instances</td>
                             <td colspan="3">Maximum number of instances allowed
                                 for your account</td>
-                            <td colspan="1">10</td>
+                            <td colspan="1">5</td>
                         </tr>
                         <tr>
                             <td colspan="1">Volume Size</td>
                             <td colspan="3">Maximum volume size per
                                 instance in gigabytes (GB) for your
                                 account</td>
-                            <td colspan="1">10</td>
+                            <td colspan="1">25</td>
                         </tr>
                     </tbody>
                 </table>
