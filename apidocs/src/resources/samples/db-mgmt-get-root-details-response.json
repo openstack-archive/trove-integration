@@ -1,12 +1,12 @@
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 108
-Date: Wed, 25 Jan 2012 21:58:26 GMT
+Content-Length: 102
+Date: Tue, 24 Jul 2012 19:48:33 GMT
 
 {
-    "root_enabled_history": {
-        "id": 2, 
-        "root_enabled_at": "2012-01-25 21:58:11", 
-        "root_enabled_by": "examples"
+    "root_history": {
+        "enabled": "Never", 
+        "id": "6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+        "user": "Nobody"
     }
 }

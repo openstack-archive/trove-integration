@@ -1,7 +1,7 @@
-GET /v1.0/1234/mgmt/instances/f196c2bd-1655-4761-aee9-ef8c8e820756/diagnostics HTTP/1.1
-User-Agent: python-example-client
+GET /v1.0/1234/mgmt/instances/6e038c18-902f-4a41-b2a2-5f46fa62fc1b/diagnostics HTTP/1.1
+User-Agent: python-reddwarfclient
 Host: ord.databases.api.rackspacecloud.com
-X-Auth-Token: 2ba35268-4c11-4098-9069-5898b22755f9
+X-Auth-Token: 87c6033c-9ff6-405f-943e-2deb73f278b7
 Accept: application/json
 Content-Type: application/json
 

@@ -1,8 +1,7 @@
 HTTP/1.1 200 OK
 Content-Type: application/xml
-Content-Length: 185
-Date: Wed, 08 Feb 2012 20:35:10 GMT
+Content-Length: 159
+Date: Tue, 24 Jul 2012 19:48:33 GMT
 
-<?xml version="1.0" ?>
-<diagnostics fdSize="64" threads="2" version="THIS_IS_THE_CURRENT_VERSION" vmHwm="2124" vmPeak="24356" vmRss="2124" vmSize="24296" xmlns="http://docs.openstack.org/database/api/v1.0"/>
+<diagnostics fdSize="64" threads="2" version="1" vmHwm="2872" vmPeak="29160" vmRss="2872" vmSize="29096" xmlns="http://docs.openstack.org/database/api/v1.0"/>
 

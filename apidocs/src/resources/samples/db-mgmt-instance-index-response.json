@@ -1,53 +1,89 @@
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 647
-Date: Mon, 26 Mar 2012 16:03:38 GMT
+Content-Length: 1586
+Date: Tue, 24 Jul 2012 19:48:33 GMT
 
 {
     "instances": [
         {
-            "account_id": "1234", 
-            "created_at": "2012-03-26 15:54:09", 
+            "created": "2012-07-24T19:48:27", 
             "deleted": false, 
             "deleted_at": null, 
-            "flavorid": 3, 
-            "host": "host", 
-            "id": "1b5227df-ef24-4caf-9e1e-fa2dcce6672b", 
-            "ips": [
+            "flavor": {
+                "id": "1", 
+                "links": [
+                    {
+                        "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1", 
+                        "rel": "self"
+                    }, 
+                    {
+                        "href": "https://ord.databases.api.rackspacecloud.com/flavors/1", 
+                        "rel": "bookmark"
+                    }
+                ]
+            }, 
+            "host": "hostname", 
+            "id": "6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+            "links": [
                 {
-                    "address": "10.0.2.16", 
-                    "virtual_interface_id": 1
+                    "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+                    "rel": "self"
+                }, 
+                {
+                    "href": "https://ord.databases.api.rackspacecloud.com/instances/6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+                    "rel": "bookmark"
                 }
             ], 
-            "status": "active", 
-            "volumes": [
-                {
-                    "mountpoint": "/var/lib/mysql", 
-                    "size": 4
-                }
-            ]
+            "local_id": 0, 
+            "name": "json_rack_instance", 
+            "server_id": "64438fb6-4b98-4bd8-975e-222bc11daf74", 
+            "status": "ACTIVE", 
+            "task_description": "No tasks for the instance.", 
+            "tenant_id": "1234", 
+            "updated": "2012-07-24T19:48:29", 
+            "volume": {
+                "size": 2
+            }
         }, 
         {
-            "account_id": "1234", 
-            "created_at": "2012-03-26 15:54:15", 
+            "created": "2012-07-24T19:48:27", 
             "deleted": false, 
             "deleted_at": null, 
-            "flavorid": 3, 
-            "host": "host", 
-            "id": "c16e443f-298a-4071-9cfe-d2d35f5c0084", 
-            "ips": [
+            "flavor": {
+                "id": "1", 
+                "links": [
+                    {
+                        "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1", 
+                        "rel": "self"
+                    }, 
+                    {
+                        "href": "https://ord.databases.api.rackspacecloud.com/flavors/1", 
+                        "rel": "bookmark"
+                    }
+                ]
+            }, 
+            "host": "hostname", 
+            "id": "72eed896-134e-4212-9f25-f81b4e0795e2", 
+            "links": [
                 {
-                    "address": "10.0.2.17", 
-                    "virtual_interface_id": 2
+                    "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/72eed896-134e-4212-9f25-f81b4e0795e2", 
+                    "rel": "self"
+                }, 
+                {
+                    "href": "https://ord.databases.api.rackspacecloud.com/instances/72eed896-134e-4212-9f25-f81b4e0795e2", 
+                    "rel": "bookmark"
                 }
             ], 
-            "status": "active", 
-            "volumes": [
-                {
-                    "mountpoint": "/var/lib/mysql", 
-                    "size": 4
-                }
-            ]
+            "local_id": 0, 
+            "name": "xml_rack_instance", 
+            "server_id": "6d93bc48-f736-41db-9ad7-c8594aac25fb", 
+            "status": "ACTIVE", 
+            "task_description": "No tasks for the instance.", 
+            "tenant_id": "1234", 
+            "updated": "2012-07-24T19:48:30", 
+            "volume": {
+                "size": 2
+            }
         }
     ]
 }

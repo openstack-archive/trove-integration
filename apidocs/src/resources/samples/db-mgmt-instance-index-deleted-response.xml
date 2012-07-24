@@ -1,8 +1,0 @@
-HTTP/1.1 200 OK
-Content-Type: application/xml
-Content-Length: 65
-Date: Fri, 23 Mar 2012 19:56:16 GMT
-
-<?xml version="1.0" ?>
-<instances xmlns="http://docs.openstack.org/database/api/v1.0"/>
-

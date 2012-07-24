@@ -1,16 +1,16 @@
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 151
-Date: Wed, 08 Feb 2012 20:35:09 GMT
+Content-Length: 125
+Date: Tue, 24 Jul 2012 19:48:33 GMT
 
 {
     "diagnostics": {
         "fdSize": 64, 
         "threads": 2, 
-        "version": "THIS_IS_THE_CURRENT_VERSION", 
-        "vmHwm": 2124, 
-        "vmPeak": 24356, 
-        "vmRss": 2124, 
-        "vmSize": 24296
+        "version": "1", 
+        "vmHwm": 2872, 
+        "vmPeak": 29160, 
+        "vmRss": 2872, 
+        "vmSize": 29096
     }
 }
