@@ -1,42 +1,13 @@
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 1353
-Date: Wed, 25 Jan 2012 21:58:25 GMT
+Content-Length: 903
+Date: Tue, 24 Jul 2012 19:48:33 GMT
 
 {
     "instance": {
-        "account_id": "examples", 
-        "addresses": {
-            "usernet": [
-                {
-                    "addr": "10.0.2.17", 
-                    "version": 4
-                }
-            ]
-        }, 
-        "created": "2012-01-25T21:53:18Z", 
-        "databases": [
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "anotherexampledb"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "nextround"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "sampledb"
-            }, 
-            {
-                "character_set": "utf8", 
-                "collate": "utf8_general_ci", 
-                "name": "testingdb"
-            }
-        ], 
+        "created": "2012-07-24T19:48:27", 
+        "deleted": false, 
+        "deleted_at": null, 
         "flavor": {
             "id": "1", 
             "links": [
@@ -51,43 +22,30 @@ Date: Wed, 25 Jan 2012 21:58:25 GMT
             ]
         }, 
         "guest_status": {
-            "created_at": "2012-01-25 21:53:23", 
-            "deleted": false, 
-            "deleted_at": null, 
-            "instance_id": 2, 
-            "state": 1, 
-            "state_description": "running", 
-            "updated_at": "2012-01-25 21:57:57"
+            "state_description": "running"
         }, 
-        "host": "host", 
-        "hostname": "e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com", 
-        "id": "692d8418-7a8f-47f1-8060-59846c6e024f", 
-        "name": "xml_rack_instance", 
-        "root_enabled_at": "2012-01-25 21:58:11", 
-        "root_enabled_by": "examples", 
-        "server_state_description": "active", 
-        "status": "ACTIVE", 
-        "updated": "2012-01-25T21:55:30Z", 
-        "users": [
+        "host": "hostname", 
+        "id": "6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+        "links": [
             {
-                "name": "dbuser3"
+                "href": "https://ord.databases.api.rackspacecloud.com/v1.0/1234/instances/6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+                "rel": "self"
             }, 
             {
-                "name": "dbuser4"
-            }, 
-            {
-                "name": "root"
-            }, 
-            {
-                "name": "userwith2dbs"
+                "href": "https://ord.databases.api.rackspacecloud.com/instances/6e038c18-902f-4a41-b2a2-5f46fa62fc1b", 
+                "rel": "bookmark"
             }
         ], 
+        "local_id": 0, 
+        "name": "json_rack_instance", 
+        "server_id": "64438fb6-4b98-4bd8-975e-222bc11daf74", 
+        "status": "ACTIVE", 
+        "task_description": "No tasks for the instance.", 
+        "tenant_id": "1234", 
+        "updated": "2012-07-24T19:48:29", 
         "volume": {
-            "description": "Volume ID: None assigned to Instance: None", 
-            "id": 2, 
-            "name": "xml_rack_instance", 
-            "size": 2,
-            "used": 0.12451171875
+            "id": "VOL_0fb3073c-15de-483b-bb85-376a8997dc8a", 
+            "size": 2
         }
     }
 }
