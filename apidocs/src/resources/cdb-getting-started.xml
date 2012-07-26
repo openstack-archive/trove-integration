@@ -34,7 +34,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml"
          xml:id="cdb-getting-started"
          class="specification">
-    <?rax status.bar.text="Early Access"?>   
+     
     <info>
         <title>Getting Started with Rackspace Cloud Databases and
             Servers</title>
@@ -43,8 +43,8 @@
             <year>2012</year>
             <holder>Rackspace US, Inc.</holder>
         </copyright>
-        <releaseinfo>API v1.0 EAP</releaseinfo>
-        <pubdate>2012-07-18</pubdate>
+        <releaseinfo>API v1.0</releaseinfo>
+        <pubdate>2012-08-01</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -52,65 +52,13 @@
         </legalnotice>
         <revhistory>
             <revision>
-                <date>2012-07-18</date>
+                <date>2012-08-01</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Updated for Auth 2.0 (refer to <xref
-                                   linkend="Generating_Auth_Token"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Removed section on configuring
-                                routing for your existing Cloud Server
-                                since it is no longer needed.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-07-02</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Replaced the deleted API call List
-                                Flavors Details with List Flavors
-                                (refer to <xref linkend="List_Flavors"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Fixed the volume size parameter for
-                                the Create Instance JSON examples to
-                                be an integer; added note at end of
-                                section about waiting for the database
-                                instance to become active before using
-                                it (refer to <xref
-                                   linkend="Create_DB_Instance"
-                                />).</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-05-31</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Added note in <xref
-                                   linkend="DB_Overview"/> about forum
-                                access and access to the Cloud
-                                Databases service.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-04-16</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Initial Early Access Program (EAP)
-                                release.</para>
+                            <para>Initial Unlimited Availability (UA)
+                                release for Rackspace Cloud
+                                Databases.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
@@ -128,70 +76,25 @@
         <title>Overview</title>
         <para>Follow the steps described in this guide to use the
             Rackspace Cloud Databases API and the Cloud
-            Servers<trademark/> section of the Control Panel to create
-            and access your database instances via Rackspace Cloud
-            Servers.</para>
+            Servers<trademark/> section of the Rackspace Cloud Control
+            Panel to create and access your database instances via
+            Rackspace Cloud Servers.</para>
         <para>For details about using the Cloud Databases API, refer
             to the <citetitle>Cloud Databases Developer
                 Guide</citetitle> at <link
                 xlink:href="http://docs.rackspace.com/"
                 >http://docs.rackspace.com/</link>.</para>
-        <para>There is no need to request an invitation or account
-            activation in order to access the Cloud Databases service.
-            Using this guide, your Rackspace Cloud account, and at
-            least one Cloud Server, you can get started whenever you'd
-            like. </para>
-        <para>If you’d like to discuss database-related topics with
-            other Early Access users in our private Cloud Databases
-            community forum, please send an email to:
-                <email>clouddb_beta@rackspace.com</email> to receive
-            your forum invitation.<note>
-                <para>Forum access is <emphasis>not</emphasis>
-                    required to get access to Cloud Databases. Forum
-                    access is separate from access to the Cloud
-                    Databases service and allows you access for
-                    community support and discussions around
-                    development, design, and administration
-                    topics.</para>
-            </note></para>
-        <para>Support for Cloud Databases during the Early Access
-            Program is available for US and UK customers Monday-Friday
-            8:00AM-5:00PM (Central) and (BST) via phone, chat, or you
-            may also file a ticket using the Control Panel.</para>
+        <para>For more details about Rackspace Cloud Databases, refer
+            to <link
+                xlink:href="http://www.rackspace.com/cloud/cloud_hosting_products/databases/"
+                >http://www.rackspace.com/cloud/cloud_hosting_products/databases/</link>.
+            This site also offers links to Rackspace's official
+            support channels, including knowledge center articles,
+            forums, phone, chat, and email. </para>
         <para>Please visit our <link
                 xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
                 >Product Feedback Forum</link> and let us know what
             you think about Cloud Databases!</para>
-        <para>The Early Access Program (EAP) has some limitations. By
-            using the Rackspace Cloud Databases API, you agree and
-            understand that:<itemizedlist spacing="compact">
-                <listitem>
-                    <para>Rackspace Cloud Databases is
-                        API-only.</para>
-                </listitem>
-                <listitem>
-                    <para>There is no charge for this service during
-                        the EAP period.</para>
-                </listitem>
-                <listitem>
-                    <para>We will charge for Rackspace Cloud Databases
-                        when this service becomes generally
-                        available.</para>
-                </listitem>
-                <listitem>
-                    <para>If you participate in this Early-Access
-                        Program, you will receive a notification prior
-                        to general availability.</para>
-                </listitem>
-                <listitem>
-                    <para>There is no Service Level Agreement. </para>
-                </listitem>
-                <listitem>
-                    <para>Support is available from 8 am–5 pm (Central
-                        Time) Monday–Friday.</para>
-                </listitem>
-            </itemizedlist>
-        </para>
         <section xml:id="Prerequisites_Examples">
             <title>Prerequisites for Running Examples</title>
             <para>In order to run the examples in this guide, you must

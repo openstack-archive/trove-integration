@@ -57,7 +57,7 @@
                             <sourceDirectory>src/resources</sourceDirectory>
                             <highlightSource>false</highlightSource>
                             <!-- this is the Rackspace-internal service developer guide formerly known as ManagementAPISpec.xml -->
-			                      <security>internal</security>
+			                      
                             <includes>cdb-mgmt-devguide.xml</includes>
 			                      <pdfUrl>../../cdb-mgmt-devguide-internal.pdf</pdfUrl>
                             <enableDisqus>intranet</enableDisqus>

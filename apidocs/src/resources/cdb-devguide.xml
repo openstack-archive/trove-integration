@@ -39,7 +39,7 @@
     xmlns:html="http://www.w3.org/1999/xhtml" 
     xml:id="cdb-devguide"
     version="5.0">
-    <?rax status.bar.text="Early Access"?>
+    
     <?rax title.font.size="35px" subtitle.font.size="20px"?>
     <title>Rackspace Cloud Databases Developer Guide</title>
     <titleabbrev>Rackspace Cloud Databases Developer
@@ -60,9 +60,9 @@
             <year>2012</year>
             <holder>Rackspace US, Inc.</holder>
         </copyright>
-        <releaseinfo>API v1.0 EAP</releaseinfo>
+        <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-07-18</pubdate>
+        <pubdate>2012-08-01</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -77,93 +77,13 @@
         
         <revhistory>
             <revision>
-                <date>2012-07-18</date>
+                <date>2012-08-01</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Updated for Auth 2.0 (refer to <xref
-                                   linkend="Authentication-d1e647"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Updated absolute limits (refer to
-                                   <xref
-                                   linkend="Absolute_Limits-d1e1397"
-                                />).</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-07-02</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Added support for pagination (refer
-                                to <xref linkend="pagination"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Added REBOOT status for database
-                                instance (refer to <xref
-                                   linkend="database_instance_status"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Removed API calls for List All
-                                Database Instances Detail (&GET;
-                                /instances/detail) and List Flavors
-                                Details (&GET;
-                                /flavors/detail).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Changed the name of the API call
-                                Check Root User to List Root-Enabled
-                                Status.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Added note for volume
-                                   <code>used</code> attribute that it
-                                is <emphasis>not</emphasis> returned
-                                in responses for certain instance
-                                statuses (refer to <xref
-                                   linkend="GET_getInstanceById__version___accountId__instances__instanceId__"
-                                />).</para>
-                        </listitem>
-                        <listitem>
-                            <para>Updated all examples to match the
-                                latest software version.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-05-31</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Added note in <xref
-                                   linkend="Additional_Resources-d1e532"
-                                /> about forum access and access to
-                                the Cloud Databases service.</para>
-                        </listitem>
-                        <listitem>
-                            <para>Added Accessibility section to
-                                describe limits for accessing database
-                                instances. Refer to <xref
-                                   linkend="Accessibility"/> for
-                                details.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-04-16</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Initial Early Access Program (EAP)
-                                release.</para>
+                            <para>Initial Unlimited Availability (UA)
+                                release for Rackspace Cloud
+                                Databases.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
@@ -179,49 +99,19 @@
     </info>
     <chapter xml:id="overview">
         <title>Overview</title>
-        <para>Rackspace Cloud Databases is a relational database
-            service that allows Rackspace customers to easily
-            provision database instances of varying virtual resource
-            sizes without the need to maintain and/or update MySQL.
-            Interactions with Cloud Databases occur programmatically
-            via the Cloud Databases API as described in this developer
-            guide.</para>
+        <para>Rackspace Cloud Databases is an OpenStack-based MySQL
+            relational database service that allows Rackspace
+            customers to easily provision database instances of
+            varying virtual resource sizes without the need to
+            maintain and/or update MySQL. Interactions with Cloud
+            Databases occur programmatically via the Cloud Databases
+            API as described in this developer guide.</para>
         <note>
             <para>Rackspace recommends that Cloud Databases users back
                 up their data using <emphasis role="bold"
                     >mysqldump</emphasis> until backups are supported
                 in Cloud Databases.</para>
         </note>
-        <para>The Early Access Program (EAP) has some limitations. By
-            using the Rackspace Cloud Databases API, you agree and
-            understand that:<itemizedlist spacing="compact">
-                <listitem>
-                    <para>Rackspace Cloud Databases is
-                        API-only.</para>
-                </listitem>
-                <listitem>
-                    <para>There is no charge for this service during
-                        the EAP period.</para>
-                </listitem>
-                <listitem>
-                    <para>We will charge for Rackspace Cloud Databases
-                        when this service becomes generally
-                        available.</para>
-                </listitem>
-                <listitem>
-                    <para>If you participate in this Early Access
-                        Program, you will receive a notification prior
-                        to general availability.</para>
-                </listitem>
-                <listitem>
-                    <para>There is no Service Level Agreement. </para>
-                </listitem>
-                <listitem>
-                    <para>Support is available from 8 am–5 pm (Central
-                        Time) Monday–Friday.</para>
-                </listitem>
-            </itemizedlist>
-        </para>
         <para>The following figure shows an
             overview of Cloud Databases Infrastructure: <informalfigure>
                 <mediaobject>
@@ -299,20 +189,14 @@
                 API-related documents from <link
                     xlink:href="http://docs.rackspace.com/"
                     >http://docs.rackspace.com/</link>. </para>
-            <para>For information about getting started using Cloud
-                Databases and Cloud Servers, refer to
-                    <citetitle>Getting Started with Rackspace Cloud
-                    Databases and Servers</citetitle>.</para>
-            <para>For information about Rackspace Cloud products,
+            <para>For more details about Rackspace Cloud Databases,
                 refer to <link
-                    xlink:href="http://www.rackspace.com/cloud/"
-                    >http://www.rackspace.com/cloud</link>. This site
-                also offers links to Rackspace's official support
-                channels, including knowledge base articles, forums,
-                phone, chat, and email. </para>
-            <para>There is no need to request an invitation or account
-                activation in order to access the Cloud Databases
-                service. Using this API document, your Rackspace Cloud
+                    xlink:href="http://www.rackspace.com/cloud/cloud_hosting_products/databases/"
+                    >http://www.rackspace.com/cloud/cloud_hosting_products/databases/</link>.
+                This site also offers links to Rackspace's official
+                support channels, including knowledge center articles,
+                forums, phone, chat, and email. </para>
+            <para>Using this API document, your Rackspace Cloud
                 account, and at least one Cloud Server, you can get
                 started whenever you'd like. See the
                     <citetitle>Getting Started with Rackspace Cloud
@@ -320,24 +204,6 @@
                     xlink:href="http://docs.rackspace.com/"
                     >http://docs.rackspace.com/</link> for information
                 about getting started using the API.</para>
-            <para>If you’d like to discuss database-related topics
-                with other Early Access users in our private Cloud
-                Databases community forum, please send an email to:
-                    <email>clouddb_beta@rackspace.com</email> to
-                receive your forum invitation.<note>
-                    <para>Forum access is <emphasis>not</emphasis>
-                        required to get access to Cloud Databases.
-                        Forum access is separate from access to the
-                        Cloud Databases service and allows you access
-                        for community support and discussions around
-                        development, design, and administration
-                        topics.</para>
-                </note></para>
-            <para>Support for Cloud Databases during the Early Access
-                Program is available for US and UK customers
-                Monday-Friday 8:00AM-5:00PM (Central) and (BST) via
-                phone, chat, or you may also file a ticket using the
-                Control Panel.</para>
             <para>Please visit our <link
                     xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
                     >Product Feedback Forum</link> and let us know
@@ -350,13 +216,6 @@
                 documented at: <link
                     xlink:href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html"
                     >http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html</link>. </para>
-        </section>
-        <section xml:id="API_Contract_Changes-d1e363">
-            <title>API Contract Changes</title>
-            <para>The API contract is not locked and may change during
-                the Early Access Program.</para>
-            <para>Rackspace will notify customers in Release Notes
-                when and if the contract does change.</para>
         </section>
     </chapter>
     <chapter xml:id="Concepts-d1e563">
@@ -747,7 +606,7 @@
                         Cloud Identity Service), refer to the
                             <citetitle>Cloud Identity Client Developer
                             Guide</citetitle> at <link
-                            xlink:href="docs.rackspace.com"
+                                xlink:href="http://docs.rackspace.com"
                             >http://docs.rackspace.com/</link>.</para>
                 </tip>
                 <para>Databases service endpoints are published in the
@@ -1189,6 +1048,11 @@
             <para> The Database Service uses an ISO-8601 compliant
                 date format for the display and consumption of
                 date/time values. </para>
+            <para>The system timezone is in UTC. MySQL converts TIMESTAMP values from
+                    the current time zone to UTC for storage, and back
+                    from UTC to the current time zone for retrieval.
+                    This does not occur for other types, such as DATETIME.
+            </para>
                 <example>
                     <title>DB Service Date/Time Format</title>
                     <programlisting>yyyy-MM-dd'T'HH:mm:ss.SSSZ</programlisting>

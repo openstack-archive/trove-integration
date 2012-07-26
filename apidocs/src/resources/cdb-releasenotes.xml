@@ -4,7 +4,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude"
     xml:id="cdb-releasenotes"
     version="5.0">
-	<?rax status.bar.text="Early Access"?>
+	
 	<?rax title.font.size="35px" subtitle.font.size="20px"?>
 	<title>Rackspace Cloud Databases Release Notes</title>
 	<titleabbrev>Rackspace Cloud DBs Rel Notes</titleabbrev>
@@ -24,9 +24,9 @@
 			<year>2012</year>
 			<holder>Rackspace US, Inc.</holder>
 		</copyright>
-        <releaseinfo>API v1.0 EAP</releaseinfo>
+        <releaseinfo>API v1.0</releaseinfo>
     	<productname>Rackspace Cloud Databases</productname>
-	<pubdate>2012-07-18</pubdate>
+	<pubdate>2012-08-01</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -40,41 +40,13 @@
         </abstract>
     	<revhistory>
 			<revision>
-				<date>2012-07-18</date>
+				<date>2012-08-01</date>
 				<revdescription>
 					<para xmlns:svg="http://www.w3.org/2000/svg"
 						xmlns:m="http://www.w3.org/1998/Math/MathML"
 						xmlns:html="http://www.w3.org/1999/xhtml"
-						>Updated for v1.0.5.</para>
-				</revdescription>
-			</revision>
-			<revision>
-				<date>2012-07-12</date>
-				<revdescription>
-					<para xmlns:svg="http://www.w3.org/2000/svg"
-						xmlns:m="http://www.w3.org/1998/Math/MathML"
-						xmlns:html="http://www.w3.org/1999/xhtml"
-						>Updated for v1.0.4.</para>
-				</revdescription>
-			</revision>
-			<revision>
-				<date>2012-07-02</date>
-				<revdescription>
-					<para xmlns:svg="http://www.w3.org/2000/svg"
-						xmlns:m="http://www.w3.org/1998/Math/MathML"
-						xmlns:html="http://www.w3.org/1999/xhtml">This
-						document lists the contract breaking changes
-						for v1.0.3.</para>
-				</revdescription>
-			</revision>
-			<revision>
-				<date>2012-04-16</date>
-				<revdescription>
-					<para xmlns:svg="http://www.w3.org/2000/svg"
-						xmlns:m="http://www.w3.org/1998/Math/MathML"
-						xmlns:html="http://www.w3.org/1999/xhtml"
-						>Initial Early Access Program (EAP)
-						release.</para>
+						>Initial Unlimited Availability (UA) release
+						for Rackspace Cloud Databases.</para>
 				</revdescription>
 			</revision>
     	</revhistory>
@@ -86,183 +58,12 @@
 			in the table below:</para>
 		<?rax revhistory?>
 	</chapter>
-	<chapter xml:id="cdbv1.0.5" security="internal">
-		<title>v1.0.5, July 18, 2012 </title>
-		<itemizedlist spacing="compact">
-			<title>Resolved Issues</title>
-			<listitem>
-				<para>ERROR instances can now be deleted.</para>
-			</listitem>
-			<listitem>
-				<para>Password check bug was fixed for ignore users (root,
-					os_admin).</para>
-			</listitem>
-			<listitem>
-				<para>Update to the client to list mgmt instances (from the last
-					release).</para>
-			</listitem>
-			<listitem>
-				<para>Sneaky is no longer staying in the build forever.</para>
-			</listitem>
-		</itemizedlist>
-	</chapter>
-	<chapter xml:id="cdbv1.0.4" security="internal">
-		<title>v1.0.4, July 12, 2012 </title>
-		<itemizedlist spacing="compact">
-			<title>Resolved Issues</title>
-			<listitem>
-				<para>Better support to handle errors when calling
-					nova to create servers</para>
-			</listitem>
-			<listitem>
-				<para>Usage initial deployment</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt fixing default dict bugs</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt xml serialization for accounts</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt reboot instances</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt instance bugfix when nova instance doesnt
-					exist</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt list accounts non deleted instances</para>
-			</listitem>
-		</itemizedlist>
-	</chapter>
-	<chapter xml:id="cdbv1.0.3">
-		<title>v1.0.3, July 2, 2012 </title>
-		<para>As expected during Early Access, our API contract is not yet
-			complete. Please be advised that we are introducing
-			contract breaking changes, as described below, in this
-			release. After this update, our contract will be locked
-			and available for stable integrations. Any future changes
-			to the contract will result in a change to the API
-			version.</para>
-		<itemizedlist spacing="compact">
-			<title>Contract breaking changes for this release are as
-				follows:</title>
-			<listitem>
-				<para>
-					<emphasis role="bold">The GET /instances/detail
-						operation was removed.</emphasis>
-				</para>
-				<para>The GET /instances call now returns flavor, volume size,
-					status and no longer returns hostname or
-					created/updated status.</para>
-				<para> </para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">The GET /flavors/detail
-						operation was removed.</emphasis>
-				</para>
-				<para>The GET /flavors call now returns all flavor detail
-					information.</para>
-				<para> </para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">When using JSON to Create
-						Database Instance via API request, the volume
-						size parameter should always be an unquoted
-						integer.</emphasis>
-				</para>
-				<para>The API JSON response for this call will now return an
-					unquoted integer and will no longer return a
-					string for the volume size parameter.</para>
-				<para> </para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">Pagination has been added to
-						all list operations.</emphasis>
-				</para>
-				<para>Pagination is now supported for all list operations:
-					instances, databases and users.</para>
-				<para> </para>
-			</listitem>
-			<listitem>
-				<para>
-					<emphasis role="bold">Root-enabled status must be
-						retrieved through the List Root-Enabled Status
-						(GET /instances/{instanceId}/root)
-						operation.</emphasis>
-				</para>
-				<para>Root details will not be returned in the GET
-					/instances/{instanceId} operation.</para>
-			</listitem>
-		</itemizedlist>
-		<para>These changes may require you to modify your existing
-			code integration with the Cloud Databases API in order to
-			access functionality without issue. Please refer to the
-			updated documentation for this release for further details
-			and examples.</para>
-		<itemizedlist spacing="compact">
-			<title>Resources</title>
-			<listitem>
-				<para>Get started using the Cloud Databases API to
-					create databases in the <citetitle>Getting Started
-						Guide</citetitle> at: <link
-						xlink:href="http://docs.rackspace.com/api/"
-						>http://docs.rackspace.com/api/</link>.</para>
-			</listitem>
-			<listitem>
-				<para>Get reference information and examples in the
-						<citetitle>Cloud Databases Developer
-						Guide</citetitle> at: <link
-						xlink:href="http://docs.rackspace.com/api/"
-						>http://docs.rackspace.com/api/</link>.</para>
-			</listitem>
-			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Request
-					access to the Cloud Databases Forum during the
-					Early Access Program (EAP) by sending an email to:
-						<email>clouddb_beta@rackspace.com</email>.
-					Once received, we will send you an invitation to
-					join our forum group and you may set up your
-					account if you don’t already have one.</para>
-			</listitem>
-			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Support
-					for Cloud Databases during the Early Access
-					Program is available for US and UK customers
-					Monday-Friday 8:00AM-5:00PM (Central) and (BST)
-					via phone, chat, or you may also <link
-						xlink:href="https://manage.rackspacecloud.com/Tickets/YourTickets.do"
-						>File a Ticket</link>.</para>
-			</listitem>
-			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Please
-					visit our <link
-						xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
-						>Product Feedback Forum</link> and let us know
-					what you think about Cloud Databases!</para>
-			</listitem>
-			<listitem security="writeronly">
-				<para>View the Generated Changelog (V1.0.1) at: <link
-						xlink:href="https://github.com/hub-cap/oizys/blob/master/generic_package_scripts/nova_diablo_scripts/debian/changelog"
-						>Generated Changelog (V1.0.1)</link>.</para>
-			</listitem>
-		</itemizedlist>
-	</chapter>
-	<chapter xml:id="cdbv1.0.1">
-		<title>v1.0.1, April 16, 2012 </title>
-		<para>We are pleased to announce the availability of Rackspace Cloud
-			Databases (Early Access Program [EAP]) to all US and UK
-			Cloud customers. These release notes cover the EAP release
-			of Rackspace Cloud Databases.</para>
+	<chapter xml:id="cdbv1.0.6">
+		<title>v1.0.6, August 1, 2012 </title>
+		<para>We’re pleased to announce the availability of Rackspace Cloud
+			Databases to all US and UK Open Cloud customers. These
+			release notes cover the Unlimited Availability (UA)
+			release of Rackspace Cloud Databases.</para>
 		<itemizedlist spacing="compact">
 			<title>Product Features</title>
 			<listitem>
@@ -328,209 +129,89 @@
 			</listitem>
 		</itemizedlist>
 		<itemizedlist spacing="compact">
-			<title>Known Issues</title>
+			<title>What's New</title>
 			<listitem>
-				<para>Python-routes will not allow for dotted URLs. </para>
-				<para>There is a bug in a python library that
-					Rackspace is using that may cause incorrect user
-					deletions to occur if a period (.) is used in the
-					user name. In this case, the user name is
-					truncated to remove the portion of the name from
-					the period to the end, leaving only the portion
-					from the beginning up to the period.</para>
+				<para>Performance improvements.</para>
 			</listitem>
 			<listitem>
-				<para>Incorrect behavior occurs when creating a
-					database user.</para>
-				<para>A new user can be created with a user name that
-					already exists, but with a different password
-					and/or database name. This causes the
-					initially-specified user password to be changed
-					and/or permissions to be granted to an additional
-					database, which is incorrect behavior for a POST
-					call.</para>
+				<para>Documentation updates to the <link
+						xlink:href="http://docs.rackspace.com/api/"
+						>CDB Developer Guide</link>.</para>
+			</listitem>
+		</itemizedlist>
+		<itemizedlist spacing="compact">
+			<title>Bug Fixes</title>
+			<listitem>
+				<para>Removed root user from the users list.</para>
+			</listitem>
+			<listitem security="internal">
+				<para>List users no longer shows root (or any other
+					specified users we define).</para>
+			</listitem>
+			<listitem security="internal">
+				<para>XML Pagination works for list instances.</para>
+			</listitem>
+			<listitem security="internal">
+				<para>Kernel openvz updates.</para>
+			</listitem>
+			<listitem security="internal">
+				<para>Added Environment field to usage payload
+					xml.</para>
+			</listitem>
+			<listitem security="internal">
+				<para>Separate the modify event into modify
+					volume/flavor types.</para>
+			</listitem>
+			<listitem security="internal">
+				<para>Added categories searching for atom hopper
+					billing.</para>
+			</listitem>
+		</itemizedlist>
+		<itemizedlist spacing="compact">
+			<title>Known Issues / Limitations</title>
+			<listitem>
+				<para>Users' database privileges are not modifiable.
+					 Users must be deleted and recreated to add
+					additional database privileges.</para>
 			</listitem>
 		</itemizedlist>
 		<itemizedlist spacing="compact">
 			<title>Resources</title>
 			<listitem>
-				<para>Get started using the Cloud Databases API to create
-					databases in the <citetitle>Getting Started
-						Guide</citetitle> at: <link
+				<para> Get started using the Cloud Databases API to create
+					databases in the <emphasis role="italic">Getting
+						Started Guide</emphasis> at: <link
 						xlink:href="http://docs.rackspace.com/api/"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
 						>http://docs.rackspace.com/api/</link>.</para>
 			</listitem>
 			<listitem>
-				<para>Get reference information and examples in the
-						<citetitle>Cloud Databases Developer
-						Guide</citetitle> at: <link
+				<para> Get reference information and examples in the <emphasis
+						role="italic">Cloud Databases Developer
+						Guide</emphasis> at: <link
 						xlink:href="http://docs.rackspace.com/api/"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
 						>http://docs.rackspace.com/api/</link>.</para>
 			</listitem>
 			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Request
-					access to the Cloud Databases Forum during the
-					Early Access Program (EAP) by sending an email to:
-						<email>clouddb_beta@rackspace.com</email>.
-					Once received, we will send you an invitation to
-					join our forum group and you may set up your
-					account if you don’t already have one.</para>
-			</listitem>
-			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Support
-					for Cloud Databases during the Early Access
-					Program is available for US and UK customers
-					Monday-Friday 8:00AM-5:00PM (Central) and (BST)
-					via phone, chat, or you may also <link
+				<para> Support for Cloud Databases is available for US and UK
+					customers 24x7x365 via phone, chat, or you may
+					also <link
 						xlink:href="https://manage.rackspacecloud.com/Tickets/YourTickets.do"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
 						>File a Ticket</link>.</para>
 			</listitem>
 			<listitem>
-				<para xmlns:svg="http://www.w3.org/2000/svg"
-					xmlns:m="http://www.w3.org/1998/Math/MathML"
-					xmlns:html="http://www.w3.org/1999/xhtml">Please
-					visit our <link
+				<para> Please visit our <link
 						xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
-						>Product Feedback Forum</link> and let us know
-					what you think about Cloud Databases!</para>
-			</listitem>
-			<listitem security="internal">
-				<para>View the Generated Changelog (V1.0.1) at: <link
-						xlink:href="https://github.com/hub-cap/oizys/blob/master/generic_package_scripts/nova_diablo_scripts/debian/changelog"
-						>Generated Changelog (V1.0.1)</link>.</para>
-			</listitem>
-		</itemizedlist>
-	</chapter>
-	<chapter xml:id="cdbv1.0.1_internal" security="internal">
-		<title>Internal Information for v1.0.1 for Private Beta
-			Participants, April 16, 2012 </title>
-		<note>
-			<para> We have contract-breaking changes in this release
-				and need to notify Private Beta customers of the
-				following changes to the API:<itemizedlist spacing="compact">
-					<listitem>
-						<para>Removed the databases list from the List
-							Database Instance Details call.</para>
-					</listitem>
-					<listitem>
-						<para>Removed the single database attribute
-							from the Create User call.</para>
-					</listitem>
-					<listitem>
-						<para>Modified the List Users in Database
-							Instance call to display the databases on
-							which users have privileges. </para>
-					</listitem>
-				</itemizedlist></para>
-		</note>
-		<itemizedlist spacing="compact">
-			<title>New Features</title>
-			<listitem>
-				<para>Public Facing</para>
-				<itemizedlist>
-					<listitem>
-						<para><link
-								xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story:88086"
-								>Create instance, optionally add users
-								when adding a database</link>
-						</para>
-					</listitem>
-					<listitem>
-						<para>
-							<link
-								xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story:104568"
-								>Modify 'create user' - remove
-								singular database attribute</link>
-						</para>
-					</listitem>
-					<listitem>
-						<para>
-							<link
-								xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story:88090"
-								>Get user association shows DBs
-								now</link>
-						</para>
-					</listitem>
-					<listitem>
-						<para>
-							<link
-								xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story:148286"
-								>Adding used space to volume
-								info</link>
-						</para>
-						<para> </para>
-					</listitem>
-				</itemizedlist>
-			</listitem>
-			<listitem>
-				<para>Mgmt Facing</para>
-				<itemizedlist>
-					<listitem>
-						<para>
-							<link
-								xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story:112747"
-								>Automated Guest Upgrades</link>
-						</para>
-					</listitem>
-				</itemizedlist>
-			</listitem>
-		</itemizedlist>
-		<itemizedlist spacing="compact" security="internal">
-			<title>Resolved Issues</title>
-			<listitem>
-				<para>OpenVZ quotas bug fixed.</para>
-			</listitem>
-			<listitem>
-				<para>Validating commands that should not allow you to
-					delete/edit while they are in progress.</para>
-			</listitem>
-			<listitem>
-				<para>Mgmt IP association mistake causing mgmt api to
-					crash/return all IPs in DB.</para>
-			</listitem>
-			<listitem>
-				<para>Logging around authorization failures.</para>
-			</listitem>
-			<listitem>
-				<para>202 messages return header only (no more weird
-					text body).</para>
-			</listitem>
-			<listitem>
-				<para>http-&gt;https for images/instances.</para>
-			</listitem>
-			<listitem>
-				<para>Allow volume in error status to be
-					deleted.</para>
-			</listitem>
-			<listitem>
-				<para>Added validation for running instances before
-					operations can be submitted.</para>
-			</listitem>
-			<listitem>
-				<para>Removed DBs from GET instances/ID.</para>
-			</listitem>
-			<listitem>
-				<para>Miscellaneous cleanup around OVZ on instance
-					deletion.</para>
-			</listitem>
-			<listitem>
-				<para>Failed instances no longer show up as null in
-					mgmt api.</para>
-			</listitem>
-			<listitem>
-				<para>Miscellaneous doc fixes.</para>
-			</listitem>
-			<listitem>
-				<para>Fix bug around creating multiple users in a
-					create instance.</para>
-			</listitem>
-			<listitem>
-				<para>Fix a race condition in instance
-					provisioning.</para>
+						>Product Feedback Forum</link> and let us know
+					what you think about Cloud Databases! </para>
 			</listitem>
 		</itemizedlist>
 	</chapter>

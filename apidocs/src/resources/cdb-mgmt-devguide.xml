@@ -34,7 +34,7 @@
     xml:id="cdb-devguide"
    
     version="5.0">
-    <?rax status.bar.text="Early Access"?>
+   
     <?rax title.font.size="35px" subtitle.font.size="20px"?>
     <title>Rackspace Cloud Databases Developer Guide for Service
         Management</title>
@@ -56,9 +56,9 @@
             <year>2012</year>
             <holder>Rackspace US, Inc.</holder>
         </copyright>
-        <releaseinfo>API v1.0 EAP</releaseinfo>
+        <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-07-18</pubdate>
+        <pubdate>2012-08-01</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -74,23 +74,13 @@
         
         <revhistory>
             <revision>
-                <date>2012-07-18</date>
+                <date>2012-08-01</date>
                 <revdescription>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>Initial Unlimited Access (UA)
-                                release.</para>
-                        </listitem>
-                    </itemizedlist>
-                </revdescription>
-            </revision>
-            <revision>
-                <date>2012-04-16</date>
-                <revdescription>
-                    <itemizedlist spacing="compact">
-                        <listitem>
-                            <para>Initial Early Access Program (EAP)
-                                release.</para>
+                            <para>Initial Unlimited Availability (UA)
+                                release for Rackspace Cloud
+                                Databases.</para>
                         </listitem>
                     </itemizedlist>
                 </revdescription>
@@ -107,7 +97,7 @@
     <chapter xml:id="overview">
         <title>Overview</title>
         <para>Rackspace Cloud Databases is a database available to
-            Rackspace Cloud customers. Interactions with Cloud
+            Rackspace Open Cloud customers. Interactions with Cloud
             Databases occur programmatically via the Cloud Databases
             API as described in this <citetitle>Cloud Databases
                 Developer Guide for Service
@@ -115,9 +105,6 @@
         <remark>Writer: need to synch up Overview section with
             marketing blurb for web. These should be
             consistent.</remark>
-        <remark>Writer: need to check with Daniel for correct product
-            name once we have settled on that name; then get product
-            name modified throughout entire manual .</remark>
         <para>The API operations described in this manual relate to
             support of Cloud Databases service activities on behalf of
             a specific customer. The scope of these operations is
@@ -212,35 +199,29 @@
             <itemizedlist>
                 <listitem>
                     <para>The WADL is <link
-                            xlink:href="http://docs.rackspace.com/cdb/api/v1.0/management.wadl"
+                            xlink:href="http://docs-internal.rackspace.com/cdb/api/v1.0/management.wadl"
                         />.</para>
                 </listitem>
                 <listitem>
                     <para>The XSD is <link
-                        xlink:href="http://docs.rackspace.com/cdb/api/v1.0/xsd/management.xsd"/>. </para>
+                        xlink:href="http://docs-internal.rackspace.com/cdb/api/v1.0/xsd/management.xsd"/>. </para>
                 </listitem>
             </itemizedlist>
             <para>You can download the most current versions of other
                 API-related documents from <link
-                    xlink:href="http://docs.rackspace.com/api/"
-                    >http://docs.rackspace.com/api/</link>. </para>
+                    xlink:href="http://docs.rackspace.com/"
+                    >http://docs.rackspace.com/</link>. </para>
             <para>For information about getting started using Cloud
                 Databases and Cloud Servers, refer to
                     <citetitle>Getting Started with Rackspace Cloud
                     Databases and Servers</citetitle>.</para>
-            <para>For information about Rackspace Cloud products,
+            <para>For more details about Rackspace Cloud Databases,
                 refer to <link
-                    xlink:href="http://www.rackspace.com/cloud/"
-                    >http://www.rackspace.com/cloud</link>. This site
-                also offers links to Rackspace's official support
-                channels, including knowledge base articles, forums,
-                phone, chat, and email. </para>
-            <para>Get access to the Cloud Databases Forum during the
-                Early Access Program (EAP) by sending an email to:
-                    <email>clouddb_beta@rackspace.com</email>. Once
-                received, we will send you an invitation to join our
-                forum group and you may set up your account if you
-                don’t already have one.</para>
+                    xlink:href="http://www.rackspace.com/cloud/cloud_hosting_products/databases/"
+                    >http://www.rackspace.com/cloud/cloud_hosting_products/databases/</link>.
+                This site also offers links to Rackspace's official
+                support channels, including knowledge center articles,
+                forums, phone, chat, and email. </para>
             <para>Please visit our <link
                     xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
                     >Product Feedback Forum</link> to find out what
@@ -317,13 +298,14 @@
             <title>Authentication</title>
             <para>Every ReST request against the Cloud Databases
                 Management API requires that the caller be
-                authenticated with HTTP Basic Auth using LDAP. </para>
+                authenticated with HTTP Basic Auth.</para>
             <note>
-                <para>Not all Rackspace employees will have access to
-                    the Cloud Databases Management API. If you cannot
-                    access the service and feel that this is in error,
-                    please contact your supervisor and have the
-                    appropriate LDAP roles/permissions added. </para>
+                <para>If you cannot access the Cloud Databases
+                    Management API, please email the Cloud DB team at
+                        <email>clouddb_all@rackspace.com</email> to
+                    request access. Access will be granted on an
+                    as-needed basis until access to the Management API
+                    is integrated with Global Auth.</para>
             </note>
         </section>
         <section xml:id="Service_Access_Endpoints-d1e753">
@@ -514,7 +496,7 @@
                 list of the successful and error response codes for
                 the POST /xxxx call.</para>
         </section>
-           <section xml:id="Content_Compression-d1e1120">
+        <section xml:id="Content_Compression-d1e1120" security="writeronly">
             <title>Content Compression</title>
             <para> Request and response body data may be encoded with gzip compression to accelerate
                 interactive performance of API calls and responses. This is controlled using the
@@ -545,7 +527,7 @@
                 </tbody>
             </table>
         </section>
-        <section xml:id="Persistent_Connections-d1e1187">
+        <section xml:id="Persistent_Connections-d1e1187" security="writeronly">
             <title>Persistent Connections</title>
             <para>
                 By default, the API supports persistent connections
@@ -584,7 +566,7 @@
                     effect after the root URI path. For example, the
                     regular expression ^/v1.0/instances would match
                     the bolded portion of the following URI:
-                        https://ord.databases.api.rackspacecloud.com/<emphasis
+                        https://ord.databases.api.rackspacecloud.com<emphasis
                         role="bold">/v1.0/instances</emphasis>. </para>
                 <para>The following table specifies the default rate
                     limits for all API operations for all &GET;,
@@ -604,36 +586,31 @@
                         <tr>
                             <td colspan="1">&GET; changes-since</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">3/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&POST;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">10/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&POST; instances</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">50/day</td>
                         </tr>
                         <tr>
                             <td colspan="1">&PUT;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">10/minute</td>
                         </tr>
                         <tr>
                             <td colspan="1">&DELETE;</td>
                             <td colspan="2">*/instances/*</td>
-                            <td colspan="2"
-                                >^/v\d+\.\d+/\d+/instances.*</td>
+                            <td colspan="2">^/vd+.d+/instances.*</td>
                             <td colspan="1">100/minute</td>
                         </tr>
                     </tbody>
@@ -670,14 +647,14 @@
                             <td colspan="1">Instances</td>
                             <td colspan="3">Maximum number of instances allowed
                                 for your account</td>
-                            <td colspan="1">3</td>
+                            <td colspan="1">5</td>
                         </tr>
                         <tr>
                             <td colspan="1">Volume Size</td>
                             <td colspan="3">Maximum volume size per
                                 instance in gigabytes (GB) for your
                                 account</td>
-                            <td colspan="1">10</td>
+                            <td colspan="1">25</td>
                         </tr>
                     </tbody>
                 </table>
@@ -688,6 +665,11 @@
             <para> The Database Service uses an ISO-8601 compliant
                 date format for the display and consumption of
                 date/time values. </para>
+            <para>The system timezone is in UTC. MySQL converts
+                TIMESTAMP values from the current time zone to UTC for
+                storage, and back from UTC to the current time zone
+                for retrieval. This does not occur for other types,
+                such as DATETIME. </para>
                 <example>
                     <title>DB Service Date/Time Format</title>
                     <programlisting>yyyy-MM-dd'T'HH:mm:ss.SSSZ</programlisting>
@@ -1046,7 +1028,7 @@
                     </programlisting>
             </example>
             <example>
-                <title>Example Fault Response: JSON</title>
+                <title>Example instanceFault Response: JSON</title>
                 <?dbfo keep-together="always"?>
                 <programlisting language="json">
 <xi:include href="samples/db-faults-instanceFault.json" parse="text"/>
@@ -1129,11 +1111,12 @@
                     <para>
                         <note>
                             <para>If MySQL has crashed (causing the
-                                SHUTDOWN status), please call support
-                                for assistance.</para>
-                            <remark>Writer: Nicole will provide a
-                                "proper escalanation note" to replace
-                                the note above. 1-19-12</remark>
+                                SHUTDOWN status), you can try
+                                rebooting the database instance to see
+                                if that corrects the problem. If the
+                                instance still does not recover, you
+                                can escalate the issue to
+                                NebOps.</para>
                         </note>
                     </para>
                 </listitem>
@@ -1164,6 +1147,10 @@
                 <wadl:resource href="../../../xsd/management.wadl#diagnostics">
                     <wadl:method href="getdiagnosticdetails"/>
                 </wadl:resource>
+                <wadl:resource
+                    href="../../../xsd/management.wadl#rootdetails">
+                    <wadl:method href="getrootdetails"/>
+                </wadl:resource>
             </wadl:resources>
         </section>
 
@@ -1187,7 +1174,7 @@
             <wadl:resources xmlns:wadl="http://wadl.dev.java.net/2009/02">
                 <wadl:resource href="../../../xsd/management.wadl#instanceAction" >
                     <wadl:method href="rebootInstance"/>
-                    <wadl:method href="updateGuest"/>
+                    
                 </wadl:resource>
             </wadl:resources>
         </section>
@@ -1213,35 +1200,6 @@
                     <wadl:method href="getaccountbyid"/>
                 </wadl:resource>
             </wadl:resources>
-        </section>      
-        
-        <section xml:id="Configurations">
-            <title>Configurations</title>
-            <para>This section describes the operations that are
-                supported for managing configurations.</para>
-            <wadl:resources
-                xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="../../../xsd/management.wadl#configs">
-                    <wadl:method href="createconfigs"/>
-                    <wadl:method href="getconfigs"/>
-                </wadl:resource>
-                <wadl:resource href="../../../xsd/management.wadl#configid">
-                    <wadl:method href="getconfigbyid"/>
-                    <wadl:method href="updateconfig"/>
-                    <wadl:method href="deleteconfig"/>
-                </wadl:resource>
-            </wadl:resources>
-        </section>
-        
-        <section xml:id="Root_Flag">
-            <title>Root Flag</title>
-            <para>This section describes the operations that are supported for getting information about the root flag.</para>
-            <wadl:resources 
-                xmlns:wadl="http://wadl.dev.java.net/2009/02">
-                <wadl:resource href="../../../xsd/management.wadl#rootdetails">
-                    <wadl:method href="getrootdetails"/>                
-                </wadl:resource>
-            </wadl:resources>               
         </section>  
            
     </chapter>

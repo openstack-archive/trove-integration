@@ -40,7 +40,6 @@
           </resource>
           <resource id="instanceAction" path="action">
             <method href="#rebootInstance" />
-            <method href="#updateGuest" />
           </resource>
         </resource>
       </resource>
@@ -54,18 +53,6 @@
           </param>
           <method href="#getaccountbyid"/>
         </resource>
-      </resource>
-      <resource id="configs" path="configs">
-          <method href="#createconfigs"/>
-          <method href="#getconfigs"/>
-          <resource id="configid" path="{configId}">
-              <param name="configId" style="template" type="xsd:string">
-                <doc>The config ID for the specified configuration.</doc>
-              </param>
-              <method href="#getconfigbyid"/>
-              <method href="#updateconfig"/>
-              <method href="#deleteconfig"/>
-          </resource>
       </resource>
     </resource>
   </resources>
@@ -289,46 +276,6 @@
     &postPutFaults;
   </method>
 
-    <method name="POST" id="updateGuest">
-        <wadl:doc xml:lang="EN" title="Update the Guest Agent"  xmlns="http://docbook.org/ns/docbook">
-            <para role="shortdesc">Update the guest agent on the instance.</para>
-            <para>This operation returns a 202 Accepted response.</para>
-          <para>In all cases, the call returns immediately. To determine if the operation succeeded, 
-            call Get Diagnostics Info (see <xref linkend="GET_getdiagnosticdetails_mgmt_instances__instanceId__diagnostics_Database_Instance_Management"></xref>) 
-            to check whether the version of the guest installed on the instance has changed. Note that the version will <emphasis>not</emphasis> change if no new version of the guest is available.
-            </para>
-          <para>In the event an upgrade fails and leaves the guest in a bad state, the instance status changes to "ERROR". At this point certain API functionality may not work on the instance, and manual intervention by support is necessary.</para>
-        </wadl:doc>
-        <request>
-            <representation mediaType="application/xml" element="dbaas:UpdateGuest">
-                <doc>
-                    <para xmlns="http://docbook.org/ns/docbook">The following examples show the Update Guest Agent requests:</para>
-                    <xsdxt:code href="../apidocs/src/resources/samples/db-guest-update-request.xml"/>
-                </doc>
-            </representation>
-            <representation mediaType="application/json" element="dbaas:UpdateGuest">
-                <doc>
-                    <xsdxt:code href="../apidocs/src/resources/samples/db-guest-update-request.json"/>
-                </doc>
-            </representation>
-        </request>
-        <response status="202">
-            <representation mediaType="application/xml">
-                <doc>
-                  <para xmlns="http://docbook.org/ns/docbook">The following examples show the UpdateGuest Agent responses:</para>
-                    <xsdxt:code href="../apidocs/src/resources/samples/db-guest-update-response.xml"/>
-                </doc>
-            </representation>
-            <representation mediaType="application/json">
-                <doc>
-                    <xsdxt:code href="../apidocs/src/resources/samples/db-guest-update-response.json"/>
-                </doc>
-            </representation>
-        </response>
-        &commonFaults;
-        &getFaults;
-        &postPutFaults;
-    </method>
 
 
   <method name="GET" id="indexstorage">
@@ -425,195 +372,9 @@
     &getFaults;
   </method>
   
-  <method name="POST" id="createconfigs">
-    <wadl:doc xml:lang="EN" title="Create Configurations" xmlns="http://docbook.org/ns/docbook">
-      <para role="shortdesc">
-        Creates the specified configuration.
-      </para>
-      <remark>Reviewer: Need the description for the summary table above and the detailed description for the next paragraph.</remark>
-      <para>This operation creates the configuration as specified in the request body.</para>
-    </wadl:doc>
-    <request>
-      <representation mediaType="application/xml" element="dbaas:Configs">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Create Configurations requests:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-create-config-request.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json" element="dbaas:Configs">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-create-config-request.json"/>
-        </doc>
-      </representation>
-    </request>
-    <response status="200">
-      <representation mediaType="application/xml">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Create Configurations responses:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-create-config-response.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-create-config-response.json"/>
-        </doc>
-      </representation>
-    </response>
-    &commonFaults;
-    &getFaults;
-  </method>
   
-  <method name="GET" id="getconfigs">
-    <wadl:doc xml:lang="EN" title="List Configurations" xmlns="http://docbook.org/ns/docbook">
-      <para role="shortdesc">
-        Lists information for the configurations.
-      </para>
-      <remark>Reviewer: Need the description for the summary table above and the detailed description for the next paragraph.</remark>
-      <para>This operation lists information for the configurations.</para>
-    </wadl:doc>
-    <request>
-      <representation mediaType="application/xml">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the List Configurations requests:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-configs-request.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-configs-request.json"/>
-        </doc>
-      </representation>
-    </request>
-    <response status="200">
-      <representation mediaType="application/xml" element="dbaas:Configs">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the List Configurations responses:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-configs-response.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json" element="dbaas:Configs">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-configs-response.json"/>
-        </doc>
-      </representation>
-    </response>
-    &commonFaults;
-    &getFaults;
-  </method>
   
-  <method name="GET" id="getconfigbyid">
-    <wadl:doc xml:lang="EN" title="List Configuration Details" xmlns="http://docbook.org/ns/docbook">
-      <para role="shortdesc">
-        Lists detailed information for the specified configuration.
-      </para>
-      <remark>Reviewer: Need the description for the summary table above and the detailed description for the next paragraph.</remark>
-      <para>This operation lists the information for the specified configuration.</para>
-    </wadl:doc>
-    <request>
-      <representation mediaType="application/xml">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the List Configuration Details requests:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-get-config-request.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-get-config-request.json"/>
-        </doc>
-      </representation>
-    </request>
-    <response status="200">
-      <representation mediaType="application/xml" element="dbaas:Config">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the List Configuration Details responses:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-get-config-response.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json" element="dbaas:Config">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-get-config-response.json"/>
-        </doc>
-      </representation>
-    </response>
-    &commonFaults;
-    &getFaults;
-  </method>
   
-  <method name="PUT" id="updateconfig">
-    <wadl:doc xml:lang="EN" title="Update Configuration" xmlns="http://docbook.org/ns/docbook">
-      <para role="shortdesc">
-        Updates the specified configuration.
-      </para>
-      <remark>Reviewer: Need the description for the summary table above and the detailed description for the next paragraph.</remark>
-      <para>This operation updates the specified configuration information.</para>
-    </wadl:doc>
-    <request>
-      <representation mediaType="application/xml" element="dbaas:Config">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Update Configuration requests:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-update-config-request.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json" element="dbaas:Config">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-update-config-request.json"/>
-        </doc>
-      </representation>
-    </request>
-    <response status="200">
-      <representation mediaType="application/xml" element="dbaas:Config">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Update Configuration responses:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-update-config-response.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json" element="dbaas:Config">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-update-config-response.json"/>
-        </doc>
-      </representation>
-    </response>
-    &commonFaults;
-    &getFaults;
-  </method>
-  
-  <method name="DELETE" id="deleteconfig">
-    <wadl:doc xml:lang="EN" title="Delete Configuration" xmlns="http://docbook.org/ns/docbook">
-      <para role="shortdesc">
-        Deletes the specified configuration.
-      </para>
-      <remark>Reviewer: Need the description for the summary table above and the detailed description for the next paragraph.</remark>
-      <para>This operation deletes the specified configuration.</para>
-    </wadl:doc>
-    <request>
-      <representation mediaType="application/xml">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Delete Configuration requests:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-delete-config-request.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-delete-config-request.json"/>
-        </doc>
-      </representation>
-    </request>
-    <response status="200">
-      <representation mediaType="application/xml">
-        <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Delete Configuration responses:</para>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-delete-config-response.xml"/>
-        </doc>
-      </representation>
-      <representation mediaType="application/json">
-        <doc>
-          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-delete-config-response.json"/>
-        </doc>
-      </representation>
-    </response>
-    &commonFaults;
-    &getFaults;
-  </method>
 
   <method name="GET" id="getrootdetails">
     <wadl:doc xml:lang="EN" title="Get Root Details" xmlns="http://docbook.org/ns/docbook">
