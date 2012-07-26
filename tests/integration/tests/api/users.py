@@ -123,6 +123,14 @@ class TestUsers(object):
         assert_equal(400, self.dbaas.last_http_code)
 
     @test(depends_on=[test_create_users_list])
+    def test_cannot_create_root_user(self):
+        # Tests that the user root (in Config:ignore_users) cannot be created.
+        users = [{"name": "root", "password": "12345",
+                      "databases": [{"name": self.db1}]}]
+        assert_raises(exceptions.BadRequest, self.dbaas.users.create,
+                      instance_info.id, users)
+
+    @test(depends_on=[test_create_users_list])
     def test_create_users_list_system(self):
         #tests for users that should not be listed
         users = self.dbaas.users.list(instance_info.id)

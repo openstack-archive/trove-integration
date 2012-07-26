@@ -127,16 +127,6 @@ class TestRoot(object):
         self._verify_root_timestamp(instance_info.id)
 
     @test(depends_on=[test_root_initially_disabled_details])
-    def test_create_user_root_does_not_enable_root(self):
-        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
-        assert_false(enabled, "Root SHOULD NOT be enabled.")
-        users = []
-        users.append({"name": "root", "password": "12345"})
-        self.dbaas.users.create(instance_info.id, users)
-        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
-        assert_false(enabled, "Root SHOULD NOT be enabled.")
-
-    @test(depends_on=[test_create_user_root_does_not_enable_root])
     def test_enable_root(self):
         self._root()
 
@@ -145,6 +135,16 @@ class TestRoot(object):
         if test_config.values['root_timestamp_disabled']:
             raise SkipTest("Enabled timestamp not enabled yet")
         assert_not_equal(self.root_enabled_timestamp, 'Never')
+ 
+    @test(depends_on=[test_enable_root])
+    def test_root_not_in_users_list(self):
+        """
+        Tests that despite having enabled root, user root doesn't appear
+        in the users list for the instance.
+        """
+        users = self.dbaas.users.list(instance_info.id)
+        usernames = [user.name for user in users]
+        assert_true('root' not in usernames)
 
     @test(depends_on=[test_enable_root])
     def test_root_now_enabled(self):
@@ -192,32 +192,8 @@ class TestRoot(object):
         assert_not_equal(self.root_enabled_timestamp, 'Never')
         self._verify_root_timestamp(instance_info.id)
 
-    @test(depends_on=[test_root_still_enabled_details])
-    def test_reset_root_user_enabled(self):
-        if test_config.values['root_timestamp_disabled']:
-            raise SkipTest("Enabled timestamp not enabled yet")
-        created_users = ['root']
-        self.system_users.remove('root')
-        users = self.dbaas.users.list(instance_info.id)
-        found = False
-        for user in created_users:
-            found = any(result.name == user for result in users)
-            assert_true(found, "User '%s' not found in result" % user)
-            found = False
-
-        found = False
-        for user in self.system_users:
-            found = any(result.name == user for result in users)
-            msg = "User '%s' SHOULD NOT BE found in result" % user
-            assert_false(found, msg)
-            found = False
-        assert_not_equal(self.root_enabled_timestamp, 'Never')
-        self._verify_root_timestamp(instance_info.id)
-
-    @test(depends_on=[test_reset_root_user_enabled])
-    def test_root_enabled_after_delete_user_root(self):
-        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
-        assert_true(enabled, "Root SHOULD be enabled.")
-        self.dbaas.users.delete(instance_info.id, "root")
-        enabled = self.dbaas.root.is_root_enabled(instance_info.id)
-        assert_true(enabled, "Root SHOULD be enabled.")
+    @test(depends_on=[test_enable_root])
+    def test_root_cannot_be_deleted(self):
+        """Even if root was enabled, the user root cannot be deleted."""
+        assert_raises(exceptions.BadRequest, self.dbaas.users.delete,
+                      instance_info.id, "root")
