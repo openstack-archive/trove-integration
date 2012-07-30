@@ -58,6 +58,15 @@ class TestDatabases(object):
         self.dbaas_admin = util.create_dbaas_client(instance_info.admin_user)
 
     @test
+    def test_cannot_create_taboo_database_names(self):
+        for name in self.system_dbs:
+            databases = [{"name": name, "charset": "latin2",
+                          "collate": "latin2_general_ci"}]
+            assert_raises(exceptions.BadRequest, self.dbaas.databases.create,
+                      instance_info.id, databases)
+            assert_equal(400, self.dbaas.last_http_code)
+
+    @test
     def test_create_database(self):
         databases = []
         databases.append({"name": self.dbname, "charset": "latin2",
@@ -123,6 +132,13 @@ class TestDatabases(object):
         found = any(result.name == self.dbname_urlencoded for result in dbs)
         assert_false(found, "Database '%s' SHOULD NOT be found in result" %
                      self.dbname_urlencoded)
+
+    @test(runs_after=[test_delete_database])
+    def test_cannot_delete_taboo_database_names(self):
+        for name in self.system_dbs:
+            assert_raises(exceptions.BadRequest, self.dbaas.databases.delete,
+                          instance_info.id, name)
+            assert_equal(400, self.dbaas.last_http_code)
 
     @test(runs_after=[test_delete_database])
     def test_delete_database_on_missing_instance(self):
