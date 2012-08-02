@@ -565,7 +565,9 @@
             <para>See the MySQL documentation for information about supported character sets and collations at <link
                 xlink:href="http://dev.mysql.com/doc/refman/5.1/en/charset-mysql.html"
                 >http://dev.mysql.com/doc/refman/5.1/en/charset-mysql.html</link>.</para>
+            
 
+            <note>The following database names are reserved and cannot be used for creating databases: lost+found, information_schema, and mysql.</note>
             <para>Refer to the following tables for information about characters that are valid/invalid for creating database names.</para>
 
             <table rules="all" width="40%">
@@ -790,7 +792,15 @@
                     </tr>
                 </tbody>
             </table>
-            <note>A user is granted all privileges on the specified databases.</note>
+            
+            <note><title>Notes</title><itemizedlist>
+                <listitem>
+                    <para>A user is granted all privileges on the specified databases.</para>
+                </listitem>
+                <listitem>
+                    <para>The following user name is reserved and cannot be used for creating users: root.</para>
+                </listitem>
+            </itemizedlist></note>
 
             <para>Refer to the following tables for information about characters that are valid/invalid for creating database names, user names, and passwords.</para>
 

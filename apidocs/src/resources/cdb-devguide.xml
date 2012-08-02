@@ -62,7 +62,7 @@
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-08-01</pubdate>
+        <pubdate>2012-08-21</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -76,6 +76,27 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-08-21</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Changed FAILED status for database
+                                instance to ERROR instead (see <xref
+                                   linkend="database_instance_status"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>List reserved names that cannot be
+                                used for creating databases (see <xref
+                                   linkend="POST_createDatabase__version___accountId__instances__instanceId__databases_"
+                                />) and users (see <xref
+                                   linkend="POST_createUser__version___accountId__instances__instanceId__users_"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-08-01</date>
                 <revdescription>
@@ -1436,8 +1457,9 @@
                     </para>
                 </listitem>
                 <listitem>
-                    <para>FAILED &ndash; The database instance was not
-                        created due to an error.</para>     
+                    <para>ERROR &ndash; The last operation for the
+                        database instance failed due to an
+                        error.</para>     
                 </listitem> 
             </itemizedlist>
         </section>
