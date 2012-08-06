@@ -44,15 +44,18 @@ class Versions(object):
         expected_version = test_config.values['reddwarf_version']
         assert_equal(expected_version, versions[0].id,
                      message="Version ID: %s" % versions[0].id)
+        expected_api_updated = test_config.values['reddwarf_api_updated']
+        assert_equal(expected_api_updated, versions[0].updated,
+                     message="Version updated: %s" % versions[0].updated)
 
     def _request(self, url, method='GET', response='200'):
         resp, body = None, None
+        full_url = test_config.version_url + url
         try:
-            full_url = 'http://localhost:8775' + url
             resp, body = self.client.client.request(full_url, method)
             assert_equal(resp.get('status', ''), response)
-        except Exception:
-            pass
+        except Exception as e:
+            assert_equal(str(e.http_status), response)
         return body
 
     @test
@@ -61,7 +64,7 @@ class Versions(object):
 
     @test
     def test_no_slash_with_version(self):
-        body = self._request('/v1.0')
+        body = self._request('/v1.0', response='401')
 
     @test
     def test_with_slash_no_version(self):
@@ -69,7 +72,7 @@ class Versions(object):
 
     @test
     def test_with_slash_with_version(self):
-        body = self._request('/v1.0/')
+        body = self._request('/v1.0/', response='401')
 
     @test
     def test_request_no_version(self):
