@@ -269,14 +269,6 @@ function install_reddwarf_packages() {
 
     cd /tmp
 
-    echo "Adding to nova.conf..."
-    echo "
-logdir=$REDSTACK_SCRIPTS/../report/logs/
-logfile_mode=660
-" >> /etc/nova/nova.conf
-
-
-
     # This is probably a kludge, but we turn off the error stuff here because
     # if we can't stop the screen its not important enough to kill this
     # process.
@@ -362,7 +354,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDSTACK_SCRIPTS/../report/logs/ logfile_mode=660)
 " > localrc
     if [ -n "$USING_VAGRANT" ]
     then
@@ -788,13 +780,13 @@ function cmd_nova_client() {
     # This serves as an example of how to call the Nova client script.
     TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
     if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
-        nova --auth_url=http://localhost:35357/v2.0 \
-            --tenant_name=reddwarf --username=radmin --password=radmin \
+        nova --os_auth_url=http://localhost:35357/v2.0 \
+            --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
             --service_type=compute --region_name=RegionOne \
             --service_name='Compute Service' $@
     else
-        nova --auth_url=http://localhost:35357/v2.0 \
-            --tenant_name=reddwarf --username=radmin --password=radmin \
+        nova --os_auth_url=http://localhost:35357/v2.0 \
+            --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
             --service_type=volume --region_name=RegionOne \
             --service_name='Volume Service' $@
     fi
