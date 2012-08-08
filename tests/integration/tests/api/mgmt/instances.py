@@ -141,7 +141,7 @@ class WhenMgmtInstanceGetIsCalledButServerIsNotReady(object):
             #TODO: Validate additional fields, assert no extra fields exist.
 
 
-@test(depends_on_classes=[CreateInstance], groups=[GROUP], enabled=False)
+@test(depends_on_classes=[CreateInstance], groups=[GROUP])
 class MgmtInstancesIndex(object):
     """ Tests the mgmt instances index method. """
 
@@ -157,21 +157,27 @@ class MgmtInstancesIndex(object):
         Verify that all the expected fields are returned by the index method.
         """
         expected_fields = [
-                'account_id',
-                'id',
-                'host',
-                'status',
-                'created_at',
-                'deleted_at',
+                'created',
                 'deleted',
-                'flavorid',
-                'ips',
-                'volumes'
+                'deleted_at',
+                'flavor',
+                'host',
+                'id',
+                'links',
+                'local_id',
+                'name',
+                'server_id',
+                'status',
+                'task_description',
+                'tenant_id',
+                'updated',
+                'volume',
             ]
         index = self.client.management.index()
         for instance in index:
-            for field in expected_fields:
-                assert_true(hasattr(instance, field))
+            with Check() as check:
+                for field in expected_fields:
+                    check.true(hasattr(instance, field), "Index lacks field %s" % field)
 
     @test
     def test_mgmt_instance_index_check_filter(self):
