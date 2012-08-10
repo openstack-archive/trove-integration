@@ -47,8 +47,8 @@ class AccountsBeforeInstanceCreation(object):
         assert_raises(exceptions.NotFound, self.client.accounts.show,
                       "asd#4#@fasdf")
 
-     @test
-     def test_invalid_account_fails(self):
+    @test
+    def test_invalid_account_fails(self):
         account_info = self.client.accounts.show("badaccount")
         assert_not_equal(self.user.tenant_id, account_info.id)
 
