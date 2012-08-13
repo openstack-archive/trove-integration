@@ -940,6 +940,9 @@ function cmd_update_projects() {
   done
 }
 
+function cmd_repl() {
+    INT_TEST_OPTIONS=-i cmd_int_tests_white_box --repl --group=_does_not_exist_ $@
+}
 
 ###############################################################################
 # Process the user provided command and run the appropriate command
@@ -1045,6 +1048,7 @@ function run_command() {
         "reset-task" ) shift; cmd_reset_task $@;;
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
+        "repl" ) shift; cmd_repl $@;;
         * )
             echo "'$1' not a valid command"
             exit 1

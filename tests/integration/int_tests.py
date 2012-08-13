@@ -130,9 +130,9 @@ if __name__ == '__main__':
     index = 0
     while index < len(sys.argv):
         arg = sys.argv[index]
-        if arg[:2] == "-i" or arg == 'repl':
+        if arg[:2] == "-i" or arg == '--repl':
             repl = True
-        if arg[:7] == "--conf=":
+        elif arg[:7] == "--conf=":
             conf_file = os.path.expanduser(arg[7:])
             print("Setting TEST_CONF to " + conf_file)
             os.environ["TEST_CONF"] = conf_file
