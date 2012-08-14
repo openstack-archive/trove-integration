@@ -16,6 +16,7 @@ from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
 
+from reddwarfclient.exceptions import ClientException
 import tests
 from tests.util import test_config
 from tests.util import create_dbaas_client
@@ -54,8 +55,8 @@ class Versions(object):
         try:
             resp, body = self.client.client.request(full_url, method)
             assert_equal(resp.get('status', ''), response)
-        except Exception as e:
-            assert_equal(str(e.http_status), response)
+        except ClientException as ce:
+            assert_equal(str(ce.http_status), response)
         return body
 
     @test
