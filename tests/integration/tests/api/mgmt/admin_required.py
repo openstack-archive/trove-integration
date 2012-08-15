@@ -91,3 +91,8 @@ class TestAdminRequired(object):
     def test_diagnostics_get(self):
         """ A regular user may not view the diagnostics. """
         assert_raises(Unauthorized, self.dbaas.diagnostics.get, 0)
+
+    @test
+    def test_hwinfo_get(self):
+        """ A regular user may not view the hardware info. """
+        assert_raises(Unauthorized, self.dbaas.hwinfo.get, 0)
