@@ -58,6 +58,43 @@
   </resources>
 
   <!--Methods-->
+  <method name="GET" id="getaccounts">
+    <wadl:doc xml:lang="EN" title="List all active Accounts" xmlns="http://docbook.org/ns/docbook">
+      <para role="shortdesc">
+        Lists all of the accounts owning at least one instance that is not deleted.
+      </para>
+      <para>This operation returns a list of all the accounts across all locations that own at least one instance that has not been deleted, ie all accounts of current uers.</para>
+    </wadl:doc>
+    <request>
+      <representation mediaType="application/xml">
+        <doc>
+          <para xmlns="http://docbook.org/ns/docbook">The following examples show the List All Active Accounts requests:</para>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-accounts-request.xml"/>
+        </doc>
+      </representation>
+      <representation mediaType="application/json">
+        <doc>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-accounts-request.json"/>
+        </doc>
+      </representation>
+    </request>
+      <response status="200">
+      <representation mediaType="application/xml" element="dbaas:Hosts">
+      <doc>
+        <para xmlns="http://docbook.org/ns/docbook">The following examples show the List All Active Accounts responses:</para>
+        <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-accounts-response.xml"/>
+      </doc>
+      </representation>
+      <representation mediaType="application/json" element="dbaas:Hosts">
+        <doc>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-list-accounts-response.json"/>
+        </doc>
+      </representation>
+    </response>
+    &commonFaults;
+    &getFaults;
+  </method>
+
   <method name="GET" id="gethosts">
     <wadl:doc xml:lang="EN" title="List All Compute Hosts" xmlns="http://docbook.org/ns/docbook">
       <para role="shortdesc">
