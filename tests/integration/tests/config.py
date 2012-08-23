@@ -50,6 +50,7 @@ class TestConfig(object):
         Create TestConfig, and set default values. These will be overwritten by
         the "load_from" methods below.
         """
+        self._loaded_files = []
         self._values = {
             'clean_slate': os.environ.get("CLEAN_SLATE", "False") == "True",
             'fake_mode': os.environ.get("FAKE_MODE", "False") == "True",
@@ -68,6 +69,9 @@ class TestConfig(object):
         self._frozen_values = FrozenDict(self._values)
         self._users = None
 
+    def get(self, name, default_value):
+        return self.values.get(name, default_value)
+
     def load_from_line(self, line):
         index = line.find("=")
         if index >= 0:
@@ -75,14 +79,27 @@ class TestConfig(object):
             value = line[index + 1:]
             self._values[key] = value
 
+    def load_include_files(self, original_file, files):
+        directory = os.path.dirname(original_file)
+        for file_sub_path in files:
+            file_full_path = os.path.join(directory, file_sub_path)
+            self.load_from_file(file_full_path)
+
     def load_from_file(self, file_path):
+        if file_path in self._loaded_files:
+            return
         file_contents = open(file_path, "r").read()
         try:
             contents = json.loads(file_contents)
+            if "include-files" in contents:
+                self.load_include_files(file_path, contents['include-files'])
+                del contents['include-files']
             self._values.update(contents)
         except Exception as exception:
             raise RuntimeError("Error loading conf file \"" + file_path + "\".",
                                exception)
+        finally:
+            self._loaded_files.append(file_path)
 
     def __getattr__(self, name):
         if name not in self._values:

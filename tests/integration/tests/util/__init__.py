@@ -186,11 +186,25 @@ def create_dbaas_client(user):
         if value is not None:
             kwargs[kwargs_name] = value
     force_url = 'override_reddwarf_api_url' in test_config.values
-    set_optional('auth_strategy', 'auth_strategy')
-    set_optional('region_name', 'reddwarf_client_region_name')
-    set_optional('service_url', 'override_reddwarf_api_url')
 
-    if test_config.values.get('auth_strategy', '') == 'fake':
+    service_url = test_config.get('override_reddwarf_api_url', None)
+    if user.requirements.is_admin:
+        service_url = test_config.get('override_admin_reddwarf_api_url',
+                                      service_url)
+    if service_url:
+        kwargs['service_url'] = service_url
+
+    auth_strategy = None
+    if user.requirements.is_admin:
+        auth_strategy = test_config.get('admin_auth_strategy',
+                                        test_config.auth_strategy)
+    else:
+        auth_strategy = test_config.auth_strategy
+    set_optional('region_name', 'reddwarf_client_region_name')
+    if test_config.values.get('override_reddwarf_api_url_append_tenant', False):
+        kwargs['service_url'] += "/" + user.tenant
+
+    if auth_strategy == 'fake':
         from reddwarfclient import auth
         class FakeAuth(auth.Authenticator):
 
@@ -208,10 +222,19 @@ def create_dbaas_client(user):
 
                 return FakeCatalog(self)
 
-        kwargs['auth_strategy'] = FakeAuth
+        auth_strategy = FakeAuth
+
+    if auth_strategy:
+        kwargs['auth_strategy'] = auth_strategy
+
+    if not user.requirements.is_admin:
+        auth_url = test_config.reddwarf_auth_url
+    else:
+        auth_url = test_config.values.get('reddwarf_admin_auth_url',
+                                          test_config.reddwarf_auth_url)
 
     dbaas = Dbaas(user.auth_user, user.auth_key, tenant=user.tenant,
-                  auth_url=test_config.reddwarf_auth_url, **kwargs)
+                  auth_url=auth_url, **kwargs)
     dbaas.authenticate()
     with Check() as check:
         check.is_not_none(dbaas.client.auth_token, "Auth token not set!")

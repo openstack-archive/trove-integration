@@ -19,6 +19,8 @@ from nose.tools import assert_equal
 from nose.tools import assert_false
 from nose.tools import assert_true
 from reddwarfclient import exceptions
+from reddwarfclient.flavors import Flavor
+from reddwarfclient.flavors import Flavors
 
 from proboscis import before_class
 from proboscis import test
@@ -91,27 +93,40 @@ class Flavors(object):
 
     @before_class
     def setUp(self):
+        rd_user = test_config.users.find_user(
+            Requirements(is_admin=False, services=["reddwarf"]))
+        self.rd_client = create_dbaas_client(rd_user)
+
         if test_config.nova_client is None:
             raise SkipTest("Skipping this test as no info to communicate with "
                            "Nova was found in the test config.")
         nova_user = test_config.users.find_user(
             Requirements(is_admin=False, services=["nova"]))
-        rd_user = test_config.users.find_user(
-            Requirements(is_admin=False, services=["reddwarf"]))
         self.nova_client = create_nova_client(nova_user)
-        self.rd_client = create_dbaas_client(rd_user)
+
+    def get_expected_flavors(self):
+        # If we have access to the client, great! Let's use that as the flavors
+        # returned by Reddwarf should be identical.
+        if test_config.nova_client is not None:
+            return self.nova_client.flavors.list()
+        # If we don't have access to the client the flavors need to be spelled
+        # out in the config file.
+        flavors = [Flavor(Flavors, flavor_dict, loaded=True)
+                   for flavor_dict in test_config.flavors]
+        return flavors
+
 
     @test
     def confirm_flavors_lists_nearly_identical(self):
-        os_flavors = self.nova_client.flavors.list()
+        os_flavors = self.get_expected_flavors()
         dbaas_flavors = self.rd_client.flavors.list()
 
         print("Open Stack Flavors:")
         print(os_flavors)
         print("DBaaS Flavors:")
         print(dbaas_flavors)
-        assert_equal(len(os_flavors), len(dbaas_flavors),
-                     "Length of both flavors list should be identical.")
+        #Length of both flavors list should be identical.
+        assert_equal(len(os_flavors), len(dbaas_flavors))
         for os_flavor in os_flavors:
             found_index = None
             for index, dbaas_flavor in enumerate(dbaas_flavors):
