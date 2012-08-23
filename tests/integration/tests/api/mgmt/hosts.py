@@ -22,6 +22,7 @@ from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_raises
 from proboscis.asserts import assert_true
 from proboscis.asserts import fail
+from proboscis.check import Check
 
 import tests
 from tests.api.instances import create_new_instance
@@ -50,8 +51,8 @@ class HostsBeforeInstanceCreation(object):
                          "list hosts call should not be empty: %s" %
                          str(host_index_result))
         assert_equal(len(host_index_result), 1,
-                    "list hosts length should be one: %r" %
-                    host_index_result[0])
+                     "list hosts length should be one: %r" %
+                     host_index_result[0])
 
         msg = ("'host' instance count should have 0 running instances: %r" %
                host_index_result[0].instanceCount)
@@ -66,18 +67,19 @@ class HostsBeforeInstanceCreation(object):
         assert_not_equal(single_host, None,
                          "Get host should not be empty for: %s" % self.host)
         print("test_index_host_list_single result: %r" % single_host.__dict__)
-        assert_true(single_host.percentUsed == 0,
-                    "percentUsed should be 0 : %r" % single_host.percentUsed)
-        assert_true(single_host.totalRAM,
-                    "totalRAM should exist > 0 : %r" % single_host.totalRAM)
-        assert_true(single_host.usedRAM == 0,
-                    "usedRAM should be 0 : %r" % single_host.usedRAM)
-        assert_true(instance_info.name
-                        not in [dbc.name for dbc
-                                in single_host.instances])
-        instance_info.host_info = single_host
-        for index, instance in enumerate(single_host.instances, start=1):
-            print("%r instance: %r" % (index, instance))
+        with Check() as check:
+            check.true(single_host.percentUsed < 50,
+                       "percentUsed should be around 40 but was  %r"
+                       % single_host.percentUsed)
+            check.true(single_host.totalRAM,
+                       "totalRAM should exist > 0 : %r" % single_host.totalRAM)
+            check.true(single_host.usedRAM < 1000, "usedRAM should be less "
+                       "than 1000 : %r" % single_host.usedRAM)
+            check.true(instance_info.name not in
+                       [dbc.name for dbc in single_host.instances])
+            instance_info.host_info = single_host
+            for index, instance in enumerate(single_host.instances, start=1):
+                print("%r instance: %r" % (index, instance))
 
     @test(enabled=create_new_instance())
     def test_host_not_found(self):
@@ -86,7 +88,7 @@ class HostsBeforeInstanceCreation(object):
 
 
 @test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"],
-      enabled=create_new_instance())
+      depends_on=[HostsBeforeInstanceCreation], enabled=create_new_instance())
 class HostsAfterInstanceCreation(object):
 
     @before_class(enabled=create_new_instance())
@@ -107,7 +109,7 @@ class HostsAfterInstanceCreation(object):
             print("%d host: %s" % (index, host))
             self.host = host
 
-    @test(enabled=create_new_instance())
+    @test(enabled=create_new_instance(), depends_on=[test_index_host_list])
     def test_index_host_list_single(self):
         myresult = self.client.hosts.get(self.host)
         assert_not_equal(myresult, None,
@@ -115,19 +117,21 @@ class HostsAfterInstanceCreation(object):
         assert_true(len(myresult.instances) > 0,
                     "instance list on the host should not be empty: %r" %
                     myresult.instances)
-        assert_true(myresult.totalRAM == instance_info.host_info.totalRAM,
-                        "totalRAM should be the same as before : %r == %r" %
-                        (myresult.totalRAM, instance_info.host_info.totalRAM))
-        diff = instance_info.host_info.usedRAM + instance_info.dbaas_flavor.ram
-        assert_true(myresult.usedRAM == diff,
-                        "usedRAM should be : %r == %r" %
-                        (myresult.usedRAM, diff))
-        calc = round(1.0 * myresult.usedRAM / myresult.totalRAM * 100)
-        assert_true(myresult.percentUsed == calc,
-                        "percentUsed should be : %r == %r" %
-                        (myresult.percentUsed, calc))
-        print("test_index_host_list_single result instances: %s" %
-              str(myresult.instances))
-        for index, instance in enumerate(myresult.instances, start=1):
-            print("%d instance: %s" % (index, instance))
-            assert_equal(['id', 'name', 'status'], sorted(instance.keys()))
+        with Check() as check:
+            check.true(myresult.totalRAM == instance_info.host_info.totalRAM,
+                       "totalRAM should be the same as before : %r == %r" %
+                       (myresult.totalRAM, instance_info.host_info.totalRAM))
+            diff = instance_info.host_info.usedRAM\
+                   + instance_info.dbaas_flavor.ram
+            check.true(myresult.usedRAM == diff,
+                       "usedRAM should be : %r == %r" %
+                       (myresult.usedRAM, diff))
+            calc = int((1.0 * myresult.usedRAM / myresult.totalRAM) * 100)
+            check.true(myresult.percentUsed == calc,
+                       "percentUsed should be : %r == %r" %
+                       (myresult.percentUsed, calc))
+            print("test_index_host_list_single result instances: %s" %
+                str(myresult.instances))
+            for index, instance in enumerate(myresult.instances, start=1):
+                print("%d instance: %s" % (index, instance))
+                check.equal(['id', 'name', 'status'], sorted(instance.keys()))
