@@ -468,9 +468,12 @@ class ResizeInstanceTest(ActionTestBase):
     @test(depends_on=[test_make_sure_mysql_is_running_after_resize])
     @time_out(TIME_OUT_TIME)
     def test_resize_down(self):
+        expected_dbaas_flavor = self.old_dbaas_flavor
         self.dbaas.instances.resize_instance(self.instance_id,
             self.get_flavor_href(flavor_id=self.expected_old_flavor_id))
         assert_equal(202, self.dbaas.last_http_code)
+        self.old_dbaas_flavor = instance_info.dbaas_flavor
+        instance_info.dbaas_flavor = expected_dbaas_flavor
         self.wait_for_resize()
         assert_equal(str(self.instance.flavor['id']),
                      str(self.expected_old_flavor_id))
