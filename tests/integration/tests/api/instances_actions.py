@@ -43,6 +43,7 @@ from tests.util import test_config
 from tests.util import LocalSqlClient
 from sqlalchemy import create_engine
 from sqlalchemy import exc as sqlalchemy_exc
+from tests.util.check import TypeCheck
 from sqlalchemy.sql.expression import text
 
 if WHITE_BOX:
@@ -59,6 +60,7 @@ if WHITE_BOX:
 GROUP = "dbaas.api.instances.actions"
 GROUP_REBOOT = "dbaas.api.instances.actions.reboot"
 GROUP_RESTART = "dbaas.api.instances.actions.restart"
+GROUP_STOP_MYSQL = "dbaas.api.instances.actions.stop"
 MYSQL_USERNAME = "test_user"
 MYSQL_PASSWORD = "abcde"
 
@@ -227,7 +229,7 @@ class RebootTestBase(ActionTestBase):
         self.fix_mysql()  # kill files
         cmd = """ssh %s 'sudo cp /dev/null /var/lib/mysql/ib_logfile%d'"""
         for index in range(2):
-            full_cmd = cmd % (instance_info.get_address(), index)
+            full_cmd = cmd % (self.instance_local_id, index)
             print("RUNNING COMMAND: %s" % full_cmd)
             util.process(full_cmd)
 
@@ -236,7 +238,7 @@ class RebootTestBase(ActionTestBase):
         if not FAKE_MODE:
             cmd = "ssh %s 'sudo rm /var/lib/mysql/ib_logfile%d'"
             for index in range(2):
-                util.process(cmd % (instance_info.get_address(), index))
+                util.process(cmd % (self.instance_local_id, index))
 
     def wait_for_failure_status(self):
         """Wait until status becomes running."""
@@ -283,13 +285,58 @@ class RestartTests(RebootTestBase):
 
     @test(depends_on=[test_ensure_mysql_is_running], enabled=not FAKE_MODE)
     def test_unsuccessful_restart(self):
-        """Restart MySQL via the REST when it should fail, assert it does."""        
+        """Restart MySQL via the REST when it should fail, assert it does."""
         self.unsuccessful_restart()
 
     @test(depends_on=[test_set_up],
           runs_after=[test_ensure_mysql_is_running,test_unsuccessful_restart])
     def test_successful_restart(self):
         """Restart MySQL via the REST API successfully."""
+        self.successful_restart()
+
+
+@test(groups=[tests.INSTANCES, INSTANCE_GROUP, GROUP, GROUP_STOP_MYSQL],
+      depends_on_groups=[GROUP_START], depends_on=[create_user])
+class StopTests(RebootTestBase):
+    """Tests which involve stopping MySQL."""
+
+    def call_reboot(self):
+        self.instance.restart()
+
+    @before_class
+    def test_set_up(self):
+        self.set_up()
+
+    @test
+    def test_ensure_mysql_is_running(self):
+        """Make sure MySQL is accessible before restarting."""
+        self.ensure_mysql_is_running()
+
+    @test(depends_on=[test_ensure_mysql_is_running])
+    def test_stop_mysql(self):
+        """Stops MySQL."""
+        instance_info.dbaas_admin.management.stop(self.instance_id)
+        self.wait_for_broken_connection()
+        self.wait_for_failure_status()
+
+    @test(depends_on=[test_stop_mysql])
+    def test_instance_get_shows_volume_info_while_mysql_is_down(self):
+        """
+        Confirms the get call behaves appropriately while an instance is
+        down.
+        """
+        instance = self.dbaas.instances.get(self.instance_id)
+        with TypeCheck("instance", instance) as check:
+            check.has_field("volume", dict)
+            check.true('size' in instance.volume)
+            check.true('used' in instance.volume)
+            check.true(isinstance(instance.volume.get('size', None), int))
+            check.true(isinstance(instance.volume.get('used', None), float))
+
+    @test(depends_on=[test_set_up],
+          runs_after=[test_instance_get_shows_volume_info_while_mysql_is_down])
+    def test_successful_restart_when_in_shutdown_state(self):
+        """Restart MySQL via the REST API successfully when MySQL is down."""
         self.successful_restart()
 
 

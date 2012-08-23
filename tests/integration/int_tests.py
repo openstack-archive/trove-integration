@@ -219,6 +219,7 @@ if __name__ == '__main__':
         from tests.api import versions
         from tests.api import instances
         from tests.api import instances_actions
+        from tests.api import instances_mysql_down
         from tests.api import instances_pagination
         from tests.api import instances_delete
         from tests.api import instances_quotas
@@ -259,6 +260,7 @@ if __name__ == '__main__':
             "dbaas.preinstance",
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
+            "dbaas.api.instances.actions.stop",
             "dbaas.guest.shutdown",
             versions.GROUP,
             "dbaas.guest.start.test",
@@ -272,6 +274,7 @@ if __name__ == '__main__':
             "dbaas.api.instances.quotas",
             "dbaas.api.instances.delete",
             "dbaas.api.instances.status",
+            "dbaas.api.instances.down",
         ]
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)

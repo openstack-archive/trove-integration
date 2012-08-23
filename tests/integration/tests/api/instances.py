@@ -137,11 +137,8 @@ class InstanceTestInfo(object):
         return result.ip[0]
 
     def get_local_id(self):
-        if not WHITE_BOX:
-            raise RuntimeError("Only available in White Box tests.")
-        if self.local_id is None:
-            self.local_id = dbapi.localid_from_uuid(self.id)
-        return self.local_id
+        mgmt_instance = self.dbaas_admin.management.show(self.id)
+        return mgmt_instance.local_id
 
 
 # The two variables are used below by tests which depend on an instance
@@ -437,6 +434,13 @@ class AfterInstanceCreation(unittest.TestCase):
                       "database": "testdb"})
         assert_unprocessable(dbaas.users.create, instance_info.id, users)
 
+    def test_resize_instance_after_create(self):
+        assert_unprocessable(dbaas.instances.resize_instance,
+                             instance_info.id, 8)
+
+    def test_resize_volume_after_create(self):
+        assert_unprocessable(dbaas.instances.resize_volume,
+                             instance_info.id, 2)
 
 @test(depends_on_classes=[CreateInstance],
       runs_after=[AfterInstanceCreation],
