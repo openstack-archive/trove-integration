@@ -410,6 +410,7 @@ class ResizeInstanceTest(ActionTestBase):
             self.instance_id, self.flavor_id)
 
     def obtain_flavor_ids(self):
+        self.expected_dbaas_flavor = self.instance.flavor
         self.expected_old_flavor_id = self.instance.flavor['id']
         flavor_name = test_config.values.get('instance_bigger_flavor_name',
                                              'm1.small')
@@ -468,7 +469,7 @@ class ResizeInstanceTest(ActionTestBase):
     @test(depends_on=[test_make_sure_mysql_is_running_after_resize])
     @time_out(TIME_OUT_TIME)
     def test_resize_down(self):
-        expected_dbaas_flavor = self.old_dbaas_flavor
+        expected_dbaas_flavor = self.expected_dbaas_flavor
         self.dbaas.instances.resize_instance(self.instance_id,
             self.get_flavor_href(flavor_id=self.expected_old_flavor_id))
         assert_equal(202, self.dbaas.last_http_code)

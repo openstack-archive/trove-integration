@@ -159,8 +159,9 @@ class CollectionCheck(Check):
                 if possible_type is None:
                     if value is None:
                         match = True
-                if isinstance(value, possible_type):
-                    match = True
+                else:
+                    if isinstance(value, possible_type):
+                        match = True
             if not match:
                 self.fail('Element "%s.%s" does not match any of these '
                           'expected types: %s' % (self.name, key, type_list))

@@ -65,6 +65,7 @@ class TestConfig(object):
             'white_box': False,
             'test_mgmt': False,
             'use_local_ovz':False,
+            "report_directory":os.environ.get("REPORT_DIRECTORY", None),
         }
         self._frozen_values = FrozenDict(self._values)
         self._users = None

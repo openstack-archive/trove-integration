@@ -15,6 +15,7 @@
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
+from proboscis import SkipTest
 
 from reddwarfclient.exceptions import ClientException
 import tests
@@ -65,6 +66,8 @@ class Versions(object):
 
     @test
     def test_no_slash_with_version(self):
+        if test_config.auth_strategy == "fake":
+            raise SkipTest("Skipping this test since auth is faked.")
         body = self._request('/v1.0', response='401')
 
     @test
@@ -73,6 +76,8 @@ class Versions(object):
 
     @test
     def test_with_slash_with_version(self):
+        if test_config.auth_strategy == "fake":
+            raise SkipTest("Skipping this test since auth is faked.")
         body = self._request('/v1.0/', response='401')
 
     @test

@@ -56,7 +56,10 @@ class AccountsBeforeInstanceCreation(object):
     def test_account_zero_instances(self):
         account_info = self.client.accounts.show(self.user.tenant_id)
         assert_equal(0, len(account_info.instances))
-        assert_equal(self.user.tenant_id, account_info.id)
+        expected = self.user.tenant_id
+        if expected is None:
+            expected = "None"
+        assert_equal(expected, account_info.id)
 
     @test
     def test_list_empty_accounts(self):
@@ -74,9 +77,16 @@ class AccountsAfterInstanceCreation(object):
 
     @test
     def test_account_details_available(self):
+        if test_config.auth_strategy == "fake":
+            raise SkipTest("Skipping this as auth is faked anyway.")
         account_info = self.client.accounts.show(instance_info.user.tenant_id)
         # Now check the results.
-        assert_equal(account_info.id, instance_info.user.tenant_id)
+        expected = instance_info.user.tenant_id
+        if expected is None:
+            expected = "None"
+        print("account_id.id = '%s'" % account_info.id)
+        print("expected = '%s'" % expected)
+        assert_equal(account_info.id, expected)
         # Instances: Here we know we've only created one instance.
         assert_equal(1, len(account_info.instances))
         assert_is_not_none(account_info.instances[0]['host'])
@@ -90,6 +100,8 @@ class AccountsAfterInstanceCreation(object):
 
     @test
     def test_list_accounts(self):
+        if test_config.auth_strategy == "fake":
+            raise SkipTest("Skipping this as auth is faked anyway.")
         accounts_info = self.client.accounts.index()
         assert_equal(1, len(accounts_info.accounts))
         account = accounts_info.accounts[0]
