@@ -973,6 +973,7 @@ function print_usage() {
         --helper for environment--
           kick-start      - kick start the setup of reddwarf.
                             (redstack build/initialize/build-image/start)
+                            [mysql no-clean] no clean avoids rebuilding pacakges from scratch
 
         --reddwarf dependency services--
           start-deps      - Start or resume daemons Reddwarf depends on.
