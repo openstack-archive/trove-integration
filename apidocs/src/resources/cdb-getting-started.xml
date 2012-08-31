@@ -44,13 +44,26 @@
             <holder>Rackspace US, Inc.</holder>
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
-        <pubdate>2012-08-01</pubdate>
+        <pubdate>2012-08-02</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
             </annotation>
         </legalnotice>
         <revhistory>
+            <revision>
+                <date>2012-08-02</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Corrected request examples for
+                                authentication (refer to <xref
+                                   linkend="Generating_Auth_Token"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-08-01</date>
                 <revdescription>
@@ -353,7 +366,8 @@
    &lt;apiKeyCredentials
       xmlns="http://docs.rackspace.com/identity/api/ext/RAX-KSKEY/v1.0"
          username="<emphasis role="bold">your_username</emphasis>" 
-         apiKey="<emphasis role="bold">your_api_key</emphasis>"/>' \
+         apiKey="<emphasis role="bold">your_api_key</emphasis>"/>
+&lt;/auth>' \
 <option>-H 'Content-Type: application/xml'</option> \
 <option>-H 'Accept: application/xml'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
@@ -368,8 +382,9 @@
        "RAX-KSKEY:apiKeyCredentials":
        {  
           "username": "<emphasis role="bold">your_username</emphasis>",  
-          "apiKey": "<emphasis role="bold">your_api_key</emphasis>"}  
-    }' \
+          "apiKey": "<emphasis role="bold">your_api_key</emphasis>"}
+    }  
+}' \
 <option>-H 'Content-Type: application/json'</option> \
 <uri>'https://identity.api.rackspacecloud.com/v2.0/tokens'</uri></screen>
         </example>

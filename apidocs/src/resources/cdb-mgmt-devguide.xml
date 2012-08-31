@@ -58,7 +58,7 @@
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-08-01</pubdate>
+        <pubdate>2012-08-21</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -73,6 +73,19 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-08-21</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Changed FAILED status for database
+                                instance to ERROR instead (see <xref
+                                   linkend="database_instance_status"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-08-01</date>
                 <revdescription>
@@ -1121,8 +1134,9 @@
                     </para>
                 </listitem>
                 <listitem>
-                    <para>FAILED &ndash; The database instance was not
-                        created due to an error.</para>     
+                    <para>ERROR &ndash; The last operation for the
+                        database instance failed due to an
+                        error.</para>     
                 </listitem> 
             </itemizedlist>
         </section>
