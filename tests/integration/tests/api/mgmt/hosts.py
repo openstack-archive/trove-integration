@@ -139,5 +139,6 @@ class HostsAfterInstanceCreation(object):
                 str(myresult.instances))
             for index, instance in enumerate(myresult.instances, start=1):
                 print("%d instance: %s" % (index, instance))
-                check.equal(sorted(['id', 'name', 'status', 'server_id']),
+                check.equal(sorted(['id', 'name', 'status', 'server_id',
+                                    'tenant_id']),
                             sorted(instance.keys()))

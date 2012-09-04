@@ -71,12 +71,12 @@ def mgmt_instance_get():
     # Grab the info.id created by the main instance test which is stored in
     # a global.
     id = instance_info.id
-    instance = mgmt.show(id)
+    api_instance = mgmt.show(id)
 
     # Print out all fields for extra info if the test fails.
-    for name in dir(instance):
-        print(str(name) + "=" + str(getattr(instance, name)))
-    with TypeCheck("instance", instance) as instance:
+    for name in dir(api_instance):
+        print(str(name) + "=" + str(getattr(api_instance, name)))
+    with TypeCheck("instance", api_instance) as instance:
         instance.has_field('created', basestring)
         instance.has_field('deleted', bool)
         # If the instance hasn't been deleted, this should be false... but
@@ -84,12 +84,9 @@ def mgmt_instance_get():
         instance.has_field('deleted_at', (basestring, None))
         instance.has_field('flavor', dict, flavor_check)
         instance.has_field('guest_status', dict, guest_status_check)
-        instance.has_field('host', basestring)
         instance.has_field('id', basestring)
         instance.has_field('links', list)
-        instance.has_field('local_id', int)
         instance.has_field('name', basestring)
-        instance.has_field('server_id', basestring)
         #instance.has_field('server_status', basestring)
         instance.has_field('status', basestring)
         instance.has_field('tenant_id', basestring)
@@ -100,6 +97,23 @@ def mgmt_instance_get():
         else:
             instance.has_field('volume', None)
         #TODO: Validate additional fields, assert no extra fields exist.
+    with CollectionCheck("server", api_instance.server) as server:
+        server.has_element("addresses", dict)
+        server.has_element("deleted", bool)
+        server.has_element("deleted_at", (basestring, None))
+        server.has_element("host", basestring)
+        server.has_element("id", basestring)
+        server.has_element("local_id", int)
+        server.has_element("name", basestring)
+        server.has_element("status", basestring)
+        server.has_element("tenant_id", basestring)
+    with CollectionCheck("volume", api_instance.volume) as volume:
+        volume.has_element("attachments", list)
+        volume.has_element("availability_zone", basestring)
+        volume.has_element("created_at", (basestring, None))
+        volume.has_element("id", basestring)
+        volume.has_element("size", int)
+        volume.has_element("status", basestring)
 
 
 @test(groups=["fake." + GROUP])
@@ -161,12 +175,10 @@ class MgmtInstancesIndex(object):
                 'deleted',
                 'deleted_at',
                 'flavor',
-                'host',
                 'id',
                 'links',
-                'local_id',
                 'name',
-                'server_id',
+                'server',
                 'status',
                 'task_description',
                 'tenant_id',
@@ -190,7 +202,7 @@ class MgmtInstancesIndex(object):
             filtered_index = self.client.management.index(
                 deleted=deleted_filter)
             instance_counts.append(len(filtered_index))
-            for instance in filtered_index:
+        for instance in filtered_index:
                 # Every instance listed here should have the proper value
                 # for 'deleted'.
                 assert_equal(deleted_filter, instance.deleted)

@@ -133,7 +133,7 @@ class InstanceTestInfo(object):
         return create_dns_entry(instance_info.local_id, instance_info.id)
 
     def get_address(self):
-        result = self.dbaas.instances.get(self.id)
+        result = self.dbaas_admin.instances.get(self.id)
         return result.ip[0]
 
     def get_local_id(self):
