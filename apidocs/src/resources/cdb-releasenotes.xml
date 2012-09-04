@@ -26,7 +26,7 @@
 		</copyright>
         <releaseinfo>API v1.0</releaseinfo>
     	<productname>Rackspace Cloud Databases</productname>
-	<pubdate>2012-08-21</pubdate>
+	<pubdate>2012-09-13</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -39,6 +39,15 @@
 				Interface (<abbrev>API</abbrev>). </para>
         </abstract>
     	<revhistory>
+			<revision>
+				<date>2012-09-13</date>
+				<revdescription>
+					<para xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
+						>Updated for v1.0.11.</para>
+				</revdescription>
+			</revision>
 			<revision>
 				<date>2012-08-21</date>
 				<revdescription>
@@ -75,6 +84,118 @@
 			previous versions. The most recent changes are described
 			in the table below:</para>
 		<?rax revhistory?>
+	</chapter>
+	<chapter xml:id="cdbv1.0.11">
+		<title>v1.0.11, September 13, 2012 </title>
+		<itemizedlist spacing="compact">
+			<title>Bug Fixes</title>
+			<listitem>
+				<para><link security="internal"
+						xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A355524"
+						>D-08051: </link>Fixed issue preventing users
+					from increasing/decreasing their instance flavor
+					size.</para>
+			</listitem>
+			<listitem>
+				<para><link security="internal"
+					xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A271288"
+					>D-06654: </link>Resizing instance using same
+					volume size no longer generates misleading error
+					message.</para>
+			</listitem>
+			<listitem>
+				<para><link security="internal"
+						xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A348396"
+						>D-07897: </link>Fixed issue where instance in
+					ERROR fails to delete.</para>
+			</listitem>
+			<listitem security="internal">
+				<para><link 
+						xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A344970"
+						>D-07819: </link>Fixed issue causing usage
+					information to be applied when instance goes into
+					error status after failed provisioning.</para>
+			</listitem>
+			<listitem security="internal">
+				<para><link
+						xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A303374"
+						>D-07213: </link>Fixed guest update Mgmt API
+					call.</para>
+			</listitem>
+		</itemizedlist>
+		<itemizedlist spacing="compact" security="internal">
+			<title>Maintenance</title>
+			<listitem security="internal">
+				<para><link 
+					xlink:href="https://www15.v1host.com/RACKSPCE/defect.mvc/Summary?oidToken=Defect%3A367019"
+					>D-08217: </link>Corrected yagi logrotate
+					configuration to prevent log file handle from
+					disappearing.</para>
+			</listitem>
+			<listitem>
+				<para><link security="internal"
+						xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story%3A273769"
+						>B-27788: </link>Updated usage modify events
+					(resize volume/flavor).</para>
+			</listitem>
+			<listitem>
+				<para><link security="internal"
+						xlink:href="https://www15.v1host.com/RACKSPCE/story.mvc/Summary?oidToken=Story%3A304905"
+						>B-29438: </link>Added Environment Variable to
+					usage event.</para>
+			</listitem>
+		</itemizedlist>
+		<itemizedlist spacing="compact">
+			<title>Known Issues / Limitations</title>
+			<listitem>
+				<para>List Versions API call does not work and returns
+					a "403 Forbidden" response.</para>
+			</listitem>
+			<listitem>
+				<para>Users' database privileges are not modifiable. Users must be
+					deleted and recreated to add additional database
+					privileges.</para>
+			</listitem>
+		</itemizedlist>
+		<itemizedlist spacing="compact">
+			<title>Resources</title>
+			<listitem>
+				<para> Get started using the Cloud Databases API to
+					create databases in the <emphasis role="italic"
+						>Getting Started Guide</emphasis> at: <link
+						xlink:href="http://docs.rackspace.com/api/"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
+						>http://docs.rackspace.com/api/</link>.</para>
+			</listitem>
+			<listitem>
+				<para> Get reference information and examples in
+						the <emphasis role="italic">Cloud Databases
+						Developer Guide</emphasis> at: <link
+						xlink:href="http://docs.rackspace.com/api/"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml"
+						>http://docs.rackspace.com/api/</link>.</para>
+			</listitem>
+			<listitem>
+				<para> Support for Cloud Databases is available for US
+					and UK customers 24x7x365 via phone, chat, or you
+					may also <link
+						xlink:href="https://manage.rackspacecloud.com/Tickets/YourTickets.do"
+						xmlns:svg="http://www.w3.org/2000/svg"
+						xmlns:m="http://www.w3.org/1998/Math/MathML"
+						xmlns:html="http://www.w3.org/1999/xhtml">File
+						a Ticket</link>.</para>
+			</listitem>
+			<listitem>
+				<para> Please visit our <link
+						xlink:href="http://feedback.rackspacecloud.com/forums/71021-product-feedback/category/42449-cloud-databases"
+						>Product Feedback Forum</link> and let us know
+					what you think about Cloud Databases! </para>
+			</listitem>
+		</itemizedlist>
 	</chapter>
 	<chapter xml:id="cdbv1.0.8">
 		<title>v1.0.8, August 21, 2012 </title>
