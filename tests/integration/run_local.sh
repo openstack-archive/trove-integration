@@ -44,8 +44,11 @@ function on_error() {
 
 trap on_error EXIT  # Proceed to trap - END in event of failure.
 
+REDDWARF_CLIENT_PATH=$RDC_PATH tox -e py26
 start_server
-REDDWARF_CLIENT_PATH=$RDC_PATH tox -e local -- $@
+.tox/py26/bin/pip install -U $RDC_PATH
+PYTHONPATH=$PYTHONPATH:$RDC_PATH .tox/py26/bin/python int_tests.py \
+    --conf=localhost.test.conf -- $@
 stop_server
 
 
