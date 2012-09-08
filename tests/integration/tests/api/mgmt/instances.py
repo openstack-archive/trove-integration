@@ -136,22 +136,31 @@ class WhenMgmtInstanceGetIsCalledButServerIsNotReady(object):
     @test
     def mgmt_instance_get(self):
         """Tests the mgmt get call works when the Nova server isn't ready."""
-        instance = self.mgmt.show(self.id)
+        api_instance = self.mgmt.show(self.id)
         # Print out all fields for extra info if the test fails.
-        for name in dir(instance):
-            print(str(name) + "=" + str(getattr(instance, name)))
-        with TypeCheck("instance", instance) as instance:
-            #TODO: Figure out why we no longer have the commented out fields.
+        for name in dir(api_instance):
+            print(str(name) + "=" + str(getattr(api_instance, name)))
+        # Print out all fields for extra info if the test fails.
+        for name in dir(api_instance):
+            print(str(name) + "=" + str(getattr(api_instance, name)))
+        with TypeCheck("instance", api_instance) as instance:
+            instance.has_field('created', basestring)
             instance.has_field('deleted', bool)
-            instance.has_field('host', basestring)
+            # If the instance hasn't been deleted, this should be false... but
+            # lets avoid creating more ordering work.
+            instance.has_field('deleted_at', (basestring, None))
+            instance.has_field('flavor', dict, flavor_check)
+            instance.has_field('guest_status', dict, guest_status_check)
             instance.has_field('id', basestring)
-            instance.has_field('local_id', None)
+            instance.has_field('links', list)
             instance.has_field('name', basestring)
-            instance.has_field('server_id', None)
             #instance.has_field('server_status', basestring)
             instance.has_field('status', basestring)
             instance.has_field('tenant_id', basestring)
             instance.has_field('updated', basestring)
+            # Can be None if no volume is given on this instance.
+            instance.has_field('server', None)
+            instance.has_field('volume', None)
             #TODO: Validate additional fields, assert no extra fields exist.
 
 
