@@ -138,7 +138,7 @@ class InstanceTestInfo(object):
 
     def get_local_id(self):
         mgmt_instance = self.dbaas_admin.management.show(self.id)
-        return mgmt_instance.local_id
+        return mgmt_instance.server["local_id"]
 
 
 # The two variables are used below by tests which depend on an instance
