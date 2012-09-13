@@ -33,7 +33,7 @@
     </profile> 
   </profiles>
   <properties>
-    <doctools.version>1.4.0</doctools.version>
+    <doctools.version>1.5.0</doctools.version>
   </properties>
 
     <build>
