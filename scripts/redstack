@@ -344,6 +344,8 @@ function run_devstack() {
 
     # Creating this lock directory seems sure-fire.
     mkdir -p $USERHOME/nova_locks
+    # Kill the lock files, just in case they persist and can't be overwritten.
+    rm -rf $USERHOME/nova_locks/*
 
     echo "
 # Set some arguments for devstack.
