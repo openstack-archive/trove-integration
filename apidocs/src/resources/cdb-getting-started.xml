@@ -93,6 +93,10 @@
                 </revdescription>
             </revision>           
         </revhistory>
+    <raxm:metadata xmlns:raxm="http://docs.rackspace.com/api/metadata">
+      <raxm:product version="v1.0">cdb</raxm:product>
+      <raxm:priority>1</raxm:priority>
+    </raxm:metadata> 
     </info>
     <chapter xml:id="DB_Doc_Change_History">
         <title>Document Change History</title>
