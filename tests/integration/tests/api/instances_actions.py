@@ -410,8 +410,11 @@ class ResizeInstanceTest(ActionTestBase):
             self.instance_id, self.flavor_id)
 
     def obtain_flavor_ids(self):
-        self.expected_dbaas_flavor = self.instance.flavor
-        self.expected_old_flavor_id = self.instance.flavor['id']
+        old_id = self.instance.flavor['id']
+        self.expected_old_flavor_id = old_id
+        res = instance_info.dbaas.find_flavor_and_self_href(old_id)
+        self.expected_dbaas_flavor, _dontcare_ = res
+
         flavor_name = test_config.values.get('instance_bigger_flavor_name',
                                              'm1.small')
         flavors = self.dbaas.find_flavors_by_name(flavor_name)
