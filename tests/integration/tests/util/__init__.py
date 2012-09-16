@@ -44,7 +44,6 @@ except ImportError:
     EVENT_AVAILABLE = False
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 
 from reddwarfclient import exceptions
 
@@ -78,28 +77,18 @@ def assert_mysql_failure_msg_was_permissions_issue(msg):
                 "a permissions issue. Instead saw the message: %s" % msg)
 
 
-@test(groups="unit")
-def assert_mysql_failure_msg_was_permissions_issue_is_passed():
-    assert_mysql_failure_msg_was_permissions_issue(
-        """(1045, "Access denied for user 'tes!@#tuser'@'10.0.2.15'""")
-    assert_mysql_failure_msg_was_permissions_issue(
-        """(1045, "Access denied for user 'anous*&^er'@'10.0.2.15'""")
-
-
-@test(groups="unit")
-def assert_mysql_failure_msg_was_permissions_issue_is_failed():
-    assert_raises(ASSERTION_ERROR,
-                  assert_mysql_failure_msg_was_permissions_issue, "Unknown db")
-
-
 def assert_mysql_connection_fails(user_name, password, ip):
-    engine = init_engine(user_name, password, ip)
+    from tests.util import mysql
     try:
-        engine.connect()
+        with mysql.create_mysql_connection(ip, user_name, password) as db:
+            pass
         fail("Should have failed to connect: mysql --host %s -u %s -p%s"
              % (ip, user_name, password))
-    except OperationalError as oe:
-        assert_mysql_failure_msg_was_permissions_issue(oe.message)
+    except mysql.MySqlPermissionsFailure:
+        return # Good, this is what we wanted.
+    except mysql.MySqlConnectionFailure as mcf:
+        fail("Expected to see permissions failure. Instead got this message:"
+             "%s" % mcf.message)
 
 
 def assert_http_code(expected_http_code, func, *args, **kwargs):

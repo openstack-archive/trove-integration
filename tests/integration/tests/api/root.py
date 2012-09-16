@@ -36,18 +36,19 @@ from tests import util
 from tests.util import test_config
 from tests import WHITE_BOX
 
-if WHITE_BOX:
-    # TODO(tim.simpson): Restore this once white box functionality can be
-    #                    added back to this test module.
-    pass
-    # from sqlalchemy.sql.expression import text
-    # from reddwarf.guest.dbaas import LocalSqlClient
 
 GROUP = "dbaas.api.root"
 
 
-@test(depends_on_classes=[TestUsers], groups=[tests.DBAAS_API, GROUP,
-                                                  tests.INSTANCES])
+def log_in_as_root(root_password):
+    con = create_mysql_connection(instance_info.get_address(), 'root',
+                                  root_password)
+    return con
+
+
+@test(depends_on_classes=[TestMysqlAccess],
+      runs_after=[TestUsers],
+      groups=[tests.DBAAS_API, GROUP, tests.INSTANCES])
 class TestRoot(object):
     """
     Test the root operations
@@ -80,8 +81,8 @@ class TestRoot(object):
         client = LocalSqlClient(engine)
         with client:
             t = text("""SELECT User, Host FROM mysql.user """
-                     """WHERE User=:user AND Host=:host;""")
-            result = client.execute(t, user=user, host=host)
+                     """WHERE User="%s" AND Host="%s" """ % (user, host))
+            result = client.query(t)
             for row in result:
                 assert_equal(user, row['User'])
                 assert_equal(host, row['Host'])
@@ -135,7 +136,7 @@ class TestRoot(object):
         if test_config.values['root_timestamp_disabled']:
             raise SkipTest("Enabled timestamp not enabled yet")
         assert_not_equal(self.root_enabled_timestamp, 'Never')
- 
+
     @test(depends_on=[test_enable_root])
     def test_root_not_in_users_list(self):
         """

@@ -156,23 +156,23 @@ class TestUsers(object):
         self._check_connection(self.username1, self.password1)
 
     def show_databases(self, user, password):
-        cmd = "sudo mysql -h %s -u '%s' -p'%s' -e 'show databases;'"\
-                % (instance_info.get_address(), user, password)
-        print("Running cmd: %s" % cmd)
-        dblist, err = process(cmd)
-        print("returned: %s" % dblist)
-        if err:
-            assert_false(True, err)
-        return dblist
+        print("Going to connect to %s, %s, %s"
+              % (instance_info.get_address(), user, password))
+        with create_mysql_connection(instance_info.get_address(),
+                                     user, password) as db:
+            print(db)
+            dbs = db.execute("show databases")
+            return [row['Database'] for row in dbs]
+
 
     def check_database_for_user(self, user, password, dbs):
         if not FAKE:
             # Make the real call to the database to check things.
-            dblist = self.show_databases(user, password)
+            actual_list = self.show_databases(user, password)
             for db in dbs:
-                default_db = re.compile("[\w\n]*%s[\w\n]*" % db)
-                if not default_db.match(dblist):
-                    fail("No match for db %s in dblist. %s :(" % (db, dblist))
+                assert_true(
+                    db in actual_list,
+                    "No match for db %s in dblist. %s :(" % (db, actual_list))
         # Confirm via API.
         result = self.dbaas.users.list(instance_info.id)
         assert_equal(200, self.dbaas.last_http_code)
@@ -181,6 +181,7 @@ class TestUsers(object):
                 break
         else:
             fail("User %s not added to collection." % user)
+
 
     @test
     def test_username_too_long(self):

@@ -61,6 +61,7 @@ class TestConfig(object):
             'nova_url': "http://localhost:8774/v1.1",
             'instance_create_time': 16 * 60,
             'dbaas_image': None,
+            'mysql_connection_method': {"type": "direct"},
             'typical_nova_image_name': None,
             'white_box': False,
             'test_mgmt': False,

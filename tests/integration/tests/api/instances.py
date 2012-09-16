@@ -133,8 +133,13 @@ class InstanceTestInfo(object):
         return create_dns_entry(instance_info.local_id, instance_info.id)
 
     def get_address(self):
-        result = self.dbaas_admin.instances.get(self.id)
-        return result.ip[0]
+        result = self.dbaas_admin.mgmt.instances.show(self.id)
+        addresses = result.server['addresses']
+        if "infranet" in addresses:
+            address = addresses['infranet'][0]
+        else:
+            address = addresses['private'][0]
+        return address['addr']
 
     def get_local_id(self):
         mgmt_instance = self.dbaas_admin.management.show(self.id)
@@ -174,25 +179,29 @@ class InstanceSetup(object):
     @before_class
     def setUp(self):
         """Sets up the client."""
-        global dbaas
-        global dbaas_admin
-        # TODO(rnirmal): We need to better split out the regular client and
-        # the admin client
-        reqs = Requirements(is_admin=False)
-        instance_info.user = test_config.users.find_user(reqs)
-        instance_info.dbaas = create_dbaas_client(instance_info.user)
-        if WHITE_BOX:
-            instance_info.nova_client = create_nova_client(instance_info.user)
-            instance_info.volume_client = create_nova_client(instance_info.user,
-                    service_type=test_config.nova_client['volume_service_type'])
-
-        dbaas = instance_info.dbaas
 
         reqs = Requirements(is_admin=True)
         instance_info.admin_user = test_config.users.find_user(reqs)
         instance_info.dbaas_admin = create_dbaas_client(
                                         instance_info.admin_user)
         dbaas_admin = instance_info.dbaas_admin
+
+        # Make sure we create the client as the correct user if we're using
+        # a pre-built instance.
+        if existing_instance():
+            mgmt_instance = dbaas_admin.mgmt.instances.show(existing_instance())
+            t_id = mgmt_instance.tenant_id
+            instance_info.user = test_config.users.find_user_by_tenant_id(t_id)
+        else:
+            reqs = Requirements(is_admin=False)
+            instance_info.user = test_config.users.find_user(reqs)
+
+        instance_info.dbaas = create_dbaas_client(instance_info.user)
+        if WHITE_BOX:
+            instance_info.nova_client = create_nova_client(instance_info.user)
+            instance_info.volume_client = create_nova_client(instance_info.user,
+                    service_type=test_config.nova_client['volume_service_type'])
+        dbaas = instance_info.dbaas
 
         if WHITE_BOX:
             user = instance_info.user.auth_user
@@ -688,7 +697,10 @@ class TestInstanceListing(object):
     @test(enabled=test_config.values["reddwarf_main_instance_has_volume"])
     def test_volume_found(self):
         instance = dbaas.instances.get(instance_info.id)
-        assert_equal(instance_info.volume['size'], instance.volume['size'])
+        if create_new_instance():
+            assert_equal(instance_info.volume['size'], instance.volume['size'])
+        else:
+            assert_true(isinstance(instance_info.volume['size'], int))
         if create_new_instance():
             assert_true(0.12 < instance.volume['used'] < 0.25)
 
