@@ -205,7 +205,7 @@
                 </tr>
                 <tr>
                     <td colspan="1">(volume) size</td>
-                    <td colspan="3">Specifies the volume size in gigabytes (GB). The value specified must be between 1 and 10.</td>
+                    <td colspan="3">Specifies the volume size in gigabytes (GB). The value specified must be between 1 and 50.</td>
                     <td colspan="1">Yes</td>
                 </tr>
                 <tr>

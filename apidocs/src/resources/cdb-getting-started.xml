@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!DOCTYPE article [
+<!DOCTYPE book [
         <!-- Some useful entities borrowed from HTML -->
         <!ENTITY ndash  "&#x2013;">
         <!ENTITY mdash  "&#x2014;">
@@ -25,32 +25,48 @@
         <!ENTITY MUST_NOT   '<emphasis xmlns="http://docbook.org/ns/docbook" role="strong">MUST NOT</emphasis>'>
 ]>
 
-<article version="5.0"
+<book version="5.0"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
          xmlns:m="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml"
-         xml:id="cdb-getting-started"
-         class="specification">
+         xml:id="cdb-getting-started">
+    
+    <?rax title.font.size="35px" subtitle.font.size="20px"?>
+    <title>Rackspace Cloud Databases Getting Started Guide</title>
+    <titleabbrev>Rackspace Cloud Databases and Servers Getting Started Guide</titleabbrev>
      
     <info>
-        <title>Getting Started with Rackspace Cloud Databases and
-            Servers</title>
+        
         <copyright>
             <year>2011</year>
             <year>2012</year>
             <holder>Rackspace US, Inc.</holder>
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
-        <pubdate>2012-08-02</pubdate>
+        <productname>Rackspace Cloud Databases</productname>
+        <pubdate>2012-09-04</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
             </annotation>
         </legalnotice>
         <revhistory>
+            <revision>
+                <date>2012-09-04</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Added information for pricing and
+                                service level (refer to <xref
+                                   linkend="Pricing_SLA-d1e1362"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-08-02</date>
                 <revdescription>
@@ -77,15 +93,19 @@
                 </revdescription>
             </revision>           
         </revhistory>
+    <raxm:metadata xmlns:raxm="http://docs.rackspace.com/api/metadata">
+      <raxm:product version="v1.0">cdb</raxm:product>
+      <raxm:priority>1</raxm:priority>
+    </raxm:metadata> 
     </info>
-    <section xml:id="DB_Doc_Change_History">
+    <chapter xml:id="DB_Doc_Change_History">
         <title>Document Change History</title>
         <para>This version of the Getting Started replaces and
             obsoletes all previous versions. The most recent changes
             are described in the table below:</para>
         <?rax revhistory?>
-    </section>
-    <section xml:id="DB_Overview">
+    </chapter>
+    <chapter xml:id="DB_Overview">
         <title>Overview</title>
         <para>Follow the steps described in this guide to use the
             Rackspace Cloud Databases API and the Cloud
@@ -122,8 +142,29 @@
                     </listitem>
                 </itemizedlist></para>
         </section>
-    </section>
-    <section xml:id="DB_Sending_API_Requests">
+        <section xml:id="Pricing_SLA-d1e1362">
+            <title>Pricing and Service Level</title>
+            <para>Cloud Databases is part of the Rackspace Cloud and
+                your use through the API will be billed as per the
+                pricing schedule at <link
+                    xlink:href="http://www.rackspace.com/cloud/public/databases/pricing"
+                    >http://www.rackspace.com/cloud/public/databases/pricing</link>.
+                Cloud Servers is also part of the Rackspace Cloud and
+                your use through the Control Panel will be billed as
+                per the pricing schedule at <link
+                    xlink:href="http://www.rackspace.com/cloud/public/servers/pricing"
+                    >http://www.rackspace.com/cloud/public/servers/pricing</link>.</para>
+            <para>The Service Level Agreements (SLAs) for Cloud
+                Databases and Cloud Servers are available at <link
+                    xlink:href="http://www.rackspace.com/cloud/legal/sla/#cloud_databases"
+                    >http://www.rackspace.com/cloud/legal/sla/#cloud_databases</link>
+                and <link
+                    xlink:href="http://www.rackspace.com/cloud/legal/sla"
+                    >http://www.rackspace.com/cloud/legal/sla</link>
+                respectively.</para>
+        </section>
+    </chapter>
+    <chapter xml:id="DB_Sending_API_Requests">
         <title>Send Requests to the API</title>
         <para>You have several options for sending requests through an
             API: </para>
@@ -277,8 +318,8 @@
                 long line, removing all the backslash line
                 continuation characters.</para>
         </section>
-    </section>
-    <section xml:id="Generating_Auth_Token">
+    </chapter>
+    <chapter xml:id="Generating_Auth_Token">
         <title>Generate an Authentication Token</title>
         <para>You need to generate a token whether you use cURL or a
             ReST client.</para>
@@ -466,12 +507,12 @@
         <para>After authentication, you can use cURL to perform &GET;,
             &DELETE;, and &POST; requests for the Cloud Databases
             API.</para>
-    </section>
-    <section xml:id="Service_Access_Endpoints-d1e753">
+    </chapter>
+    <chapter xml:id="Service_Access_Endpoints-d1e753">
         <title>Service Access/Endpoints</title>
         <para>The endpoints to use for your Cloud Databases API calls
             are summarized in the table below.</para>
-        <?rax-fo keep-with-next?>
+        
         <para>
             <table rules="all">
                 <caption>Regionalized Service Endpoints</caption>
@@ -538,8 +579,8 @@
                 (<code>https://ord.databases.api.rackspacecloud.com/v1.0/your_acct_id/</code>),
             as you can see in the cURL List Flavors Details Request
             examples in <xref linkend="List_Flavors"/>.</para>
-    </section>
-    <section xml:id="List_Flavors">
+    </chapter>
+    <chapter xml:id="List_Flavors">
         <title>List Flavors</title>
         <para> A flavor is an available hardware configuration for a
             database instance. Each flavor has a unique combination of
@@ -612,9 +653,9 @@
             permanent link to a flavor resource that is appropriate
             for long term storage and works across API
             versions.</para>
-    </section>
+    </chapter>
     
-    <section xml:id="Create_DB_Instance">
+    <chapter xml:id="Create_DB_Instance">
             <title>Create a Database Instance with a Database and a
             User</title>
             <para>A database instance is an isolated MySQL instance in
@@ -778,8 +819,8 @@
                     sections that follow until the instance has ACTIVE
                     status. </para>
             </note></para>
-        </section>
-    <section xml:id="List_DBS_For_Instance">
+        </chapter>
+    <chapter xml:id="List_DBS_For_Instance">
         <title>List Databases for Instance</title>
         <para>In this section you will list the databases in the
             specified database instance.</para>
@@ -859,8 +900,8 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
         </example>
         <para>You can see that the database <code>sampledb</code> was
             successfully created. Next you will list the users.</para>
-    </section>
-    <section xml:id="List_Users_DB_Instance">
+    </chapter>
+    <chapter xml:id="List_Users_DB_Instance">
         <title>List Users in Database Instance</title>
         <para>In this section you will list the users in the specified
             database instance.</para>
@@ -956,8 +997,8 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
         </example>
         <para>You can see that the user <code>simplestUser</code> was
             successfully created.</para>
-    </section>
-    <section xml:id="Create_Cloud_Server">
+    </chapter>
+    <chapter xml:id="Create_Cloud_Server">
         <title>Create a New Cloud Server</title>
         <para>Create a Cloud Server (or use an existing Cloud Server)
             to access your database.</para>
@@ -1011,8 +1052,8 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
                     Servers Developer Guide</link> for
                 details.</para>
         </note>
-    </section>
-    <section xml:id="Configure_Cloud_Server_DB">
+    </chapter>
+    <chapter xml:id="Configure_Cloud_Server_DB">
         <title>Configuring an Application to Use Your Cloud
             Database</title>
         <para>If you are configuring an application to use your
@@ -1023,8 +1064,8 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
             for the <code>hostname</code> returned and the request
             examples for the user name and password you
             specified.</para>
-    </section>
-    <section xml:id="MySQL_GUI_Admin">
+    </chapter>
+    <chapter xml:id="MySQL_GUI_Admin">
         <title>MySQL GUI Administration</title>
         <para> If you want to access your database using the command
             line MySQL client, then you have now completed the
@@ -1086,5 +1127,5 @@ Date: Thu, 05 Apr 2012 18:13:53 GMT
         <para>This concludes the <citetitle>Getting
             Started</citetitle>. Thank you for using Rackspace Cloud
             products.</para>
-    </section>
-</article>
+    </chapter>
+</book>
