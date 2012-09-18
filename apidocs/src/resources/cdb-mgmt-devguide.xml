@@ -58,7 +58,7 @@
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-08-21</pubdate>
+        <pubdate>2012-10-02</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -73,6 +73,29 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-10-02</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Added new API calls Get Hardware
+                                Info (see <xref
+                                   linkend="GET_getHwInfo_mgmt_instances__instanceId__hwinfo_"
+                                />) and Update All Instances on Host
+                                (see <xref
+                                   linkend="POST_updateHostInstances_mgmt_hosts__hostId__instances_action_"
+                                />).</para>
+                        </listitem>
+                        <listitem>
+                            <para>Added tenant_id field to sample
+                                responses for List All Instances for a
+                                Host API call (see <xref
+                                   linkend="GET_gethostbyid_mgmt_hosts__hostId__"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-08-21</date>
                 <revdescription>
@@ -1149,7 +1172,7 @@
         
         <section xml:id="Database_Instance_Management">
             <title>Database Instance Management</title>
-            <para>This section describes the operations that are supported for managing database instances.</para>
+            <para>This section describes the operations that are supported for managing database instances.</para>        
             <wadl:resources 
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
                 <wadl:resource href="../../../xsd/management.wadl#instances">
@@ -1165,6 +1188,10 @@
                     href="../../../xsd/management.wadl#rootdetails">
                     <wadl:method href="getrootdetails"/>
                 </wadl:resource>
+                <wadl:resource
+                    href="../../../xsd/management.wadl#hwInfo">
+                    <wadl:method href="getHwInfo"/>
+                </wadl:resource>
             </wadl:resources>
         </section>
 
@@ -1178,6 +1205,9 @@
                 </wadl:resource>
                 <wadl:resource href="../../../xsd/management.wadl#hostid">
                     <wadl:method href="gethostbyid"/>
+                </wadl:resource>
+                <wadl:resource href="../../../xsd/management.wadl#instanceAction-hostId">
+                    <wadl:method href="updateHostInstances"/>
                 </wadl:resource>
             </wadl:resources>               
         </section>

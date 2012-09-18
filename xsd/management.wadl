@@ -24,13 +24,13 @@
               <param name="hostId" style="template" type="xsd:string">
                 <doc>The host ID for the specified host.</doc></param>
               <method href="#gethostbyid"/>
-              <resource id="instances" path="instances">
-                <resource id="instanceAction" path="action">
-                  <method href="#updateHostInstances" />
-                </resource>
+            <resource id="instances-hostId" path="instances">
+              <resource id="instanceAction-hostId" path="action">
+                <method href="#updateHostInstances" />
+              </resource>
+            </resource>
               </resource>
           </resource>
-      </resource>
       <resource id="instances" path="instances">
         <method href="#getIndex"/>
         <resource id="instanceId" path="{instanceId}">
@@ -72,7 +72,7 @@
       <para role="shortdesc">
         Lists all of the accounts owning at least one instance that is not deleted.
       </para>
-      <para>This operation returns a list of all the accounts across all locations that own at least one instance that has not been deleted, ie all accounts of current uers.</para>
+      <para>This operation returns a list of all the accounts across all locations that own at least one instance that has not been deleted, ie all accounts of current users.</para>
     </wadl:doc>
     <request>
       <representation mediaType="application/xml">
@@ -323,7 +323,7 @@
   </method>
 
   <method name="POST" id="updateHostInstances">
-    <wadl:doc xml:lang="EN" title="Update all Instances on Host"  xmlns="http://docbook.org/ns/docbook">
+    <wadl:doc xml:lang="EN" title="Update All Instances on Host"  xmlns="http://docbook.org/ns/docbook">
       <para role="shortdesc">Update all instances on a specified host.</para>
       <para>This operation will call on all guest agents in a specified host to install new versions of itself.</para>
       <para>This operation returns a 202 Accepted response.</para>
@@ -331,7 +331,7 @@
     <request>
       <representation mediaType="application/xml" element="dbaas:Update">
         <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Host Instance Update requests:</para>
+          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Update all Instances on Host requests:</para>
           <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-request.xml"/>
         </doc>
       </representation>
@@ -344,7 +344,7 @@
     <response status="202">
       <representation mediaType="application/xml">
         <doc>
-          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Host Instance Update responses:</para>
+          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Update all Instances on Host responses:</para>
           <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-response.xml"/>
         </doc>
       </representation>
@@ -588,7 +588,7 @@
                   </tr>
                   <tr>
                       <td colspan="1">num_cpus</td>
-                      <td colspan="3">Number of cpus an instance sees.</td>
+                      <td colspan="3">Number of CPUs an instance sees.</td>
                   </tr>
               </tbody>
           </table>
@@ -609,7 +609,7 @@
       <response status="200">
           <representation mediaType="application/xml" element="dbaas:DiagnosticsDetails">
               <doc>
-                  <para xmlns="http://docbook.org/ns/docbook">The following examples show the Get Hardware Info requests:</para>
+                  <para xmlns="http://docbook.org/ns/docbook">The following examples show the Get Hardware Info responses:</para>
                   <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-hwinfo-response.xml"/>
               </doc>
           </representation>
