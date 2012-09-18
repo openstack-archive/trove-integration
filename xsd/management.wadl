@@ -24,6 +24,11 @@
               <param name="hostId" style="template" type="xsd:string">
                 <doc>The host ID for the specified host.</doc></param>
               <method href="#gethostbyid"/>
+              <resource id="instances" path="instances">
+                <resource id="instanceAction" path="action">
+                  <method href="#updateHostInstances" />
+                </resource>
+              </resource>
           </resource>
       </resource>
       <resource id="instances" path="instances">
@@ -39,6 +44,9 @@
               <method href="#getdiagnosticdetails"/>
           </resource>
           <resource id="instanceAction" path="action">
+            <method href="#rebootInstance" />
+          </resource>
+          <resource id="hwInfo" path="hwinfo">
             <method href="#rebootInstance" />
           </resource>
         </resource>
@@ -313,7 +321,42 @@
     &postPutFaults;
   </method>
 
-
+  <method name="POST" id="updateHostInstances">
+    <wadl:doc xml:lang="EN" title="Update all Instances on Host"  xmlns="http://docbook.org/ns/docbook">
+      <para role="shortdesc">Update all instances on a specified host.</para>
+      <para>This operation will call on all guest agents in a specified host to install new versions of itself.</para>
+      <para>This operation returns a 202 Accepted response.</para>
+    </wadl:doc>
+    <request>
+      <representation mediaType="application/xml" element="dbaas:Update">
+        <doc>
+          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Host Instance Update requests:</para>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-request.xml"/>
+        </doc>
+      </representation>
+      <representation mediaType="application/json" element="dbaas:Update">
+        <doc>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-request.json"/>
+        </doc>
+      </representation>
+    </request>
+    <response status="202">
+      <representation mediaType="application/xml">
+        <doc>
+          <para xmlns="http://docbook.org/ns/docbook">The following examples show the Host Instance Update responses:</para>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-response.xml"/>
+        </doc>
+      </representation>
+      <representation mediaType="application/json">
+        <doc>
+          <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-host-update-response.json"/>
+        </doc>
+      </representation>
+    </response>
+    &commonFaults;
+    &getFaults;
+    &postPutFaults;
+  </method>
 
   <method name="GET" id="indexstorage">
     <wadl:doc xml:lang="EN" title="List Storage Device Details" xmlns="http://docbook.org/ns/docbook">
@@ -409,10 +452,6 @@
     &getFaults;
   </method>
   
-  
-  
-  
-
   <method name="GET" id="getrootdetails">
     <wadl:doc xml:lang="EN" title="Get Root Details" xmlns="http://docbook.org/ns/docbook">
       <para role="shortdesc">
@@ -520,6 +559,62 @@
           <representation mediaType="application/json">
               <doc>
                   <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-diagnostics-response.json"/>
+              </doc>
+          </representation>
+      </response>
+      &commonFaults;
+      &getFaults;
+  </method>
+
+  <method name="GET" id="hwInfo">
+      <wadl:doc xml:lang="EN" title="Get Hardware Info" xmlns="http://docbook.org/ns/docbook">
+          <para role="shortdesc">
+              Get the instance hardware info from the guest agent.
+          </para>
+          <para>This operation provides the following info from the guest agent managing the specified instance.</para>
+          <table rules="all">
+              <caption>Return Attributes for Get Hardware Info</caption>
+              <thead>
+                  <tr>
+                      <td colspan="1">Name</td>
+                      <td colspan="3">Description</td>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td colspan="1">mem_total</td>
+                      <td colspan="3">Total memory an instance sees.</td>
+                  </tr>
+                  <tr>
+                      <td colspan="1">num_cpus</td>
+                      <td colspan="3">Number of cpus an instance sees.</td>
+                  </tr>
+              </tbody>
+          </table>
+      </wadl:doc>
+      <request>
+          <representation mediaType="application/xml">
+              <doc>
+                  <para xmlns="http://docbook.org/ns/docbook">The following examples show the Get Hardware Info requests:</para>
+                  <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-hwinfo-request.xml"/>
+              </doc>
+          </representation>
+          <representation mediaType="application/json">
+              <doc>
+                  <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-hwinfo-request.json"/>
+              </doc>
+          </representation>
+      </request>
+      <response status="200">
+          <representation mediaType="application/xml" element="dbaas:DiagnosticsDetails">
+              <doc>
+                  <para xmlns="http://docbook.org/ns/docbook">The following examples show the Get Hardware Info requests:</para>
+                  <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-hwinfo-response.xml"/>
+              </doc>
+          </representation>
+          <representation mediaType="application/json">
+              <doc>
+                  <xsdxt:code href="../apidocs/src/resources/samples/db-mgmt-instance-hwinfo-response.json"/>
               </doc>
           </representation>
       </response>

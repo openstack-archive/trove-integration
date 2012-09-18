@@ -706,7 +706,6 @@ class MgmtHosts(object):
             # In XML land this is a string. :'(
             check.equal("2", results[1][0].instanceCount)
 
-
     @test
     def mgmt_get_host_detail(self):
         results = self.clients.do("mgmt_get_host_detail",
@@ -730,6 +729,14 @@ class MgmtHosts(object):
                     #TODO: Check with GUID regex.
                     check.true(isinstance(instance['id'], basestring))
                     check.true(isinstance(instance['server_id'], basestring))
+                    check.true(isinstance(instance['tenant_id'], basestring))
+
+    @test
+    def mgmt_host_update_all(self):
+        results = self.clients.do("mgmt_host_update",
+            "/mgmt/hosts/fake_host/instances/action",
+            "POST", 202, "Accepted",
+            lambda client : client.mgmt.hosts.update_all("fake_host"))
 
 
 @test(depends_on=[CreateInstance], groups=['uses_instances'])
@@ -957,6 +964,23 @@ class MgmtInstanceRoot(object):
             lambda client, id: client.mgmt.instances.root_enabled_history(id),
             ([json_instance.id], [xml_instance.id]))
         #TODO: validate the actual stuff that comes back (booorring!).
+
+
+@test(depends_on=[CreateInstance])
+class MgmtInstanceHWInfo(object):
+
+    @before_class
+    def mgmt_get_instance_details(self):
+        self.clients = ClientPair()
+
+    @test
+    def mgmt_get_hw_info(self):
+        results = self.clients.do("mgmt_get_hw_info",
+            ("/mgmt/instances/%s/hwinfo" % json_instance.id,
+             "/mgmt/instances/%s/hwinfo" % xml_instance.id),
+            "GET", 200, "OK",
+            lambda client, id: client.hw_info.get(id),
+            ([json_instance.id], [xml_instance.id]))
 
 
 @test(depends_on=[CreateInstance], groups=['uses_instances'])
