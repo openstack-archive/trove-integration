@@ -61,7 +61,7 @@ class HostsBeforeInstanceCreation(object):
             print("%r host: %r" % (host[0], host[1]))
             self.host = host[1]
 
-    @test(enabled=create_new_instance())
+    @test(enabled=create_new_instance(), depends_on=[test_empty_index_host_list])
     def test_empty_index_host_list_single(self):
         single_host = self.client.hosts.get(self.host)
         assert_not_equal(single_host, None,

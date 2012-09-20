@@ -28,6 +28,7 @@ from tests.api.instances import instance_info
 from tests.util import test_config
 from tests.util import create_dbaas_client
 from tests.util.users import Requirements
+from tests.api.instances import existing_instance
 
 GROUP = "dbaas.api.mgmt.accounts"
 
@@ -55,7 +56,8 @@ class AccountsBeforeInstanceCreation(object):
     @test
     def test_account_zero_instances(self):
         account_info = self.client.accounts.show(self.user.tenant_id)
-        assert_equal(0, len(account_info.instances))
+        expected_instances = 0 if not existing_instance() else 1
+        assert_equal(expected_instances, len(account_info.instances))
         expected = self.user.tenant_id
         if expected is None:
             expected = "None"
@@ -64,7 +66,8 @@ class AccountsBeforeInstanceCreation(object):
     @test
     def test_list_empty_accounts(self):
         accounts_info = self.client.accounts.index()
-        assert_equal(0, len(accounts_info.accounts))
+        expected_accounts = 0 if not existing_instance() else 1
+        assert_equal(expected_accounts, len(accounts_info.accounts))
 
 
 @test(groups=[tests.INSTANCES, GROUP], depends_on_groups=["dbaas.listing"])
