@@ -55,6 +55,7 @@
         <method href="#indexstorage"/>
       </resource>
       <resource id="accounts" path="accounts">
+        <method href="#getaccounts"/>
         <resource id="accountid" path="{accountId}">
           <param name="accountId" style="template" type="xsd:string">
             <doc>The account ID for the specified account.</doc>
