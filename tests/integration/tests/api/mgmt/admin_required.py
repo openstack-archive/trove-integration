@@ -56,11 +56,6 @@ class TestAdminRequired(object):
         assert_raises(Unauthorized, self.dbaas.hosts.get, 0)
 
     @test
-    def test_images_show(self):
-        """ A regular user may not view the details of any image. """
-        assert_raises(Unauthorized, self.dbaas.images.get, 0)
-
-    @test
     def test_mgmt_show(self):
         """
         A regular user may not view the management details

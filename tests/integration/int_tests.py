@@ -266,6 +266,7 @@ if __name__ == '__main__':
             "dbaas.guest.shutdown",
             versions.GROUP,
             "dbaas.guest.start.test",
+            "dbaas.api.mgmt.admin",
             "dbaas.api.mgmt.instances",
         ]
         proboscis.register(groups=["blackbox"],
