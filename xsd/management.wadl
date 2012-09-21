@@ -47,7 +47,7 @@
             <method href="#rebootInstance" />
           </resource>
           <resource id="hwInfo" path="hwinfo">
-            <method href="#rebootInstance" />
+            <method href="#getHwInfo" />
           </resource>
         </resource>
       </resource>
@@ -566,7 +566,7 @@
       &getFaults;
   </method>
 
-  <method name="GET" id="hwInfo">
+  <method name="GET" id="getHwInfo">
       <wadl:doc xml:lang="EN" title="Get Hardware Info" xmlns="http://docbook.org/ns/docbook">
           <para role="shortdesc">
               Get the instance hardware info from the guest agent.
