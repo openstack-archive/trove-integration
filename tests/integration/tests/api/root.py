@@ -35,6 +35,8 @@ from tests.util import init_engine
 from tests import util
 from tests.util import test_config
 from tests import WHITE_BOX
+from tests.openvz.dbaas_ovz import TestMysqlAccess
+
 
 
 GROUP = "dbaas.api.root"
