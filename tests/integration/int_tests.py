@@ -98,6 +98,17 @@ def initialize_rdl_config(config_file):
     config.setup_logging(options, conf)
 
 
+def initialize_nova_flags(config_file):
+    from nova import flags
+    from nova import log as logging
+    from nova import service
+    from nova import utils
+
+    flags.parse_args(['int_tests'], default_config_files=[config_file])
+    logging.setup()
+    utils.monkey_patch()
+
+
 def _clean_up():
     """Shuts down any services this program has started and shows results."""
     from tests.util import report
@@ -127,6 +138,7 @@ if __name__ == '__main__':
     print("RUNNING TEST ARGS :  " + str(sys.argv))
     extra_test_conf_lines = []
     rdl_config_file = None
+    nova_flag_file = None
     index = 0
     while index < len(sys.argv):
         arg = sys.argv[index]
@@ -148,6 +160,8 @@ if __name__ == '__main__':
             pass  # Don't append this...
         elif arg[:14] == "--config-file=":
             rdl_config_file = arg[14:]
+        elif arg[:13] == "--nova-flags=":
+            nova_flag_file = arg[13:]
         elif arg.startswith('--hide-elapsed'):
             show_elapsed = False
         else:
@@ -180,6 +194,8 @@ if __name__ == '__main__':
     if WHITE_BOX:  # If white-box testing, set up the flags.
         # Handle loading up RDL's config file madness.
         initialize_rdl_config(rdl_config_file)
+        if nova_flag_file:
+            initialize_nova_flags(nova_flag_file)
 
 
     # Set up the report, and print out how we're running the tests.
@@ -247,6 +263,7 @@ if __name__ == '__main__':
         from tests.smoke import instance
         from tests.recreates import create_11
         from tests.recreates import login
+        from tests.volumes import volumes_create
 
         black_box_groups = [
             flavors.GROUP,

@@ -27,12 +27,7 @@ from tests.util.services import Service
 from tests.util.services import start_proc
 from tests.util.services import WebService
 from tests import CONFIG
-from tests import WHITE_BOX
 
-if WHITE_BOX:
-    from nova import context
-    from nova import utils
-    from nova.db import api as dbapi
 
 FAKE = CONFIG.fake_mode
 START_SERVICES = (not FAKE) and CONFIG.values.get('start_services', False)
