@@ -263,7 +263,8 @@ if __name__ == '__main__':
         from tests.smoke import instance
         from tests.recreates import create_11
         from tests.recreates import login
-        from tests.volumes import volumes_create
+        if WHITE_BOX:
+            from tests.volumes import volumes_create
 
         black_box_groups = [
             flavors.GROUP,
