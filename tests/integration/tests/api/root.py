@@ -35,6 +35,8 @@ from tests.util import init_engine
 from tests import util
 from tests.util import test_config
 from tests import WHITE_BOX
+from tests.openvz.dbaas_ovz import TestMysqlAccess
+
 
 if WHITE_BOX:
     # TODO(tim.simpson): Restore this once white box functionality can be
@@ -135,7 +137,7 @@ class TestRoot(object):
         if test_config.values['root_timestamp_disabled']:
             raise SkipTest("Enabled timestamp not enabled yet")
         assert_not_equal(self.root_enabled_timestamp, 'Never')
- 
+
     @test(depends_on=[test_enable_root])
     def test_root_not_in_users_list(self):
         """
