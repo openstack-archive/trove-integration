@@ -762,8 +762,10 @@ function cmd_int_tests() {
 
 function cmd_int_tests_white_box() {
     export PYTHONPATH=$PYTHONPATH:$REDDWARF_SOURCE
+    export PYTHONPATH=$PYTHONPATH:$PATH_NOVA
     cmd_int_tests --test-config white_box=True \
-        --config-file=$USERHOME/reddwarf.conf $@
+        --config-file=$USERHOME/reddwarf.conf \
+        --nova-flags=/etc/nova/nova.conf $@
 }
 
 function cmd_example_tests() {
