@@ -66,6 +66,7 @@ class TestConfig(object):
             'white_box': False,
             'test_mgmt': False,
             'use_local_ovz':False,
+            "known_bugs":{},
             "report_directory":os.environ.get("REPORT_DIRECTORY", None),
         }
         self._frozen_values = FrozenDict(self._values)
@@ -93,15 +94,17 @@ class TestConfig(object):
         file_contents = open(file_path, "r").read()
         try:
             contents = json.loads(file_contents)
-            if "include-files" in contents:
-                self.load_include_files(file_path, contents['include-files'])
-                del contents['include-files']
-            self._values.update(contents)
         except Exception as exception:
             raise RuntimeError("Error loading conf file \"" + file_path + "\".",
                                exception)
         finally:
             self._loaded_files.append(file_path)
+
+        if "include-files" in contents:
+            self.load_include_files(file_path, contents['include-files'])
+            del contents['include-files']
+        self._values.update(contents)
+
 
     def __getattr__(self, name):
         if name not in self._values:

@@ -328,16 +328,53 @@ if __name__ == '__main__':
     from tests.colorizer import NovaTestResult
     from tests.colorizer import NovaTestRunner
     from proboscis.case import TestResult as ProboscisTestResult
+    from proboscis import SkipTest
 
     class IntegrationTestResult(NovaTestResult, ProboscisTestResult):
+        """
+        Makes the pretty colors from NovaTestResult compatble with Proboscis
+        SkipTest, and intercepts known bugs defined in the test config.
+        """
+
+        def _intercept_known_bugs(self, test, err):
+            name = str(test)
+            excuse = CONFIG.known_bugs.get(name, None)
+            if excuse:
+                tracker_id, error_string = excuse
+                if error_string in str(err[1]):
+                    skip = SkipTest("KNOWN BUG: %s\n%s"
+                                    % (tracker_id, str(err[1])))
+                    self.onError(test)
+                    super(IntegrationTestResult, self).addSkip(test, skip)
+                else:
+                    result = (RuntimeError, RuntimeError(
+                         'Test "%s" contains known bug %s.\n'
+                         'Expected the following error string:\n%s\n'
+                         'What was seen was the following:\n%s\n'
+                         'If the bug is no longer happening, please change '
+                         'the test config.'
+                         % (name, tracker_id, error_string, str(err))), None)
+                    self.onError(test)
+                    super(IntegrationTestResult, self).addError(test, result)
+                return True
+            return False
 
         def addFailure(self, test, err):
+            if self._intercept_known_bugs(test, err):
+                return
             self.onError(test)
             super(IntegrationTestResult, self).addFailure(test, err)
 
         def addError(self, test, err):
+            if self._intercept_known_bugs(test, err):
+                return
             self.onError(test)
             super(IntegrationTestResult, self).addError(test, err)
+
+        def addSuccess(self, test):
+            if self._intercept_known_bugs(test, None):
+                return
+            super(IntegrationTestResult, self).addSuccess(test)
 
         @staticmethod
         def get_doc(cls_or_func):
