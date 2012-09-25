@@ -114,7 +114,7 @@ class InstanceTestInfo(object):
         self.user = None  # The user instance who owns the instance.
         self.admin_user = None  # The admin user for the management interfaces.
         self.volume = None  # The volume the instance will have.
-        self.volume_id = None  # Id for the attached volume
+        self.volume_id = None  # Id for the attached vo186lume
         self.storage = None  # The storage device info for the volumes.
         self.databases = None  # The databases created on the instance.
         self.host_info = None  # Host Info before creating instances
@@ -184,6 +184,7 @@ class InstanceSetup(object):
         instance_info.admin_user = test_config.users.find_user(reqs)
         instance_info.dbaas_admin = create_dbaas_client(
                                         instance_info.admin_user)
+        global dbaas_admin
         dbaas_admin = instance_info.dbaas_admin
 
         # Make sure we create the client as the correct user if we're using
@@ -201,6 +202,7 @@ class InstanceSetup(object):
             instance_info.nova_client = create_nova_client(instance_info.user)
             instance_info.volume_client = create_nova_client(instance_info.user,
                     service_type=test_config.nova_client['volume_service_type'])
+        global dbaas
         dbaas = instance_info.dbaas
 
         if WHITE_BOX:
