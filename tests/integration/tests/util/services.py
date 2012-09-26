@@ -128,6 +128,43 @@ class Service(object):
                                   int(m.group(3)))
         raise RuntimeError("Memory info not found.")
 
+    def get_fd_count_from_proc_file(self):
+        """Returns file descriptors according to /proc/<id>/status."""
+        pid = self.find_proc_id()
+        with open("/proc/%d/status" % pid) as status:
+            for line in status.readlines():
+                index = line.find(":")
+                name = line[:index]
+                value = line[index + 1:]
+                if name == "FDSize":
+                    return int(value)
+        raise RuntimeError("FDSize not found!")
+
+    def get_fd_count(self):
+        """Returns file descriptors according to /proc/<id>/status."""
+        pid = self.find_proc_id()
+        cmd = "Finding file descriptors..."
+        print("CMD" + cmd)
+        proc = start_proc(['ls', '-la', '/proc/%d/fd' % pid], shell=False)
+        count = -3
+        has_two_lines = False
+        for line in iter(proc.stdout.readline, ""):
+            print("\t" + line)
+            count += 1
+        if not count:
+            raise RuntimeError("Could not get file descriptors!")
+        return count
+
+
+        with open("/proc/%d/fd" % pid) as status:
+            for line in status.readlines():
+                index = line.find(":")
+                name = line[:index]
+                value = line[index + 1:]
+                if name == "FDSize":
+                    return int(value)
+        raise RuntimeError("FDSize not found!")
+
     def kill_proc(self):
         """Kills the process, wherever it may be."""
         pid = self.find_proc_id()
