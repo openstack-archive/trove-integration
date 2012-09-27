@@ -142,3 +142,5 @@ class HostsAfterInstanceCreation(object):
                 check.equal(sorted(['id', 'name', 'status', 'server_id',
                                     'tenant_id']),
                             sorted(instance.keys()))
+                for key in instance.keys():
+                    check.is_not_none(instance[key])
