@@ -173,6 +173,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
 
         """
         self.agent.start()
+        print("FDSize=%d" % self.agent.get_fd_count())
         mem = self.agent.get_memory_info()
         self.original_mapped = mem.mapped
 
@@ -195,21 +196,33 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
         # I've noticed that the memory jumps up a bit between 5 and 10 seconds
         # after it starts and then holds steady. So instead of taking the
         # original count, let's wait a bit and use that.
-        time.sleep(10)
+        for i in range(10):
+            time.sleep(1)
+            print("FDSize=%d" % self.agent.get_fd_count())
+
+
         self.original_mapped = self.agent.get_memory_info().mapped
+        self.original_fdsize = self.agent.get_fd_count()
+        print("Starting FDSize=%d" % self.original_fdsize)
         print("Mapped memory at 10 seconds   : %d" % self.original_mapped)
 
         total_seconds = 0
         mapped = []
+        fdsize = []
         for i in range(4):
             time.sleep(5)
             total_seconds += 5
             mapped.append(self.agent.get_memory_info().mapped)
+            fdsize.append(self.agent.get_fd_count())
             print("Mapped memory after %d seconds : %d"
                   % (total_seconds, mapped[-1]))
+            print("FDSize = %d" %  self.agent.get_fd_count())
         if self.original_mapped < mapped[-1]:
             fail("Oh no, after %d seconds memory rose from %d to %d!"
                  % (total_seconds, self.original_mapped, mapped[-1]))
+        if self.original_fdsize <  fdsize[-1]:
+            fail("Oh no, after %d seconds fdsize rose from %d to %d!"
+                 % (self.original_fdsize, fdsize[-1]))
         if mapped[-1] > 30 * 1024:
             fail("Whoa, why is mapped memory = %d for procid=%d, proc= %s?"
                  % (mapped[-1], self.agent.find_proc_id(), self.agent_bin))
@@ -229,6 +242,12 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
         matches = re.search("(\\w+)\\.(\\w+)\\.(\\w+)\\.(\\w+)", version)
         assert_true(matches is not None)
 
+    def _check_for_fd_growth(self):
+        actual_fdc = self.agent.get_fd_count()
+        if self.original_fdsize <  actual_fdc:
+            fail("Oh no, fdsize rose from %d to %d!"
+                 % (self.original_fdsize, actual_fdc))
+
     @test(depends_on=[send_message])
     def restart_rabbit_again(self):
         """Now stop and start rabbit, ensuring the agent reconnects."""
@@ -236,6 +255,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
         assert_false(self.rabbit.is_alive)
         self.rabbit.reset()
         self.rabbit.start()
+        self._check_for_fd_growth()
         assert_true(self.rabbit.is_alive)
 
     @test(depends_on=[restart_rabbit_again])
