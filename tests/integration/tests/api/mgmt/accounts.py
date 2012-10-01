@@ -27,6 +27,7 @@ from tests import CLEAN_SLATE
 from tests.api.instances import instance_info
 from tests.util import test_config
 from tests.util import create_dbaas_client
+from tests.util import poll_until
 from tests.util.users import Requirements
 from tests.api.instances import existing_instance
 
@@ -175,3 +176,44 @@ class AllAccounts(object):
     @time_out(60)
     def tear_down(self):
         self._delete_instances_for_users()
+
+
+@test(groups=["fake.%s.broken" % GROUP],
+      depends_on_groups=["services.initialize"])
+class AccountWithBrokenInstance(object):
+
+    @before_class
+    def setUp(self):
+        self.user = test_config.users.find_user(Requirements(is_admin=True))
+        self.client = create_dbaas_client(self.user)
+        self.name = 'test_SERVER_ERROR'
+        # Create an instance with a broken compute instance.
+        self.response = self.client.instances.create(self.name, 1,
+            {'size': 1}, [])
+        poll_until(lambda: self.client.instances.get(self.response.id),
+                   lambda instance: instance.status == 'ERROR',
+                   time_out=10)
+        self.instance = self.client.instances.get(self.response.id)
+        print "Status: %s" % self.instance.status
+        assert_equal(self.instance.status, "ERROR",
+            "Instance did not drop to error after server prov failure.")
+
+    @test
+    def no_compute_instance_no_problem(self):
+        '''Get account by ID shows even instances lacking computes'''
+        if test_config.auth_strategy == "fake":
+            raise SkipTest("Skipping this as auth is faked anyway.")
+        account_info = self.client.accounts.show(self.user.tenant_id)
+        # All we care about is that accounts.show doesn't 500 on us
+        # for having a broken instance in the roster.
+        assert_equal(len(account_info.instances), 1)
+        instance = account_info.instances[0]
+        assert_true(isinstance(instance['id'], basestring))
+        assert_equal(len(instance['id']), 36)
+        assert_equal(instance['name'], self.name)
+        assert_equal(instance['status'], "ERROR")
+        assert_is_none(instance['host'])
+
+    @after_class
+    def tear_down(self):
+        self.client.instances.delete(self.response.id)
