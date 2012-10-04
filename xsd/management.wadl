@@ -68,11 +68,11 @@
 
   <!--Methods-->
   <method name="GET" id="getaccounts">
-    <wadl:doc xml:lang="EN" title="List all active Accounts" xmlns="http://docbook.org/ns/docbook">
+    <wadl:doc xml:lang="EN" title="List All Active Accounts" xmlns="http://docbook.org/ns/docbook">
       <para role="shortdesc">
         Lists all of the accounts owning at least one instance that is not deleted.
       </para>
-      <para>This operation returns a list of all the accounts across all locations that own at least one instance that has not been deleted, ie all accounts of current users.</para>
+      <para>This operation returns a list of all the accounts across all locations that own at least one instance that has not been deleted, that is, all accounts of current users.</para>
     </wadl:doc>
     <request>
       <representation mediaType="application/xml">

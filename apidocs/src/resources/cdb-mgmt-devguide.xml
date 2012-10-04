@@ -58,7 +58,7 @@
         </copyright>
         <releaseinfo>API v1.0</releaseinfo>
         <productname>Rackspace Cloud Databases</productname>
-        <pubdate>2012-10-02</pubdate>
+        <pubdate>2012-10-04</pubdate>
         <legalnotice role="rs-api">
             <annotation>
                 <remark>Copyright details are filled in by the template.</remark>
@@ -73,6 +73,19 @@
         </abstract>
         
         <revhistory>
+            <revision>
+                <date>2012-10-04</date>
+                <revdescription>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>Added new API call List All Active
+                                Accounts (see <xref
+                                   linkend="GET_getaccounts_mgmt_accounts_"
+                                />).</para>
+                        </listitem>
+                    </itemizedlist>
+                </revdescription>
+            </revision>
             <revision>
                 <date>2012-10-02</date>
                 <revdescription>
@@ -1240,6 +1253,10 @@
                 supported for accounts.</para>
             <wadl:resources
                 xmlns:wadl="http://wadl.dev.java.net/2009/02">
+                <wadl:resource
+                    href="../../../xsd/management.wadl#accounts">
+                    <wadl:method href="getaccounts"/>
+                </wadl:resource>
                 <wadl:resource href="../../../xsd/management.wadl#accountid">
                     <wadl:method href="getaccountbyid"/>
                 </wadl:resource>
