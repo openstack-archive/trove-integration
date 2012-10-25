@@ -224,9 +224,16 @@ REDDWARF_ROLE=$REDDWARF_ROLE
         OS_USERNAME=reddwarf \
         OS_PASSWORD=REDDWARF-PASS \
         OS_AUTH_URL='http://localhost:8779/v1.0/$(tenant_id)s' \
-        keystone_manage service-create --name=reddwarf \
-                            --type=dbaas \
+        keystone_manage service-create --name=Reddwarf \
+                            --type=reddwarf\
                             --description="Reddwarf"
+        service_id=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224  service-list|grep Reddwarf|cut -d'|' -f2`
+        keystone_manage endpoint-create \
+               --region RegionOne --service-id $service_id \
+               --publicurl 'http://localhost:8779/v1.0/$(tenant_id)s' \
+               --adminurl 'http://localhost:8779/v1.0/$(tenant_id)s' \
+               --internalurl 'http://localhost:8779/v1.0/$(tenant_id)s'
+
     fi
 
 }
@@ -247,6 +254,7 @@ catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v1.0/$(tenant_id)
 catalog.RegionOne.reddwarf.name = Reddwarf
     ' >> /etc/keystone/default_catalog.templates
 }
+
 
 function install_reddwarf_packages() {
     # Called after devstack.
@@ -270,18 +278,6 @@ function install_reddwarf_packages() {
     pkg_install maven2
 
     cd /tmp
-
-    # This is probably a kludge, but we turn off the error stuff here because
-    # if we can't stop the screen its not important enough to kill this
-    # process.
-    set +e
-    cmd_stop_deps
-    set -e
-    add_to_keystone_conf
-
-    set +e
-    cmd_start_deps
-    set -e
 }
 
 
@@ -341,6 +337,7 @@ function run_review_for() {
 function run_devstack() {
     exclaim "Running devstack..."
     cd $PATH_DEVSTACK_SRC
+    HOST_IP=`ip_chunk eth0 1`.`ip_chunk eth0 2`.`ip_chunk eth0 3`.`ip_chunk eth0 4`
 
     # Creating this lock directory seems sure-fire.
     mkdir -p $USERHOME/nova_locks
@@ -358,7 +355,7 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDSTACK_SCRIPTS/../report/logs/ logfile_mode=660)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDSTACK_SCRIPTS/../report/logs/ logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
 " > localrc
     if [ -n "$USING_VAGRANT" ]
     then
@@ -372,7 +369,7 @@ FLOATING_RANGE=`ip_chunk eth0 1`.`ip_chunk eth0 2`.`ip_chunk eth0 3`.128/28
 HOST_IP=`ip_chunk eth0 1`.`ip_chunk eth0 2`.`ip_chunk eth0 3`.`ip_chunk eth0 4`
 " >> localrc
     fi
-    ./stack.sh
+    HOST_IP=$HOST_IP ./stack.sh
 }
 
 function ensure_local_sources() {
