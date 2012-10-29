@@ -176,6 +176,12 @@ function configure_keystone() {
 
     REDDWARF_USER=`keystone_add_user reddwarf REDDWARF-PASS reddwarf@example.com`
 
+    #TODO(tim.simpson): Write some code here that removes the roles so these
+    #                   command won't fail if you run them twice.
+    #                   That way we will still catch errors if our calls to
+    #                   keystone fail, but can run kickstart twice w/o install.
+    set +e
+
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
 
     # TODO: Restrict permissions.
@@ -195,6 +201,8 @@ function configure_keystone() {
 
     REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+
+    set -e
 
     # Add the tenant id's into test.conf
     DEMO_TENANT=`get_tenant_id demo`
@@ -613,6 +621,26 @@ function mod_test_conf() {
     cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $USERHOME/test.conf
 }
 
+function add_flavor() {
+    FLAVOR_NAME=$1
+    FLAVOR_ID=$2
+    FLAVOR_MEMORY_MB=$3
+    FLAVOR_ROOT_GB=$4
+    echo "Adding flavor $FLAVOR_ID ($FLAVOR_NAME), memory=$FLAVOR_MEMORY_MB, root_gb=$FLAVOR_ROOT_GB"
+    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb, disabled, is_public) VALUES('$FLAVOR_NAME', $FLAVOR_ID, $FLAVOR_MEMORY_MB, 1, 0, 40, 1, $FLAVOR_ID, $FLAVOR_ROOT_GB, 0, 1);"
+}
+
+function add_flavors() {
+    # Incredibly useful for testing resize in a VM.
+    set +e
+    add_flavor 'tinier' 6 506 10
+    # It can also be useful to have a flavor with 512 megs and a bit of disk space.
+    add_flavor 'm1.rd-tiny' 7 512 2
+    # Its also useful to have a slightly bigger flavor...
+    add_flavor 'm1.rd-smaller' 8 768 2
+    set -e
+}
+
 function cmd_initialize() {
     exclaim 'Initializing...'
 
@@ -635,14 +663,7 @@ function cmd_initialize() {
     exclaim "Initializing the Reddwarf Database..."
     rd_manage db_sync repo_path=$REDDWARF_SOURCE/reddwarf_test.sqlite
 
-    # Incredibly useful for testing resize in a VM.
-    set +e
-    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb, disabled) VALUES('tinier', 6, 506, 1, 0, 40, 1, 6, 10, 0);"
-    # It can also be useful to have a flavor with 512 megs and a bit of disk space.
-    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb, disabled) VALUES('m1.rd-tiny', 7, 512, 1, 0, 40, 1, 7, 2, 0);"
-    # Its also useful to have a slightly bigger flavor...
-    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb, disabled) VALUES('m1.rd-smaller', 8, 768, 1, 0, 40, 1, 8, 2, 0);"
-    set -e
+    add_flavors
 }
 
 
