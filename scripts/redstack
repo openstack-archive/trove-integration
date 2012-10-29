@@ -131,8 +131,8 @@ function keystone_add_user_role() {
     keystone --endpoint http://localhost:35357/v2.0 \
         --token be19c524ddc92109a224 user-role-add \
         --tenant_id $TENANT_UUID \
-        --user $USER_UUID \
-        --role $ROLE_UUID
+        --user-id $USER_UUID \
+        --role-id $ROLE_UUID
 }
 
 function keystone_manage () {
