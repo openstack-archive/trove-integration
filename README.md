@@ -39,7 +39,7 @@ Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a vi
 
 #### Clone this repo:
 
-    $ git clone https://github.com/hub-cap/reddwarf_lite-integration.git
+    $ git clone https://github.com/stackforge/reddwarf-integration.git
 
 #### Go into the scripts directory:
 
