@@ -4,7 +4,7 @@
 
 ### Steps to setup this environment:
 
-Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a virtual machine_ )
+Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a virtual machine_ )
 
 #### Login to the machine as root
 

@@ -56,7 +56,7 @@ Vagrant::Config.run do |global_config|
 
     config.vm.network "33.33.44.11"
 
-    config.vm.box = "oneiric"
+    config.vm.box = "precise"
     config.vm.host_name = "host"
 
     config.ssh.timeout  = 3600
