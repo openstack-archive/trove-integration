@@ -661,7 +661,8 @@ function cmd_initialize() {
     fix_rd_configfile
 
     exclaim "Initializing the Reddwarf Database..."
-    rd_manage db_sync repo_path=$REDDWARF_SOURCE/reddwarf_test.sqlite
+    #no longer pass the repo_path argument, since rd_manage doesn't use it anymore
+    rd_manage db_sync
 
     add_flavors
 }
