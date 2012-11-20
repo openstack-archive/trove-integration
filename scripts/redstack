@@ -11,7 +11,7 @@
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
-REDDWARF_SOURCE=/opt/stack/reddwarf_lite
+REDDWARF_SOURCE=/opt/stack/reddwarf
 
 USERHOME=$HOME
 
