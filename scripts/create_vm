@@ -24,7 +24,7 @@ class Config(object):
         'nova': "/opt/stack/nova",
         'python_keystoneclient': "/opt/stack/python-keystoneclient",
         'python_novaclient': "/opt/stack/python-novaclient",
-        'reddwarf_lite':"/opt/stack/reddwarf_lite",
+        'reddwarf':"/opt/stack/reddwarf",
         'python_reddwarfclient':"/opt/stack/python-reddwarfclient",
         'tempest':"/opt/stack/tempest"
     }

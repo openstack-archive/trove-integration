@@ -43,7 +43,7 @@ Install a fresh Ubuntu 11.10 (Oneiric Ocelot) image ( _We suggest to create a vi
 
 #### Go into the scripts directory:
 
-    $ cd reddwarf_lite-integration/scripts/
+    $ cd reddwarf-integration/scripts/
 
 #### Running redstack is the core script:
 *Run this to get the command list with a short description of each*
