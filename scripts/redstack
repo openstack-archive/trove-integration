@@ -833,12 +833,12 @@ function cmd_nova_client() {
         nova --os_auth_url=http://localhost:35357/v2.0 \
             --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
             --service_type=compute --region_name=RegionOne \
-            --service_name='Compute Service' $@
+            --service_name='nova' $@
     else
         nova --os_auth_url=http://localhost:35357/v2.0 \
             --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
             --service_type=volume --region_name=RegionOne \
-            --service_name='Volume Service' $@
+            --service_name='cinder' $@
     fi
 }
 
