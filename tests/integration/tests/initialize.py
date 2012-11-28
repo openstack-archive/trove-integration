@@ -32,6 +32,7 @@ from tests import CONFIG
 FAKE = CONFIG.fake_mode
 START_SERVICES = (not FAKE) and CONFIG.values.get('start_services', False)
 KEYSTONE_ALL = CONFIG.values.get('keystone_use_combined', True)
+USE_NOVA_VOLUME = CONFIG.values.get('use_nova_volume', False)
 
 dbaas_image = None
 instance_name = None
@@ -139,7 +140,7 @@ def start_compute():
 
 
 @test(groups=["services.initialize"], depends_on_classes=[start_scheduler],
-      enabled=START_SERVICES)
+      enabled=START_SERVICES and USE_NOVA_VOLUME)
 def start_volume():
     """Starts the Nova Compute Service."""
     Daemon(service_path_root="nova_code_root",
