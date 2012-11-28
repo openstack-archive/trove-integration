@@ -73,7 +73,7 @@ function build_vm() {
 
     if [ $SERVICE_TYPE == 'mysql' ]
     then
-        PKGS="--addpkg mysql-server-5.1"
+        PKGS="--addpkg mysql-server-5.5"
     else
         exclaim "Warning: You did not pass in a valid image type, the image may fail"
     fi
