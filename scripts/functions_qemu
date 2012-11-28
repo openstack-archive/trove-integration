@@ -8,7 +8,7 @@ function install_prep_packages() {
     exclaim 'Updating dependencies (part 1a)...'
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
-    pkg_install git-core kvm-pxe ubuntu-vm-builder
+    pkg_install git-core kvm-ipxe ubuntu-vm-builder
 }
 
 function build_vm() {
@@ -111,9 +111,9 @@ function cmd_build_image() {
 
     USERNAME=`whoami`
     mkdir -p $USERHOME/images
-    VM_PATH=$USERHOME/images/oneiric_${SERVICE_TYPE}_image
-    UBUNTU_DISTRO=ubuntu_oneiric
-    UBUNTU_DISTRO_NAME=oneiric
+    VM_PATH=$USERHOME/images/precise_${SERVICE_TYPE}_image
+    UBUNTU_DISTRO=ubuntu_precise
+    UBUNTU_DISTRO_NAME=precise
 
     # If the path doesnt exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ]
