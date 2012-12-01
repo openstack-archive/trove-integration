@@ -33,7 +33,7 @@ from tests.util import TestClient
 from tests.util import count_notifications
 from tests.util import create_dbaas_client
 from tests.util import test_config
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 from tests.volumes import VOLUMES_DRIVER
 
 if WHITE_BOX:

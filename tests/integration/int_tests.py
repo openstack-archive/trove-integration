@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # Many of the test decorators depend on configuration values, so before
     # start importing modules we have to load the test config followed by the
     # flag files.
-    from tests.config import CONFIG
+    from reddwarf.tests.config import CONFIG
 
     # Find config file.
     if not "TEST_CONF" in os.environ:
@@ -213,9 +213,6 @@ if __name__ == '__main__':
     for path in sys.path:
         report.log("\t%s" % path)
 
-    from tests.util.client import monkey_patch_reddwarf_client
-    monkey_patch_reddwarf_client()
-
     # Now that all configurations are loaded its time to import everything.
 
     import proboscis
@@ -231,25 +228,25 @@ if __name__ == '__main__':
     if not ADD_DOMAINS:
         from tests import initialize
         from tests.api import delete_all
-        from tests.api import flavors
-        from tests.api import versions
-        from tests.api import instances
-        from tests.api import instances_actions
-        from tests.api import instances_mysql_down
+        from reddwarf.tests.api import flavors
+        from reddwarf.tests.api import versions
+        from reddwarf.tests.api import instances
+        from tests.api import instances_direct
+        from reddwarf.tests.api import instances_actions
+        from reddwarf.tests.api import instances_mysql_down
         from tests.api import instances_pagination
-        from tests.api import instances_delete
+        from reddwarf.tests.api import instances_delete
         from tests.api import instances_quotas
         from tests.api import instances_states
-        from tests.api import databases
-        from tests.api import root
-        from tests.api import users
-        from tests.api.mgmt import accounts
-        from tests.api.mgmt import admin_required
+        from reddwarf.tests.api import databases
+        from reddwarf.tests.api import root
+        from reddwarf.tests.api import users
+        from reddwarf.tests.api.mgmt import accounts
+        from reddwarf.tests.api.mgmt import admin_required
         from tests.api.mgmt import hosts
         from tests.api.mgmt import update_hosts
-        from tests.api.mgmt import instances
-        from tests.api.mgmt import storage
-        from tests.openvz import dbaas_ovz
+        from reddwarf.tests.api.mgmt import instances
+        from reddwarf.tests.api.mgmt import storage
         from tests.dns import dns
         from tests.guest import amqp_restarts
         from tests.reaper import volume_reaping

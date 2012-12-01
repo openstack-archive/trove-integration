@@ -15,9 +15,9 @@
 
 import unittest
 
-from tests.util.users import Requirements
-from tests.util.users import ServiceUser
-from tests.util.users import Users
+from reddwarf.tests.util.users import Requirements
+from reddwarf.tests.util.users import ServiceUser
+from reddwarf.tests.util.users import Users
 
 USER_LIST = [
     {"auth_user":"admin",

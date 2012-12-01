@@ -39,7 +39,7 @@ from tests.util import process
 from tests.util import restart_compute_service
 from tests.util import string_in_list
 from tests.util import TestClient
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 
 from tests.util.instance import InstanceTest
 from tests import WHITE_BOX

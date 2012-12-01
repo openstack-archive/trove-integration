@@ -6,10 +6,10 @@ from proboscis.decorators import time_out
 
 from reddwarfclient import Dbaas
 
-from tests.api.instances import instance_info
-from tests.api.instances import GROUP_START as INSTANCE_START
-from tests.api.instances import GROUP_TEST
-from tests.api.instances import GROUP_STOP as INSTANCE_STOP
+from reddwarf.tests.api.instances import instance_info
+from reddwarf.tests.api.instances import GROUP_START as INSTANCE_START
+from reddwarf.tests.api.instances import GROUP_TEST
+from reddwarf.tests.api.instances import GROUP_STOP as INSTANCE_STOP
 from tests import WHITE_BOX
 
 
@@ -40,6 +40,15 @@ class Setup(unittest.TestCase):
         dns_driver = utils.import_object(FLAGS.dns_driver)
 
 
+def expected_dns_entry():
+    """Returns expected DNS entry for this instance.
+
+    :rtype: Instance of :class:`DnsEntry`.
+
+    """
+    return create_dns_entry(instance_info.local_id, instance_info.id)
+
+
 @test(depends_on_classes=[Setup],
       depends_on_groups=[INSTANCE_START],
       groups=[GROUP, GROUP_TEST])
@@ -52,7 +61,7 @@ class WhenInstanceIsCreated(unittest.TestCase):
     """
 
     def test_dns_entry_should_exist(self):
-        entry = instance_info.expected_dns_entry()
+        entry = expected_dns_entry()
         if entry:
             def get_entries():
                 return dns_driver.get_entries_by_name(entry.name)
@@ -77,7 +86,7 @@ class AfterInstanceIsDestroyed(unittest.TestCase):
     """
 
     def test_dns_entry_exist_should_be_removed_shortly_thereafter(self):
-        entry = instance_info.expected_dns_entry()
+        entry = expected_dns_entry()
 
         if not entry:
             return

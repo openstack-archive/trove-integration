@@ -24,7 +24,7 @@ from proboscis.asserts import fail
 from reddwarfclient.exceptions import NotFound as NotFound404
 from tests.util import report
 from tests.util import test_config
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 from tests import WHITE_BOX
 
 if WHITE_BOX:

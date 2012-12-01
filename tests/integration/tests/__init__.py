@@ -36,7 +36,7 @@ from proboscis import before_class
 from proboscis import test
 # True if we can "see" the internals, such as the database, or can import
 # nova and reddwarf code.
-from tests.config import CONFIG
+from reddwarf.tests.config import CONFIG
 
 #TODO(tim.simpson): Stop using these globals and instead just use CONFIG.
 def initialize_globals():

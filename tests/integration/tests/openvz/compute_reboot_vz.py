@@ -29,9 +29,9 @@ from proboscis.asserts import fail
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from tests.api.instances import GROUP_START
-from tests.api.instances import GROUP_TEST
-from tests.api.instances import instance_info
+from reddwarf.tests.api.instances import GROUP_START
+from reddwarf.tests.api.instances import GROUP_TEST
+from reddwarf.tests.api.instances import instance_info
 
 from tests.util import TestClient
 from tests.util import check_database
@@ -42,7 +42,7 @@ from tests.util import restart_compute_service
 from tests.util import string_in_list
 from tests.util import test_config
 from tests.util.instance import InstanceTest
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 
 from tests import WHITE_BOX
 

@@ -709,13 +709,12 @@ function init_fake_mode() {
     sed -i \
         "s/reddwarf.tests.fakes.keystone/keystone.middleware.auth_token/g" \
         $CONF_FILE
+    sed -i "s/log_file = rdtest.log//g" $CONF_FILE
     cd $PATH_REDDWARF
     set -e
     rm -f reddwarf_test.sqlite
     set +e
-    bin/reddwarf-manage --config-file=$CONF_FILE \
-        db_sync \
-        repo_path=reddwarf_test.sqlite
+    bin/reddwarf-manage --config-file=$CONF_FILE db_sync
     sqlite3 reddwarf_test.sqlite \
         "INSERT INTO service_images VALUES('1','mysql','fake');"
 }

@@ -25,11 +25,11 @@ from proboscis.asserts import fail
 from proboscis.check import Check
 
 import tests
-from tests.api.instances import create_new_instance
-from tests.api.instances import instance_info
+from reddwarf.tests.api.instances import create_new_instance
+from reddwarf.tests.api.instances import instance_info
 from tests.util import test_config
 from tests.util import create_dbaas_client
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 
 GROUP = "dbaas.api.mgmt.hosts"
 

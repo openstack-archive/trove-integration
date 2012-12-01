@@ -17,7 +17,7 @@ from reddwarfclient import exceptions
 from tests import util
 from tests.util import create_dbaas_client
 from tests.util import test_config
-from tests.util.users import Requirements
+from reddwarf.tests.util.users import Requirements
 
 
 class TestBase(object):
@@ -63,7 +63,7 @@ class TestBase(object):
         for index in range(self.max):
             name = "multi-%03d" % index
             result = self.dbaas.instances.create(name, 1,
-                                   {'size': 1}, [], [])
+                                                 {'size': 1}, [], [])
             self.ids.append(result.id)
         # Sort the list of IDs in order, so we can confirm the lists pagination
         # returns is also sorted correctly.
@@ -221,5 +221,5 @@ class InstancePagination20(TestBase):
     @test
     def pagination_fourth_quarter(self):
         self.test_pagination(requested_limit=20, requested_marker=self.ids[14],
-                             expected_length=5,  expected_marker=None,
+                             expected_length=5, expected_marker=None,
                              expected_last_item=self.ids[19])
