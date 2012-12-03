@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Approved+1: slicknik <SlickNik@gmail.com>
+Code-Review+2: slicknik <SlickNik@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 03 Dec 2012 22:33:34 +0000
+Reviewed-on: https://review.openstack.org/17268
+Project: stackforge/reddwarf-integration
+Branch: refs/heads/master
