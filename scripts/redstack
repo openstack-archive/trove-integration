@@ -590,6 +590,7 @@ function service_report_log_directory {
 function fix_rd_configfile() {
     cd $PATH_REDDWARF
     cp etc/reddwarf/reddwarf.conf.sample $USERHOME/reddwarf.conf
+    cp etc/reddwarf/api-paste.ini $USERHOME/api-paste.ini
     cp etc/reddwarf/reddwarf-taskmanager.conf.sample $USERHOME/reddwarf-taskmanager.conf
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/reddwarf.extra.conf
     if [ -e $EXTRA_CONF ]; then
