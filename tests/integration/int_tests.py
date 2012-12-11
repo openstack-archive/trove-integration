@@ -268,25 +268,29 @@ if __name__ == '__main__':
             users.GROUP,
             databases.GROUP,
             root.GROUP,
-            accounts.GROUP,
-            hosts.GROUP,
-            storage.GROUP,
             "services.initialize",
             "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
             "dbaas.api.instances.actions.stop",
-            "dbaas.api.instances.actions.reboot",
             "dbaas.guest.shutdown",
             versions.GROUP,
             "dbaas.guest.start.test",
-            "dbaas.api.mgmt.admin",
-            "dbaas.api.mgmt.instances",
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
 
+        black_box_mgmt_groups = [
+            accounts.GROUP,
+            hosts.GROUP,
+            storage.GROUP,
+            "dbaas.api.instances.actions.reboot",
+            "dbaas.api.mgmt.admin",
+            "dbaas.api.mgmt.instances",
+        ]
+        proboscis.register(groups=["blackbox_mgmt"],
+                           depends_on_groups=black_box_mgmt_groups)
         heavy_black_box_groups = [
             "dbaas.api.instances.pagination",
             "dbaas.api.instances.quotas",
