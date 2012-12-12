@@ -722,8 +722,8 @@ function init_fake_mode() {
 function cmd_start() {
     init_reddwarf_screen
 
-    screen_it api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$USERHOME/reddwarf.conf | tee $USERHOME/reddwarf-api.log"
-    screen_it taskmanager "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$USERHOME/reddwarf-taskmanager.conf | tee $USERHOME/reddwarf-taskmanager.log"
+    screen_it api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$USERHOME/reddwarf.conf | tee $REDSTACK_SCRIPTS/../report/logs/reddwarf-api.log"
+    screen_it taskmanager "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$USERHOME/reddwarf-taskmanager.conf | tee $REDSTACK_SCRIPTS/../report/logs/reddwarf-taskmanager.log"
 }
 
 function cmd_start_fake() {
