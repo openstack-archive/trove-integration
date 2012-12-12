@@ -778,6 +778,24 @@ function cmd_int_tests() {
     python $args
 }
 
+function cmd_int_tests_simple() {
+    exclaim "Running Reddwarf Simple Integration Tests..."
+    cd $REDSTACK_SCRIPTS
+    export TEST_CONF=$USERHOME/test.conf
+    if [ $# -lt 1 ]; then
+        args="--group=simple_blackbox"
+    else
+        args="$@"
+    fi
+
+    # -- verbose makes it prettier.
+    # -- logging-clear-handlers keeps the novaclient and other things from
+    #    spewing logs to stdout.
+    args="$INT_TEST_OPTIONS -B $REDSTACK_TESTS/integration/int_tests.py --verbose --logging-clear-handlers $args"
+    echo "python $args"
+    python $args
+}
+
 function cmd_int_tests_white_box() {
     export PYTHONPATH=$PYTHONPATH:$REDDWARF_SOURCE
     export PYTHONPATH=$PYTHONPATH:$PATH_NOVA
@@ -1008,6 +1026,7 @@ function print_usage() {
         --tests--
           unit-tests      - Run the unit tests.dependencies
           int-tests       - Runs the integration tests (requires all daemons).
+          simple-tests    - Runs the simple integration tests (requires all daemons).
 
         --tools--
           debug           - Debug this script (shows all commands).
@@ -1048,6 +1067,7 @@ function run_command() {
         "start" ) cmd_start;;
         "int-tests" ) shift; cmd_int_tests $@;;
         "int-tests-wb" ) shift; cmd_int_tests_white_box $@;;
+        "simple-tests") shift; cmd_int_tests_simple $@;;
         "stop" ) cmd_stop;;
         "glance-client" ) shift; cmd_glance_client;;
         "nova-client" ) shift; cmd_nova_client $@;;
