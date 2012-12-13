@@ -6,5 +6,7 @@ sudo -u USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyCh
 echo 'USERNAME ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 # Do an apt-get update since its SUPER slow first time
 apt-get update
+# Add extras which is _only_ in pip.....
+pip install extras
 # Starts the reddwarf guestagent (using the upstart script)
 service reddwarf-guest start
