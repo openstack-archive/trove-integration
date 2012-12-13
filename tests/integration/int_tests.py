@@ -231,6 +231,7 @@ if __name__ == '__main__':
         from reddwarf.tests.api import flavors
         from reddwarf.tests.api import versions
         from reddwarf.tests.api import instances
+        from reddwarf.tests.api.instances import GROUP_START_SIMPLE
         from tests.api import instances_direct
         from reddwarf.tests.api import instances_actions
         from reddwarf.tests.api import instances_mysql_down
@@ -280,6 +281,17 @@ if __name__ == '__main__':
         ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
+
+        simple_black_box_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            GROUP_START_SIMPLE,
+            "dbaas.api.mgmt.admin",
+            "dbaas.preinstance"
+        ]
+        proboscis.register(groups=["simple_blackbox"],
+                           depends_on_groups=simple_black_box_groups)
 
         black_box_mgmt_groups = [
             accounts.GROUP,
