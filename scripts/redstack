@@ -140,11 +140,11 @@ function keystone_manage () {
 }
 
 function get_tenant_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep $1 | awk '{print $2}'
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep "$1" | awk '{print $2}'
 }
 
 function get_role_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep $1 | awk '{print $2}'
+    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep "$1" | awk '{print $2}'
 }
 
 function configure_keystone() {
@@ -201,11 +201,10 @@ function configure_keystone() {
 
     REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
-
     set -e
 
     # Add the tenant id's into test.conf
-    DEMO_TENANT=`get_tenant_id demo`
+    DEMO_TENANT=`get_tenant_id ' demo'`
     sed -i "s/%reddwarf_tenant_id%/$REDDWARF_TENANT/g" $USERHOME/test.conf
     sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $USERHOME/test.conf
     sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $USERHOME/test.conf
