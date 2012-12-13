@@ -273,6 +273,9 @@ function install_reddwarf_packages() {
     pkg_install python-pexpect
     #TODO(tim.simpson): Install unstable branch for now.
 
+    # Needed to install client on fresh VM
+    pkg_install libxslt1-dev
+
     exclaim "Installing Reddwarf Client..."
     pushd $PATH_PYTHON_REDDWARFCLIENT
     sudo python setup.py develop
