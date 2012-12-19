@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get -y install mysql-server-5.5 mysql-client-5.5
