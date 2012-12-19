@@ -1,0 +1,21 @@
+#!/bin/bash
+# Save user SSH public key if available.
+# XXX: Obviously not suitable for downloadable images.
+
+set -e
+set -o xtrace
+
+if [ -e "/tmp/in_target.d/ssh-authorized-keys" ]; then
+    if ! [ -e "/home/${USERNAME}/.ssh" ]; then
+        sudo -Hiu ${USERNAME} mkdir ~${USERNAME}/.ssh/
+    fi
+    sudo -Hiu ${USERNAME} dd of=~${USERNAME}/.ssh/authorized_keys conv=notrunc if=/tmp/in_target.d/ssh-authorized-keys
+    if ! [ -e "/home/${USERNAME}/.ssh/id_rsa" ]; then
+        sudo -Hiu ${USERNAME} dd of=~${USERNAME}/.ssh/id_rsa if=/tmp/in_target.d/id_rsa
+        # perms have to be right on this file for ssh to work
+        sudo -Hiu ${USERNAME} chmod 600 ~${USERNAME}/.ssh/id_rsa
+        sudo -Hiu ${USERNAME} dd of=~${USERNAME}/.ssh/id_rsa.pub if=/tmp/in_target.d/id_rsa.pub
+    fi
+fi
+
+# TODO should be an else here

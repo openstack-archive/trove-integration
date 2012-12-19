@@ -301,6 +301,18 @@ function install_devstack() {
     fi
 }
 
+function install_diskimagebuilder() {
+    exclaim "Installing diskimage-builder..."
+    # Installs diskimage-builder (if needed).
+    if [ ! -d $PATH_DISKIMAGEBUILDER ]; then
+        echo "Cloning from git."
+        mkdir -p $PATH_DISKIMAGEBUILDER
+        git clone $REPO_DISKIMAGEBUILDER $PATH_DISKIMAGEBUILDER
+        echo "Adding Reddwarf Elements to Disk Image Builder"
+        cp -r $REDSTACK_SCRIPTS/files/elements/* $PATH_DISKIMAGEBUILDER/elements
+    fi
+}
+
 function install_devstack_code() {
     exclaim "Installing devstack projects..."
     # Ensures present user can get to the devstack dirs
@@ -398,6 +410,7 @@ function cmd_install() {
     run_devstack
     ensure_local_sources
     install_reddwarf_packages
+    install_diskimagebuilder
     exclaim "FINISHED INSTALL"
 }
 

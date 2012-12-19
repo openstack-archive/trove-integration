@@ -1,0 +1,15 @@
+#!/bin/bash
+# Add the stack user we recommend folk use.
+
+set -e
+set -o xtrace
+
+if ! id -u ubuntu >/dev/null 2>&1; then
+    echo "Adding ${USERNAME} user"
+    useradd -G admin -m ${USERNAME} -s /bin/bash
+    passwd ${USERNAME} <<_EOF_
+${USERNAME}
+${USERNAME}
+_EOF_
+fi
+
