@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: take "staged" apt sources file and put them in the apt sources directory on the GUEST image
+
+set -e
+set -o xtrace
+
+
+sudo dd if=/tmp/in_target.d/reddwarf-source-host.list of=/etc/apt/sources.list.d/reddwarf-source-host.list
