@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+cat <<EOL >> /etc/apt/sources.list.d/percona.list
+deb http://10.0.0.1:8080/debian squeeze main
+EOL

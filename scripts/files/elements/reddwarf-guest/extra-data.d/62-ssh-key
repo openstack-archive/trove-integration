@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+source $_LIB/die
+
+[ -n "$TMP_HOOKS_PATH." ] || die "Temp hook path not set"
+
+[ -n "${USERNAME}" ] || die "User Name needs to be set to the user for the guest VM"
+
+#[ `whoami` = "root" ] || die "You should not be root to create keys"
+
+generate_empty_passphrase_ssh_key () {
+    echo "generating a empty passphrase DEV ONLY rsa key"
+    HOMEDIR=$1
+    expect -c "
+spawn sudo -Hiu ubuntu /usr/bin/ssh-keygen -f $HOMEDIR/.ssh/id_rsa -q
+expect \"empty for no passphrase\"
+send \n
+expect assphrase
+send \n
+expect eof"
+}
+
+HOMEDIR=/home/${USERNAME}
+
+if [ ! -e $HOMEDIR/.ssh ]; then
+    sudo -Hiu ${USERNAME} mkdir -p $HOMEDIR/.ssh
+fi
+
+if [ ! -f $HOMEDIR/.ssh/id_rsa.pub ]
+then
+    sudo apt-get -y install expect
+
+    #generate a public key
+    generate_empty_passphrase_ssh_key $HOMEDIR
+fi
+
+is_in_keyfile=`cat $HOMEDIR/.ssh/id_rsa.pub | grep -f - $HOMEDIR/.ssh/authorized_keys | wc -l`
+if [ $is_in_keyfile == 0 ]; then
+    echo "Adding keyfile to authorized_keys, it does not yet exist"
+    cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
+fi
+
+if [ -e $HOMEDIR/.ssh/authorized_keys ]; then
+   sudo -Hiu ${USERNAME} cat $HOMEDIR/.ssh/authorized_keys > $TMP_HOOKS_PATH/ssh-authorized-keys
+   sudo -Hiu ${USERNAME} cat $HOMEDIR/.ssh/id_rsa > $TMP_HOOKS_PATH/id_rsa
+   sudo -Hiu ${USERNAME} cat $HOMEDIR/.ssh/id_rsa.pub > $TMP_HOOKS_PATH/id_rsa.pub
+fi

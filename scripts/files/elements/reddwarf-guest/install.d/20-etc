@@ -1,0 +1,5 @@
+#!/bin/sh
+
+dd if=/tmp/in_target.d/reddwarf-guest.conf of=/etc/init/reddwarf-guest.conf
+
+

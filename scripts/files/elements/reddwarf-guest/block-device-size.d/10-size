@@ -1,0 +1,10 @@
+#!/bin/bash
+# Add the stack user we recommend folk use.
+
+set -e
+
+if (( '5' '>' $IMAGE_SIZE )); then
+   echo IMAGE_SIZE=5
+fi
+
+
