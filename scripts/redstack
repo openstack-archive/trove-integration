@@ -14,7 +14,6 @@ REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 REDDWARF_SOURCE=/opt/stack/reddwarf
 
 USERHOME=$HOME
-
 # Load options not checked into VCS.
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
@@ -26,6 +25,10 @@ set -e
 # Load global configuration variables.
 . $REDSTACK_SCRIPTS/redstack.rc
 . $REDSTACK_SCRIPTS/reviews.rc
+# allow overrides from devstack if already set
+if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
+    . $PATH_DEVSTACK_SRC/localrc
+fi
 
 # PATH_REDDWARF more than likely has file separators, which sed does not like
 # This will escape them
@@ -108,11 +111,11 @@ function keystone_add_user() {
     USER_PASS=$2
     USER_EMAIL=$3
     # Create the user "reddwarf"
-    USER_UUID=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 user-list | grep $USER_NAME | awk '{print $2}'`
+    USER_UUID=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN user-list | grep $USER_NAME | awk '{print $2}'`
     if [ -z $USER_UUID ]; then
         USER_UUID=`echo_id_from_table keystone \
                    --endpoint http://localhost:35357/v2.0  \
-                   --token be19c524ddc92109a224 user-create \
+                   --token $SERVICE_TOKEN user-create \
                    --name=$USER_NAME --pass="$USER_PASS" --email=$USER_EMAIL`
     fi
 
@@ -124,27 +127,27 @@ function keystone_add_user_role() {
     USER_UUID=$2
     ROLE_UUID=$3
     echo "keystone --endpoint http://localhost:35357/v2.0
-        --token be19c524ddc92109a224 user-role-add
+        --token $SERVICE_TOKEN user-role-add
         --tenant_id $TENANT_UUID
         --user $USER_UUID
         --role $ROLE_UUID"
     keystone --endpoint http://localhost:35357/v2.0 \
-        --token be19c524ddc92109a224 user-role-add \
+        --token $SERVICE_TOKEN user-role-add \
         --tenant_id $TENANT_UUID \
         --user-id $USER_UUID \
         --role-id $ROLE_UUID
 }
 
 function keystone_manage () {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 $@
+    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN $@
 }
 
 function get_tenant_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-list | grep "$1" | awk '{print $2}'
+    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN tenant-list | grep "$1" | awk '{print $2}'
 }
 
 function get_role_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-list | grep "$1" | awk '{print $2}'
+    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN role-list | grep "$1" | awk '{print $2}'
 }
 
 function configure_keystone() {
@@ -156,22 +159,22 @@ function configure_keystone() {
     REDDWARF_TENANT=`get_tenant_id reddwarf`
     ADMIN_ROLE=`get_role_id admin`
     if [ -z $REDDWARF_TENANT ]; then
-        REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=reddwarf`
+        REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN tenant-create --name=reddwarf`
     fi
 
     REDDWARF_ROLE=`get_role_id reddwarf`
     if [ -z "$REDDWARF_ROLE" ]; then
-        REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=reddwarf`
+        REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN role-create --name=reddwarf`
     fi
 
     DAFFY_TENANT=`get_tenant_id daffy`
     if [ -z $DAFFY_TENANT ]; then
-        DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 tenant-create --name=daffy`
+        DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN tenant-create --name=daffy`
     fi
 
     DAFFY_ROLE=`get_role_id daffy`
     if [ -z "$DAFFY_ROLE" ]; then
-        DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224 role-create --name=daffy`
+        DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN role-create --name=daffy`
     fi
 
     REDDWARF_USER=`keystone_add_user reddwarf REDDWARF-PASS reddwarf@example.com`
@@ -234,7 +237,7 @@ REDDWARF_ROLE=$REDDWARF_ROLE
         keystone_manage service-create --name=Reddwarf \
                             --type=reddwarf\
                             --description="Reddwarf"
-        service_id=`keystone --endpoint http://localhost:35357/v2.0 --token be19c524ddc92109a224  service-list|grep Reddwarf|cut -d'|' -f2`
+        service_id=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN service-list|grep Reddwarf|cut -d'|' -f2`
         keystone_manage endpoint-create \
                --region RegionOne --service-id $service_id \
                --publicurl 'http://localhost:8779/v1.0/$(tenant_id)s' \

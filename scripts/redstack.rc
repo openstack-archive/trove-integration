@@ -3,7 +3,7 @@ REDDWARF_SOURCE=/opt/stack/reddwarf
 PATH_INTEGRATION_CONF="/tmp/integration"
 
 # devstack is either a shared folder or is downloaded by reddwarf-ci install.
-PATH_DEVSTACK_SRC=~/devstack
+[ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 PATH_DEVSTACK_OUTPUT=/opt/stack
 REPO_DEVSTACK=git://github.com/openstack-dev/devstack.git
 
