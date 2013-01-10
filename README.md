@@ -136,6 +136,29 @@ Allows the services to continue running in the background
     $ ./redstack build-image mysql
     $ ./redstack start
 
+***
 
+### VMware Fusion 5 speed improvement
+We found out that if you are running ubuntu with KVM or Qemu it can be extemely slow. We found some ways of making this better with in VMware settings.
+On a clean install of ubuntu 12.04 enable these options in VMware. (likey the same in other virutalizing platforms)
 
+1. Shutdown the Ubuntu VM.
+
+2. Go to the VM Settings -> Processors & Memory -> Advanced Options
+   Check the "Enable hypervisor applications in this virtual machine"
+   There is one other option that may improve your performance overall as well.
+
+3. Go to the VM Settings -> Advanced
+   Set the "Troubleshooting" option to "None"
+
+4. I would suggest after setting these create a snapshot so that in cases where things break down you can revert to a clean snapshot.
+
+5. Boot up the VM and run the `./redstack install`
+
+6. To verify that KVM is setup properly after the devstack installation you can run these commands.
+```
+ubuntu@ubuntu:~$ kvm-ok
+INFO: /dev/kvm exists
+KVM acceleration can be used
+```
 
