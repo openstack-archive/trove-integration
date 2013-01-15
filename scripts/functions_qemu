@@ -14,89 +14,27 @@ function install_prep_packages() {
 function build_vm() {
     exclaim "Actually building the image, this can take up to 15 minutes"
 
-    HOMEDIR=$1
-    USERNAME=$2
-    UBUNTU_DISTRO_NAME=$3
-    VM_PATH=$4
-    SERVICE_TYPE=$5
+    # set variables here and ensure they are not changed during the duration of this script
+    readonly HOMEDIR=$1
+    readonly HOST_USERNAME=$2
+    GUEST_USERNAME=${GUEST_USERNAME:-$2}
 
-    # Create the guest with the specific files
-    mkdir -p $HOMEDIR/.ssh
-    if [ ! -e $HOMEDIR/.ssh/id_rsa.pub ]
-    then
-        pkg_install expect
-
-        # Generate a public key
-        generate_empty_passphrase_ssh_key $HOMEDIR
-    fi
-
-    # Time to create the files to copy into the VM
-    COPY_FILE=/tmp/guest-agent-files.txt
-    rm -fr $COPY_FILE
-
-    # the bootstrap_init-$SERVICE_TYPE.sh file is used in --firstboot param of ubuntu-vm-builder
-    # This file copies the current reddwarf codebase into each spawned image
-    # and executes the guestagent as a service. New code to reddwarf does not require
-    # a new image, just a new create of an instance.
-    # Please note, this is ONLY for dev and should not be considered production ready.
-    INIT_FILE=bootstrap_init-${SERVICE_TYPE}.sh
-    cp $REDSTACK_SCRIPTS/files/$INIT_FILE /tmp
-
-    sed -i.bak "s/PATH_REDDWARF/$ESCAPED_PATH_REDDWARF/g" /tmp/$INIT_FILE
-    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/$INIT_FILE
-
-    # Apt repo on the local machine
-    cp $REDSTACK_SCRIPTS/files/apt_repo.list /tmp
-    echo "/tmp/apt_repo.list /etc/apt/sources.list.d/apt_repo.list" >> $COPY_FILE
-
-    # Upstart script to start the guest
-    cp $REDSTACK_SCRIPTS/files/reddwarf-guest.upstart.conf /tmp
-    sed -i.bak "s/USERNAME/$USERNAME/g" /tmp/reddwarf-guest.upstart.conf
-    echo "/tmp/reddwarf-guest.upstart.conf /etc/init/reddwarf-guest.conf" >> $COPY_FILE
-
-    # Now put the pub key in this machines auth keys
-    # so the vm can log in to the host (scp from bootstrap_init-$SERVICE_TYPE.sh)
-    # This will also enable us to log in to the dev instances w/o a password
-    is_in_keyfile=`cat $HOMEDIR/.ssh/id_rsa.pub |grep -f - $HOMEDIR/.ssh/authorized_keys |wc -l`
-    if [ $is_in_keyfile == 0 ]
-    then
-        echo "Adding keyfile to authorized_keys, it does not yet exist"
-        cat $HOMEDIR/.ssh/id_rsa.pub >> $HOMEDIR/.ssh/authorized_keys
-    fi
-
-    # These will be the way the firstboot script phones home to get the latest guest via scp.
-    # See bootstrap_init-$SERVICE_TYPE.sh for more info on what it does
-    # man ubuntu-vm-builder for more infomration on the --copy flag
-    echo "$HOMEDIR/.ssh/id_rsa.pub $HOMEDIR/.ssh/id_rsa.pub" >> $COPY_FILE
-    echo "$HOMEDIR/.ssh/id_rsa $HOMEDIR/.ssh/id_rsa" >> $COPY_FILE
-    echo "$HOMEDIR/.ssh/authorized_keys $HOMEDIR/.ssh/authorized_keys" >> $COPY_FILE
-
-    if [ $SERVICE_TYPE == 'mysql' ]
-    then
-        PKGS="--addpkg mysql-server-5.5"
-    else
+    if [ ! $SERVICE_TYPE == 'mysql' ]; then
         exclaim "Warning: You did not pass in a valid image type, the image may fail"
     fi
 
-    #build a qemu image
-    VM_BUILDER_ARGS="qemu $UBUNTU_DISTRO_NAME $PKGS \
-         --addpkg vim --addpkg openssh-server \
-         --addpkg gcc --addpkg python-dev --addpkg rsync \
-         --addpkg libxml2-dev --addpkg libxslt-dev \
-         --addpkg python-setuptools --addpkg python-pip \
-         --addpkg python-sqlalchemy --addpkg python-lxml \
-         --addpkg python-routes --addpkg python-eventlet \
-         --addpkg python-webob --addpkg python-kombu \
-         --addpkg python-pastedeploy --addpkg python-paste \
-         --addpkg python-netaddr --addpkg python-httplib2 \
-         --addpkg python-iso8601 --addpkg python-novaclient \
-         --addpkg python-pexpect --addpkg python-mysqldb \
-         --addpkg python-migrate \
-         --copy $COPY_FILE --user $USERNAME --pass $USERNAME \
-         --firstboot /tmp/$INIT_FILE -d $VM_PATH"
-    echo "Running the following command:"
-    echo "sudo ubuntu-vm-builder $VM_BUILDER_ARGS"
-    sudo ubuntu-vm-builder $VM_BUILDER_ARGS
+    readonly SSH_DIR=${HOMEDIR}/.ssh
+    manage_ssh_keys
+
+    mkdir -p $VM_PATH
+    export RELEASE=precise
+    export HOST_USERNAME
+    export GUEST_USERNAME
+    export REDSTACK_SCRIPTS
+    export SERVICE_TYPE
+    export ESCAPED_PATH_REDDWARF
+    export SSH_DIR
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x base vm reddwarf-guest reddwarf-mysql
 }
 
 function cmd_build_image() {
@@ -108,12 +46,12 @@ function cmd_build_image() {
     fi
     SERVICE_TYPE=$1
 
-
     USERNAME=`whoami`
     mkdir -p $USERHOME/images
-    VM_PATH=$USERHOME/images/precise_${SERVICE_TYPE}_image
-    UBUNTU_DISTRO=ubuntu_precise
-    UBUNTU_DISTRO_NAME=precise
+    # set values to readonly as they should not change here forward
+    readonly VM_PATH=$USERHOME/images/precise_${SERVICE_TYPE}_image
+    readonly UBUNTU_DISTRO=ubuntu_precise
+    readonly UBUNTU_DISTRO_NAME=precise
 
     # If the path doesnt exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ]
@@ -134,3 +72,43 @@ function clean_instances() {
     LIST=`virsh -q list|awk '{print $1}'`
     for i in $LIST; do sudo virsh destroy $i; done
 }
+
+function manage_ssh_keys() {
+    if [ -e ${SSH_DIR} ]; then
+        echo "${SSH_DIR} already exists"
+    else
+        echo "Creating ${SSH_DIR} for ${HOST_USERNAME}"
+        sudo -Hiu ${HOST_USERNAME} mkdir -p ${SSH_DIR}
+    fi
+
+    if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
+        sudo apt-get -y install expect
+        generate_empty_passphrase_ssh_key ${HOST_USERNAME}
+    fi
+
+    add_host_key_to_authorizedkeys
+}
+
+generate_empty_passphrase_ssh_key () {
+    echo "generating a empty passphrase DEV ONLY rsa key"
+    expect -c "
+spawn sudo -Hiu ${HOST_USERNAME} /usr/bin/ssh-keygen -f ${SSH_DIR}/id_rsa -q
+expect \"empty for no passphrase\"
+send \n
+expect assphrase
+send \n
+expect eof"
+}
+
+add_host_key_to_authorizedkeys () {
+    # test to see if the host key is already in its own authorized_keys file - if not then add it.  This is then later copied
+    # to the guest image
+    is_in_keyfile=`cat ${SSH_DIR}/id_rsa.pub | grep -f - ${SSH_DIR}/authorized_keys | wc -l`
+    if [ $is_in_keyfile == 0 ]; then
+        echo "Adding keyfile to authorized_keys, it does not yet exist"
+        cat ${SSH_DIR}/id_rsa.pub >> ${SSH_DIR}/authorized_keys
+    else
+        echo "Keyfile already exists in authorized_keys - skipping"
+    fi
+}
+
