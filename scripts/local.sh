@@ -30,6 +30,7 @@ OS_USER=${OS_USER:-admin}
 OS_TENANT=${OS_TENANT:-admin}
 DATABASE_HOST=${DATABASE_HOST:-localhost}
 DATABASE_USER=${DATABASE_USER:-root}
+DATABASE_PASSWORD=${DATABASE_PASSWORD:-$MYSQL_PASSWORD}
 BASE_SQL_CONN=${BASE_SQL_CONN:-${DATABASE_TYPE}://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST}
 
 # Set up default configuration
@@ -40,6 +41,7 @@ REDDWARF_BUILD_DIR=/tmp/build/
 REDDWARF_INTEGRATION_CONF_DIR=/tmp/reddwarf-integration/
 REDDWARF_ENV_CONF_PATH=$REDDWARF_INTEGRATION_CONF_DIR/env.rc
 REDDWARF_CONF_DIR=/etc/reddwarf/
+REDDWARF_LOCAL_CONF_DIR=$REDDWARF_DIR/etc/reddwarf/
 REDDWARF_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
 
 # Set Reddwarf interface related configuration
@@ -111,7 +113,7 @@ function reddwarf_add_keystone_user() {
             --pass=$USER_PASS \
             --email=$USER_EMAIL \
             --tenant_id $USER_TENANT \
-            | grep " id " | get_field 1)
+            | grep " id " | get_field 2)
     fi
     echo $USER_UUID
 }
@@ -126,26 +128,27 @@ function reddwarf_create_keystone_user_role() {
         --role_id $ROLE_UUID
 }
 
+function reddwarf_create() {
+    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-create \
+             --name $2 \
+             | grep " id " | get_field 2
+}
+
 function reddwarf_configure_keystone() {
     msgout "DEBUG" "Configuring keystone..."
-    # Create the tenant "reddwarf".
+    # Create the "reddwarf" tenant
     # First we should check if these exist
     REDDWARF_TENANT=`reddwarf_get_attribute_id tenant reddwarf 1`
     if [ -z "$REDDWARF_TENANT" ]; then
-        REDDWARF_TENANT=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN tenant-create \
-            --name reddwarf \
-            | grep " id " | get_field 1)
+        REDDWARF_TENANT=$(reddwarf_create tenant reddwarf)
     fi
-
 
     # Create the reddwarf role if it doesn't exist.
     # Admin role should already exist
     ADMIN_ROLE=`reddwarf_get_attribute_id role admin 1`
     REDDWARF_ROLE=`reddwarf_get_attribute_id role reddwarf 1`
     if [ -z "$REDDWARF_ROLE" ]; then
-        REDDWARF_ROLE=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN role-create \
-            --name=reddwarf \
-            | grep " id " | get_field 1)
+        REDDWARF_ROLE=$(reddwarf_create role reddwarf)
     fi
 
     REDDWARF_USER=$(reddwarf_add_keystone_user reddwarf REDDWARF-PASS reddwarf@example.com $REDDWARF_TENANT)
@@ -155,6 +158,8 @@ function reddwarf_configure_keystone() {
     reddwarf_create_keystone_user_role $REDDWARF_TENANT $RADMIN_USER $REDDWARF_ROLE
     reddwarf_create_keystone_user_role $REDDWARF_TENANT $RADMIN_USER $ADMIN_ROLE
 
+    mkdir -p ${REDDWARF_INTEGRATION_CONF_DIR}
+    touch $REDDWARF_ENV_CONF_PATH
     iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_TENANT $REDDWARF_TENANT
     iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_USER $REDDWARF_USER
     iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_ROLE $REDDWARF_ROLE
@@ -164,7 +169,7 @@ function reddwarf_configure_keystone() {
      -H "Content-type: application/json" $REDDWARF_AUTH_ENDPOINT/tokens
 
     # Register reddwarf service.
-    REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-list | grep "reddwarf" | get_field 2)
+    REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-list | grep "reddwarf" | get_field 1)
     if [ -z $REDDWARF_SERVICE_UUID ]; then
         REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-create \
             --name=Reddwarf \
@@ -195,7 +200,7 @@ function fix_rd_configfile() {
     cp etc/reddwarf/api-paste.ini $REDDWARF_CONF_DIR/api-paste.ini
     cp etc/reddwarf/reddwarf-taskmanager.conf.sample $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf
 
-    # Figure out the db connection url
+    # Figure out the db connection urls
     local dburl
     database_connection_url dburl reddwarf
 
@@ -207,6 +212,9 @@ function fix_rd_configfile() {
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT rabbit_password $RABBIT_PASSWORD
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT sql_connection $dburl
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf filter:tokenauth admin_token $SERVICE_TOKEN
+
+    iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
+    sed -i "s/e1a2c042c828d3566d0a/$ADMIN_PASSWORD/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
 }
 
 ###############################################################################
@@ -277,7 +285,7 @@ function configure_reddwarf() {
     local mod="configure_reddwarf"
     msgout "DEBUG" "$mod<-- ($REDDWARF_DIR)"
 
-    install_package libxslt1-dev
+    install_package libxslt1-dev python-pexpect
     setup_develop $REDDWARF_DIR
 
     # Create the reddwarf build dir if it doesn't exist
@@ -337,12 +345,16 @@ function start_reddwarf() {
     msgout "DEBUG" "$mod:-->"
 }
 
-install_reddwarf
-install_reddwarfclient
-configure_reddwarf
-configure_reddwarfclient
-init_reddwarf
-start_reddwarf
+function devstack_post_install_hook() {
+    install_reddwarf
+    install_reddwarfclient
+    configure_reddwarf
+    configure_reddwarfclient
+    init_reddwarf
+    start_reddwarf
+}
+
+devstack_post_install_hook
 
 # Restore xtrace
 $XTRACE
