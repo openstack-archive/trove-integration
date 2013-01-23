@@ -7,4 +7,5 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install sysstat mytop ntp lvm2 xfsprogs xfsdump policycoreutils libmysqlclient-dev
+apt-get -y install sysstat ntp lvm2 xfsprogs xfsdump libmysqlclient18=5.5.28-rel29.3-388.precise
+#mytop policycoreutils
