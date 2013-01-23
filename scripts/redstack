@@ -11,7 +11,6 @@
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
-REDDWARF_SOURCE=/opt/stack/reddwarf
 REDDWARF_CONF_DIR=/etc/reddwarf
 
 USERHOME=$HOME
@@ -632,6 +631,12 @@ function mod_test_conf() {
         cat $EXTRA_CONF >> $REDDWARF_CONF_DIR/test.conf
     fi
     cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $REDDWARF_CONF_DIR/test.conf
+
+    #Add the paths to the test conf
+    sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s,%nova_path%,$PATH_NOVA,g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s,%glance_path%,$PATH_GLANCE,g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s,%reddwarf_path%,$PATH_REDDWARF,g" $REDDWARF_CONF_DIR/test.conf
 }
 
 function add_flavor() {
