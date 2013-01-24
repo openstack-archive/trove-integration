@@ -3,7 +3,7 @@
 # Adds user to the sudoers file so they can do everything w/o a pass
 # Some binaries might be under /sbin or /usr/sbin, so make sure sudo will
 # see them by forcing PATH
-$TEMPFILE=`mktemp`
+TEMPFILE=`mktemp`
 echo "GUEST_USERNAME ALL=(ALL) NOPASSWD:ALL" > $TEMPFILE
 chmod 0440 $TEMPFILE
 sudo chown root:root $TEMPFILE
@@ -17,6 +17,11 @@ apt-get update
 
 # Add extras which is _only_ in pip.....
 pip install extras
+
+# Disable AppArmor so that reddwarf guestagent can change the conf
+# TODO this should probably be done in the guest and then re-enabled install
+ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
+apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
 # Starts the reddwarf guestagent (using the upstart script)
 service reddwarf-guest start

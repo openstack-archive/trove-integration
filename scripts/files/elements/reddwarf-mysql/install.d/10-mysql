@@ -7,4 +7,4 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install mysql-server-5.5 mysql-client-5.5
+apt-get -y install libmysqlclient18 mysql-server-5.5 mysql-client-5.5
