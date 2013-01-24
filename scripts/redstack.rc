@@ -1,4 +1,5 @@
 # Paths inside the VM.
+[ -z $SERVICE_HOST ] && SERVICE_HOST=localhost
 [ -z $DEST ] && DEST=/opt/stack
 REDDWARF_SOURCE=$DEST/reddwarf
 PATH_INTEGRATION_CONF="/tmp/integration"

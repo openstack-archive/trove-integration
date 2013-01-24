@@ -637,6 +637,7 @@ function mod_test_conf() {
     sed -i "s,%nova_path%,$PATH_NOVA,g" $REDDWARF_CONF_DIR/test.conf
     sed -i "s,%glance_path%,$PATH_GLANCE,g" $REDDWARF_CONF_DIR/test.conf
     sed -i "s,%reddwarf_path%,$PATH_REDDWARF,g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s,%service_host%,$SERVICE_HOST,g" $REDDWARF_CONF_DIR/test.conf
 }
 
 function add_flavor() {
