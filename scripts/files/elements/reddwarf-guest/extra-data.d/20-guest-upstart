@@ -13,11 +13,12 @@ source $_LIB/die
 
 [ -n "${GUEST_USERNAME}" ] || die "GUEST_USERNAME needs to be set to the user for the guest image"
 [ -n "${HOST_USERNAME}" ] || die "HOST_USERNAME needs to be set to the user for the host instance"
+[ -n "${NETWORK_GATEWAY}" ] || die "NETWORK_GATEWAY needs to be set to the user for the host instance"
 [ -n "${REDSTACK_SCRIPTS}" ] || die "REDSTACK_SCRIPTS needs to be set to the reddwarf-integration scripts dir"
 [ -n "${SERVICE_TYPE}" ] || die "SERVICE_TYPE must be set to something like mysql to create upstart conf"
 
 # put this file in first-boot.d directory so that it is executed on startup
-sed "s/GUEST_USERNAME/${GUEST_USERNAME}/g;s/HOST_USERNAME/${HOST_USERNAME}/g;s/PATH_REDDWARF/${ESCAPED_PATH_REDDWARF}/g" ${REDSTACK_SCRIPTS}/files/bootstrap_init-${SERVICE_TYPE}.sh > ${TMP_HOOKS_PATH}/first-boot.d/60-bootstrap_init-${SERVICE_TYPE}
+sed "s/GUEST_USERNAME/${GUEST_USERNAME}/g;s/HOST_USERNAME/${HOST_USERNAME}/g;s/NETWORK_GATEWAY/${NETWORK_GATEWAY}/g;s/PATH_REDDWARF/${ESCAPED_PATH_REDDWARF}/g" ${REDSTACK_SCRIPTS}/files/bootstrap_init-${SERVICE_TYPE}.sh > ${TMP_HOOKS_PATH}/first-boot.d/60-bootstrap_init-${SERVICE_TYPE}
 chmod 775 ${TMP_HOOKS_PATH}/first-boot.d/60-bootstrap_init-${SERVICE_TYPE}
 
 sed "s/GUEST_USERNAME/${GUEST_USERNAME}/g" ${REDSTACK_SCRIPTS}/files/reddwarf-guest.upstart.conf > ${TMP_HOOKS_PATH}/reddwarf-guest.conf

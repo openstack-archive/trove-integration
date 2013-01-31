@@ -23,6 +23,7 @@ ENABLED_SERVICES+=,reddwarf,rd-api,rd-tmgr
 # Public facing bits
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
 KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
 KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
@@ -215,6 +216,7 @@ function fix_rd_configfile() {
 
     iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
     sed -i "s/e1a2c042c828d3566d0a/$ADMIN_PASSWORD/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
+    sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
 }
 
 ###############################################################################

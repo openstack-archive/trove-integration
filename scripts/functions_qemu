@@ -30,6 +30,7 @@ function build_vm() {
     export RELEASE=precise
     export HOST_USERNAME
     export GUEST_USERNAME
+    export NETWORK_GATEWAY
     export REDSTACK_SCRIPTS
     export SERVICE_TYPE
     export ESCAPED_PATH_REDDWARF

@@ -496,6 +496,8 @@ function cmd_build() {
     create_package_repo
     munge_apache2
     add_dbass_mycnf_to_package_repo
+    # Set up the host IP in the apt-repo-list
+    sed -i "s,%network_gateway%,$NETWORK_GATEWAY,g" $REDSTACK_SCRIPTS/files/apt_repo.list
 }
 
 

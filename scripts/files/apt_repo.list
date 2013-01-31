@@ -1,1 +1,1 @@
-deb http://10.0.0.1:8080/debian squeeze main
+deb http://%network_gateway%:8080/debian squeeze main
