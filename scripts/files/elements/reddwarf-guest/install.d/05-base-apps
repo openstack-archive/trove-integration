@@ -7,5 +7,5 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install sysstat ntp lvm2 xfsprogs xfsdump
+apt-get -y install sysstat ntp lvm2 xfsprogs xfsdump apparmor-utils
 #mytop policycoreutils
