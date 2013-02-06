@@ -454,14 +454,14 @@ function munge_apache2() {
 	exclaim "Munging configs for apache2 (horizon has altered the default)"
 
 	# If the Additional Listen port is not in the conf, add it
-	is_in_portsfile=`grep 'Listen 8080' /etc/apache2/ports.conf |wc -l`
+	is_in_portsfile=`grep 'Listen 8090' /etc/apache2/ports.conf |wc -l`
     if [ $is_in_portsfile == 0 ]
     then
-		echo "Listen 8080" | sudo tee -a /etc/apache2/ports.conf
+		echo "Listen 8090" | sudo tee -a /etc/apache2/ports.conf
     fi
 
-    # Add the vhost for 8080 because horizon is using 80
-	echo "<VirtualHost *:8080>
+    # Add the vhost for 8090 because horizon is using 80, and swift-proxy is using 8080
+	echo "<VirtualHost *:8090>
 
     DocumentRoot /var/lib/packages
 
