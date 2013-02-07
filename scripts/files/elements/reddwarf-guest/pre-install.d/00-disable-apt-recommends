@@ -1,0 +1,12 @@
+#!/bin/bash
+# Prevent apt from installing recommended packages
+
+set -e
+set -o xtrace
+
+dd of=/etc/apt/apt.conf.d/95disable-recommends << _EOF_
+APT::Install-Recommends "0";
+Apt::Install-Suggests "0";
+_EOF_
+
+apt-get update
