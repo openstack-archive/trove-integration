@@ -35,7 +35,7 @@ function build_vm() {
     export SERVICE_TYPE
     export ESCAPED_PATH_REDDWARF
     export SSH_DIR
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x base vm reddwarf-guest reddwarf-mysql
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x vm reddwarf-guest reddwarf-mysql
 }
 
 function cmd_build_image() {
