@@ -26,6 +26,13 @@ function build_vm() {
     readonly SSH_DIR=${HOMEDIR}/.ssh
     manage_ssh_keys
 
+	if [ $SERVICE_OPTION == "--percona" ]
+	then
+		MYSQL_ELEMENT="reddwarf-percona"
+	else
+		MYSQL_ELEMENT="reddwarf-mysql"
+	fi
+
     mkdir -p $VM_PATH
     export RELEASE=precise
     export HOST_USERNAME
@@ -35,7 +42,7 @@ function build_vm() {
     export SERVICE_TYPE
     export ESCAPED_PATH_REDDWARF
     export SSH_DIR
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x -n vm reddwarf-guest reddwarf-mysql
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x -n vm reddwarf-guest ${MYSQL_ELEMENT}
 }
 
 function cmd_build_image() {
@@ -46,6 +53,12 @@ function cmd_build_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
+    
+	SERVICE_OPTION=""
+    if [ -n "$2" ]
+    then
+    	SERVICE_OPTION=$2
+	fi
 
     USERNAME=`whoami`
     mkdir -p $USERHOME/images
@@ -57,7 +70,7 @@ function cmd_build_image() {
     # If the path doesnt exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ]
     then
-        build_vm $USERHOME $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE
+        build_vm $USERHOME $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE $SERVICE_OPTION
     else
         exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
