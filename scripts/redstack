@@ -319,6 +319,7 @@ function install_diskimagebuilder() {
         echo "Linking Reddwarf Elements to Disk Image Builder"
         ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-guest $PATH_DISKIMAGEBUILDER/elements/reddwarf-guest
         ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-mysql $PATH_DISKIMAGEBUILDER/elements/reddwarf-mysql
+        ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-percona $PATH_DISKIMAGEBUILDER/elements/reddwarf-percona
     fi
 }
 
