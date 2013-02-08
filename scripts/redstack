@@ -317,6 +317,7 @@ function install_diskimagebuilder() {
         echo "Linking Reddwarf Elements to Disk Image Builder"
         ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-guest $PATH_DISKIMAGEBUILDER/elements/reddwarf-guest
         ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-mysql $PATH_DISKIMAGEBUILDER/elements/reddwarf-mysql
+    	ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-percona $PATH_DISKIMAGEBUILDER/elements/reddwarf-percona
     fi
 }
 
@@ -949,7 +950,7 @@ function cmd_run_ci() {
     cmd_build
     cmd_initialize
     # The arg will be the image type
-    cmd_build_image $1
+    cmd_build_image $@
 
     # Test in fake mode.
     exclaim "Testing in fake mode."
@@ -982,7 +983,7 @@ function cmd_clear() {
 function cmd_kick_start() {
     cmd_build
     cmd_initialize
-    cmd_build_image $1
+    cmd_build_image $@
 }
 
 function cmd_post_devstack() {
@@ -991,7 +992,7 @@ function cmd_post_devstack() {
     cmd_build
     mod_test_conf
     configure_keystone
-    cmd_build_image $1
+    cmd_build_image $@
 }
 
 function cmd_reset_task() {
