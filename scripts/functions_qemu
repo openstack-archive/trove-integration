@@ -19,13 +19,11 @@ function build_vm() {
     readonly HOST_USERNAME=$2
     GUEST_USERNAME=${GUEST_USERNAME:-$2}
 
-    if [ ! $SERVICE_TYPE == 'mysql' ]; then
-        exclaim "Warning: You did not pass in a valid image type, the image may fail"
-    fi
 
     readonly SSH_DIR=${HOMEDIR}/.ssh
     manage_ssh_keys
-
+    MYSQL_ELEMENT="reddwarf-${SERVICE_TYPE}"
+    
     mkdir -p $VM_PATH
     export RELEASE=precise
     export HOST_USERNAME
@@ -35,7 +33,7 @@ function build_vm() {
     export SERVICE_TYPE
     export ESCAPED_PATH_REDDWARF
     export SSH_DIR
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x -n vm reddwarf-guest reddwarf-mysql
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x -n vm reddwarf-guest ${MYSQL_ELEMENT}
 }
 
 function cmd_build_image() {
@@ -47,12 +45,18 @@ function cmd_build_image() {
     fi
     SERVICE_TYPE=$1
 
+    if [ $SERVICE_TYPE != mysql ] && [ $SERVICE_TYPE != percona ] ; then
+        exclaim "Warning: You did not pass in a valid image type, the image may fail"
+        exit 1
+    fi
+    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT service_type $SERVICE_TYPE
+
     USERNAME=`whoami`
     mkdir -p $USERHOME/images
     # set values to readonly as they should not change here forward
-    readonly VM_PATH=$USERHOME/images/precise_${SERVICE_TYPE}_image
     readonly UBUNTU_DISTRO=ubuntu_precise
     readonly UBUNTU_DISTRO_NAME=precise
+    readonly VM_PATH=$USERHOME/images/${UBUNTU_DISTRO_NAME}_${SERVICE_TYPE}_image
 
     # If the path doesnt exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ]
@@ -66,7 +70,7 @@ function cmd_build_image() {
     REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
 
     # Now upload it
-    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_mysql_image" ovf qcow2 $REDDWARF_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_${SERVICE_TYPE}_image" ovf qcow2 $REDDWARF_TOKEN $QCOW_IMAGE $SERVICE_TYPE
 }
 
 function clean_instances() {
