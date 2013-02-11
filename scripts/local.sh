@@ -173,9 +173,9 @@ function reddwarf_configure_keystone() {
     REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-list | grep "reddwarf" | get_field 1)
     if [ -z $REDDWARF_SERVICE_UUID ]; then
         REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-create \
-            --name=Reddwarf \
-            --type=reddwarf \
-            --description="Reddwarf Database Service" \
+            --name=reddwarf \
+            --type=database \
+            --description="Reddwarf Database as a Service" \
             | grep " id " | get_field 2)
         keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN endpoint-create \
             --region RegionOne \
