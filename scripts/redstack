@@ -236,9 +236,9 @@ REDDWARF_ROLE=$REDDWARF_ROLE
         OS_USERNAME=reddwarf \
         OS_PASSWORD=REDDWARF-PASS \
         OS_AUTH_URL='http://localhost:8779/v1.0/$(tenant_id)s' \
-        keystone_manage service-create --name=Reddwarf \
-                            --type=reddwarf\
-                            --description="Reddwarf"
+        keystone_manage service-create --name=reddwarf \
+                            --type=database\
+                            --description="Reddwarf Database as a Service"
         service_id=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN service-list|grep Reddwarf|cut -d'|' -f2`
         keystone_manage endpoint-create \
                --region RegionOne --service-id $service_id \
@@ -263,7 +263,7 @@ function add_to_keystone_conf() {
 catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v1.0/$(tenant_id)s
 catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v1.0/$(tenant_id)s
 catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v1.0/$(tenant_id)s
-catalog.RegionOne.reddwarf.name = Reddwarf
+catalog.RegionOne.reddwarf.name = reddwarf
     ' >> /etc/keystone/default_catalog.templates
 }
 
