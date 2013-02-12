@@ -20,8 +20,21 @@ source $TOP_DIR/stackrc
 source $TOP_DIR/localrc
 ENABLED_SERVICES+=,reddwarf,rd-api,rd-tmgr
 
+# Determine Host IP
+if [ -z "$HOST_IP" ]; then
+    HOST_IFACE=`ip route | sed -n '/^default/{ s/.*dev \(\w\+\)\s\+.*/\1/; p; }' | head -1`
+    HOST_IP=`/sbin/ifconfig $HOST_IFACE | awk '/inet addr/{gsub(/addr:/,"");print $2}'`
+fi
+
+# Determine the Service Host
+if [ -z "$SERVICE_HOST" ]; then
+    SERVICE_HOST=${HOST_IP}
+    # Write out to localrc so it's available downstream (in redstack)
+    echo "
+SERVICE_HOST=${SERVICE_HOST}" >> $TOP_DIR/localrc
+fi
+
 # Public facing bits
-SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
