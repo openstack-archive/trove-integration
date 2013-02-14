@@ -3,6 +3,9 @@
 # Adds user to the sudoers file so they can do everything w/o a pass
 # Some binaries might be under /sbin or /usr/sbin, so make sure sudo will
 # see them by forcing PATH
+host_name=`hostname`
+echo "127.0.0.1 ${host_name}" >> /etc/hosts
+
 TEMPFILE=`mktemp`
 echo "GUEST_USERNAME ALL=(ALL) NOPASSWD:ALL" > $TEMPFILE
 chmod 0440 $TEMPFILE
