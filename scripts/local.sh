@@ -14,11 +14,11 @@ set +o xtrace
 # Destination path for installation ``DEST``
 DEST=${DEST:-/opt/stack}
 TOP_DIR=$(cd $(dirname "$0") && pwd)
-source $TOP_DIR/functions
-source $TOP_DIR/lib/database
 source $TOP_DIR/stackrc
 source $TOP_DIR/localrc
 ENABLED_SERVICES+=,reddwarf,rd-api,rd-tmgr
+source $TOP_DIR/functions
+source $TOP_DIR/lib/database
 
 # Determine Host IP
 if [ -z "$HOST_IP" ]; then
