@@ -30,10 +30,19 @@ if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
     . $PATH_DEVSTACK_SRC/localrc
 fi
 
+# Public facing bits
+SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
+KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
+KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
+KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
+REDDWARF_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+
 # PATH_REDDWARF more than likely has file separators, which sed does not like
 # This will escape them
 ESCAPED_PATH_REDDWARF=`echo $PATH_REDDWARF | sed 's/\//\\\\\//g'`
 ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
+REDDWARF_LOGDIR=$REDSTACK_SCRIPTS/../report/logs
 
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
@@ -63,11 +72,6 @@ function pkg_install () {
 function pkg_update () {
     echo Updating $@...
     sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS update $@
-}
-
-function pkg_remove () {
-    echo Uninstalling $@...
-    sudo -E apt-get $APT_GET_ARGS remove $@
 }
 
 function set_home_dir() {
@@ -141,56 +145,32 @@ function keystone_manage () {
     keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN $@
 }
 
-function get_tenant_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN tenant-list | grep "$1" | awk '{print $2}'
+function get_attribute_id() {
+    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2 " | get_field $3
+
 }
 
-function get_role_id() {
-    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN role-list | grep "$1" | awk '{print $2}'
-}
-
-function configure_keystone() {
+function configure_keystone_for_test_users() {
     exclaim "Configuring keystone..."
 
-
-    # Create the tenant "reddwarf".
-    # First we should check if these exist
-    REDDWARF_TENANT=`get_tenant_id reddwarf`
-    ADMIN_ROLE=`get_role_id admin`
-    if [ -z $REDDWARF_TENANT ]; then
-        REDDWARF_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN tenant-create --name=reddwarf`
-    fi
-
-    REDDWARF_ROLE=`get_role_id reddwarf`
-    if [ -z "$REDDWARF_ROLE" ]; then
-        REDDWARF_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN role-create --name=reddwarf`
-    fi
-
-    DAFFY_TENANT=`get_tenant_id daffy`
+    REDDWARF_TENANT=`get_attribute_id tenant reddwarf 1`
+    ADMIN_ROLE=`get_attribute_id role admin 1`
+    REDDWARF_ROLE=`get_attribute_id role reddwarf 1`
+    DAFFY_TENANT=`get_attribute_id tenant daffy 1`
     if [ -z $DAFFY_TENANT ]; then
         DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN tenant-create --name=daffy`
     fi
 
-    DAFFY_ROLE=`get_role_id daffy`
+    DAFFY_ROLE=`get_attribute_id role daffy 1`
     if [ -z "$DAFFY_ROLE" ]; then
         DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN role-create --name=daffy`
     fi
-
-    REDDWARF_USER=`keystone_add_user reddwarf REDDWARF-PASS reddwarf@example.com`
 
     #TODO(tim.simpson): Write some code here that removes the roles so these
     #                   command won't fail if you run them twice.
     #                   That way we will still catch errors if our calls to
     #                   keystone fail, but can run kickstart twice w/o install.
     set +e
-
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
-
-    # TODO: Restrict permissions.
-    REDDWARF_USER=`keystone_add_user radmin radmin radmin@example.com`
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $ADMIN_ROLE
-
     REDDWARF_USER=`keystone_add_user Boss admin boss@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $ADMIN_ROLE
@@ -206,50 +186,11 @@ function configure_keystone() {
     set -e
 
     # Add the tenant id's into test.conf
-    DEMO_TENANT=`get_tenant_id ' demo'`
+    DEMO_TENANT=`get_attribute_id tenant demo 1`
     sed -i "s/%reddwarf_tenant_id%/$REDDWARF_TENANT/g" $REDDWARF_CONF_DIR/test.conf
     sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $REDDWARF_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $REDDWARF_CONF_DIR/test.conf
     sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $REDDWARF_CONF_DIR/test.conf
-
-    # Write the UUIDs to the env.rc ENV conf
-    mkdir -p ${PATH_INTEGRATION_CONF}
-    echo "
-REDDWARF_TENANT=$REDDWARF_TENANT
-REDDWARF_USER=$REDDWARF_USER
-REDDWARF_ROLE=$REDDWARF_ROLE
-" > $PATH_ENV_CONF
-
-    echo "
-# REDDWARF_TENANT=$REDDWARF_TENANT
-# REDDWARF_USER=$REDDWARF_USER
-# REDDWARF_ROLE=$REDDWARF_ROLE"
-
-    echo "Checking login..."
-    # Now attempt a login
-    curl -d '{"auth":{"passwordCredentials":{"username": "reddwarf", "password": "REDDWARF-PASS"},"tenantName":"reddwarf"}}' \
-     -H "Content-type: application/json" http://localhost:35357/v2.0/tokens
-
-    # Register reddwarf service.
-    SERVICE_UUID=`keystone_manage service-list | grep reddwarf | awk '{print $2}'`
-    if [ -z $SERVICE_UUID ]; then
-        OS_USERNAME=reddwarf \
-        OS_PASSWORD=REDDWARF-PASS \
-        OS_AUTH_URL='http://localhost:8779/v1.0/$(tenant_id)s' \
-
-        keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN service-create \
-            --name=reddwarf \
-            --type=database \
-            --description="Reddwarf Database as a Service"
-        service_id=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN service-list|grep Reddwarf|cut -d'|' -f2`
-        keystone_manage endpoint-create \
-               --region RegionOne --service-id $service_id \
-               --publicurl 'http://localhost:8779/v1.0/$(tenant_id)s' \
-               --adminurl 'http://localhost:8779/v1.0/$(tenant_id)s' \
-               --internalurl 'http://localhost:8779/v1.0/$(tenant_id)s'
-
-    fi
-
 }
 
 ###############################################################################
@@ -258,17 +199,6 @@ REDDWARF_ROLE=$REDDWARF_ROLE
 ###############################################################################
 # Install all the required dependencies
 ###############################################################################
-
-function add_to_keystone_conf() {
-    exclaim 'adding reddwarf to keystone catalog templates'
-    echo '
-catalog.RegionOne.reddwarf.publicURL = http://localhost:8779/v1.0/$(tenant_id)s
-catalog.RegionOne.reddwarf.adminURL = http://localhost:8779/v1.0/$(tenant_id)s
-catalog.RegionOne.reddwarf.internalURL = http://localhost:8779/v1.0/$(tenant_id)s
-catalog.RegionOne.reddwarf.name = reddwarf
-    ' >> /etc/keystone/default_catalog.templates
-}
-
 
 function install_reddwarf_packages() {
     # Called after devstack.
@@ -306,6 +236,7 @@ function install_devstack() {
         mkdir -p $PATH_DEVSTACK_SRC
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
+    cp $REDSTACK_SCRIPTS/local.sh $PATH_DEVSTACK_SRC
 }
 
 function install_diskimagebuilder() {
@@ -383,10 +314,12 @@ RABBIT_PASSWORD=$RABBIT_PASSWORD
 SERVICE_TOKEN=$SERVICE_TOKEN
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 SERVICE_PASSWORD=$SERVICE_PASSWORD
+FLAT_INTERFACE=br100
+REDDWARF_LOGDIR=$REDDWARF_LOGDIR
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDSTACK_SCRIPTS/../report/logs/ logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDDWARF_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
 " > localrc
     if [ -n "$USING_VAGRANT" ]
     then
@@ -580,7 +513,7 @@ function cmd_unit_tests() {
 
 function cmd_start_deps() {
     if [[ -e $PATH_DEVSTACK_SRC/stack-screenrc ]]; then
-        screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
+        screen -dmS stack -c $PATH_DEVSTACK_SRC/stack-screenrc
     fi
 }
 
@@ -593,35 +526,6 @@ function cmd_stop_deps() {
 ###############################################################################
 # Initialize Reddwarf
 ###############################################################################
-
-function service_report_log_directory {
-    # enable logging for the service when running in CI
-    if [ -n "$CI_RUN" ]; then
-        sed -i "s/#log_dir/log_dir/" $REDDWARF_CONF_DIR/$1.conf
-        sed -i "s/#log_file/log_file/" $REDDWARF_CONF_DIR/$1.conf
-        sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report\//" $REDDWARF_CONF_DIR/$1.conf
-    fi
-}
-
-function fix_rd_configfile() {
-    cd $PATH_REDDWARF
-    cp etc/reddwarf/reddwarf.conf.sample $REDDWARF_CONF_DIR/reddwarf.conf
-    cp etc/reddwarf/api-paste.ini $REDDWARF_CONF_DIR/api-paste.ini
-    cp etc/reddwarf/reddwarf-taskmanager.conf.sample $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf
-    EXTRA_CONF=$REDSTACK_SCRIPTS/conf/reddwarf.extra.conf
-    if [ -e $EXTRA_CONF ]; then
-        cat $EXTRA_CONF >> $REDDWARF_CONF_DIR/reddwarf.conf
-        cat $EXTRA_CONF >> $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf
-    fi
-
-    service_report_log_directory reddwarf
-    service_report_log_directory reddwarf-taskmanager
-
-    # Do some munging to get it a-working
-    # Tenant is no longer needed from the config, but we are leaving it in
-    # until we have a better example of stuff to sed out.
-    # sed -i.bak "s/reddwarf_tenant_id=.*/reddwarf_tenant_id=$REDDWARF_TENANT/g" /tmp/reddwarf.conf.sample
-}
 
 function rd_manage() {
     cd $PATH_REDDWARF
@@ -645,54 +549,17 @@ function mod_test_conf() {
     sed -i "s,%service_host%,$SERVICE_HOST,g" $REDDWARF_CONF_DIR/test.conf
 }
 
-function add_flavor() {
-    FLAVOR_NAME=$1
-    FLAVOR_ID=$2
-    FLAVOR_MEMORY_MB=$3
-    FLAVOR_ROOT_GB=$4
-    echo "Adding flavor $FLAVOR_ID ($FLAVOR_NAME), memory=$FLAVOR_MEMORY_MB, root_gb=$FLAVOR_ROOT_GB"
-    mysql_nova "INSERT INTO instance_types (name, id, memory_mb, vcpus, deleted, ephemeral_gb, rxtx_factor, flavorid, root_gb, disabled, is_public) VALUES('$FLAVOR_NAME', $FLAVOR_ID, $FLAVOR_MEMORY_MB, 1, 0, 40, 1, $FLAVOR_ID, $FLAVOR_ROOT_GB, 0, 1);"
-}
-
-function add_flavors() {
-    # Incredibly useful for testing resize in a VM.
-    set +e
-    add_flavor 'tinier' 6 506 10
-    # It can also be useful to have a flavor with 512 megs and a bit of disk space.
-    add_flavor 'm1.rd-tiny' 7 512 2
-    # Its also useful to have a slightly bigger flavor...
-    add_flavor 'm1.rd-smaller' 8 768 2
-    set -e
-}
-
 function cmd_initialize() {
     exclaim 'Initializing...'
 
-    echo "Create the reddwarf conf dir and integration conf dir if they don't exist"
-    sudo mkdir -p ${REDDWARF_CONF_DIR}
-    sudo chown -R $USER: ${REDDWARF_CONF_DIR}
-
     echo "Modifying test.conf with appropriate values"
     mod_test_conf
+ 
+    exclaim "Creating Keystone Test users..."
+    configure_keystone_for_test_users
 
-    echo "Creating reddwarf db..."
-    mysql_nova "DROP DATABASE IF EXISTS reddwarf;"
-    mysql_nova "CREATE DATABASE reddwarf;"
-
-    exclaim "Creating Keystone users..."
-    configure_keystone
-
-    exclaim "Making a temporary reddwarf config file..."
-    fix_rd_configfile
-
-    exclaim "Initializing the Reddwarf Database..."
-    #no longer pass the repo_path argument, since rd_manage doesn't use it anymore
-    rd_manage db_sync
-
-    add_flavors
-    
-    exclaim "Removing data from nova signing dir"
-    rm -fr /tmp/keystone-signing-nova/*
+    exclaim "Removing old keystone certs from reddwarf cache dir in /var/cache/reddwarf"
+    rm -fr /var/cache/reddwarf/*
 }
 
 
@@ -702,28 +569,8 @@ function cmd_initialize() {
 
 function screen_it {
     echo "Starting $@..."
-    screen -S reddwarf -X screen -t $1
-    screen -S reddwarf -p $1 -X stuff "$2$NL"
-}
-
-function init_reddwarf_screen() {
-    if [ ! -f ~/.screenrc ]; then
-    cat >~/.screenrc <<EOF
-hardstatus on
-hardstatus alwayslastline
-hardstatus string "%{.bW}%-w%{.rW}%n %t%{-}%+w %=%{..G}%H %{..Y}%d/%m %c"
-
-defscrollback 1024
-
-vbell off
-startup_message off
-EOF
-    fi
-
-    NL=`echo -ne '\015'`
-
-    screen -d -m -S reddwarf -t reddwarf
-    sleep 1
+    screen -S stack -X screen -t $1 bash
+    screen -S stack -p $1 -X stuff "$2"$'\015'
 }
 
 function init_fake_mode() {
@@ -748,17 +595,14 @@ function init_fake_mode() {
 }
 
 function cmd_start() {
-    init_reddwarf_screen
-
-    screen_it api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf | tee $REDSTACK_SCRIPTS/../report/logs/reddwarf-api.log"
-    screen_it taskmanager "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf | tee $REDSTACK_SCRIPTS/../report/logs/reddwarf-taskmanager.log"
+    screen_it rd-api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-api.log"
+    screen_it rd-tmgr "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-taskmanager.log"
 }
 
 function cmd_start_fake() {
     init_fake_mode
-    init_reddwarf_screen
     CONF_FILE=/tmp/reddwarf.conf.test
-    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
+    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
 }
 
 function cmd_run() {
@@ -779,8 +623,8 @@ function cmd_run_fake() {
 ###############################################################################
 
 function cmd_stop() {
-    screen -S reddwarf -X quit
-    rm *.pid*
+    screen -S stack -p rd-api -X stuff $'\003 exit \015'
+    screen -S stack -p rd-tmgr -X stuff $'\003 exit \015'
 }
 
 
@@ -888,7 +732,7 @@ function cmd_nova_client() {
 }
 
 function cmd_glance_client() {
-    REDDWARF_TENANT=`get_tenant_id reddwarf`
+    REDDWARF_TENANT=`get_attribute_id tenant reddwarf 1`
     glance --os-auth-url=http://localhost:35357/v2.0 \
         --os-username=radmin --os-password=radmin \
         --os-tenant-id $REDDWARF_TENANT $@
@@ -917,7 +761,7 @@ function cmd_delete_nova_instance() {
 }
 
 function cmd_wipe_logs() {
-    for file in `ls $REDSTACK_SCRIPTS/../report/logs/*.log`
+    for file in `ls $REDDWARF_LOGDIR/*.log`
     do
         echo "Reseting log file $file..."
         echo "Reset at `date`" > $file
@@ -996,7 +840,7 @@ function cmd_post_devstack() {
     install_diskimagebuilder
     cmd_build
     mod_test_conf
-    configure_keystone
+    configure_keystone_for_test_users
     cmd_build_image $1
 }
 

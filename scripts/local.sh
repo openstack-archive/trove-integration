@@ -351,8 +351,8 @@ function init_reddwarf() {
 function start_reddwarf() {
     local mod="start_reddwarf"
     msgout "DEBUG" "$mod<-- "
-    screen_it rd-api "cd $REDDWARF_DIR; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf | tee $REDDWARF_CONF_DIR/reddwarf-api.log"
-    screen_it rd-tmgr "cd $REDDWARF_DIR; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf | tee $REDDWARF_CONF_DIR/reddwarf-taskmanager.log"
+    screen_it rd-api "cd $REDDWARF_DIR; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-api.log"
+    screen_it rd-tmgr "cd $REDDWARF_DIR; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-taskmanager.log"
     msgout "DEBUG" "$mod:-->"
 }
 
