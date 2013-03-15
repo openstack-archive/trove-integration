@@ -214,17 +214,13 @@ function fix_rd_configfile() {
     cp etc/reddwarf/api-paste.ini $REDDWARF_CONF_DIR/api-paste.ini
     cp etc/reddwarf/reddwarf-taskmanager.conf.sample $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf
 
-    # Figure out the db connection urls
-    local dburl
-    database_connection_url dburl reddwarf
-
     # Fix the tokens in the conf files
     iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT rabbit_password $RABBIT_PASSWORD
-    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT sql_connection $dburl
+    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT sql_connection `database_connection_url reddwarf`
     iniset $REDDWARF_CONF_DIR/api-paste.ini filter:tokenauth admin_token $SERVICE_TOKEN
 
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT rabbit_password $RABBIT_PASSWORD
-    iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT sql_connection $dburl
+    iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT sql_connection `database_connection_url reddwarf`
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf filter:tokenauth admin_token $SERVICE_TOKEN
 
     iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
