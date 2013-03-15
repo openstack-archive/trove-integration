@@ -50,7 +50,8 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     $ ./redstack
 
-#### Install all the dependencies
+#### Install all the dependencies and then install reddwarf via devstack.
+*This Brings up reddwarf (rd-api rd-tmgr) and initializes the reddwarf database.*
 
     $ ./redstack install
 
@@ -75,7 +76,7 @@ Allows the services to continue running in the background
 
 ***
 
-#### Kick start the build/initialize/build-image commands
+#### Kick start the build/test-init/build-image commands
 *Add mysql as a parameter to set build and add the mysql guest image*
 
     $ ./redstack kick-start mysql
@@ -96,9 +97,9 @@ Allows the services to continue running in the background
 
     $ ./redstack build
 
-#### Initialize the database and setup everything
+#### Initialize the test configuration and set up test users
 
-    $ ./redstack initalize
+    $ ./redstack test-init
 
 #### Build the image and add it to glance
 
@@ -126,15 +127,13 @@ Allows the services to continue running in the background
 
     $ RECLONE=yes ./redstack install
     $ ./redstack kick-start mysql
-    $ ./redstack start
 
  or
 
     $ RECLONE=yes ./redstack install
     $ ./redstack build
-    $ ./redstack initialize
+    $ ./redstack test-init
     $ ./redstack build-image mysql
-    $ ./redstack start
 
 ***
 
