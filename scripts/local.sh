@@ -57,6 +57,8 @@ REDDWARF_ENV_CONF_PATH=$REDDWARF_INTEGRATION_CONF_DIR/env.rc
 REDDWARF_CONF_DIR=/etc/reddwarf/
 REDDWARF_LOCAL_CONF_DIR=$REDDWARF_DIR/etc/reddwarf/
 REDDWARF_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+REDDWARF_LOGDIR=${$REDDWARF_LOGDIR:-/var/log/reddwarf}
+REDDWARF_AUTH_CACHE_DIR=${REDDWARF_AUTH_CACHE_DIR:-/var/cache/reddwarf}
 
 # Set Reddwarf interface related configuration
 REDDWARF_SERVICE_HOST=${REDDWARF_SERVICE_HOST:-$SERVICE_HOST}
@@ -203,10 +205,12 @@ function reddwarf_configure_keystone() {
 # Setup Reddwarf Config file and related functions
 ###############################################################################
 
-function fix_rd_configfile() {
-    # Create the reddwarf conf dir if it doesn't exist
+function fix_rd_configfiles() {
+    # Create the reddwarf conf dir and cache dirs if they don't exist
     sudo mkdir -p ${REDDWARF_CONF_DIR}
+    sudo mkdir -p ${REDDWARF_AUTH_CACHE_DIR}
     sudo chown -R $USER: ${REDDWARF_CONF_DIR}
+    sudo chown -R $USER: ${REDDWARF_AUTH_CACHE_DIR}
 
     # Copy conf files over to the reddwarf conf dir
     cd $REDDWARF_DIR
@@ -218,6 +222,7 @@ function fix_rd_configfile() {
     iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT rabbit_password $RABBIT_PASSWORD
     iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT sql_connection `database_connection_url reddwarf`
     iniset $REDDWARF_CONF_DIR/api-paste.ini filter:tokenauth admin_token $SERVICE_TOKEN
+    iniset $REDDWARF_CONF_DIR/api-paste.ini filter:tokenauth signing_dir $REDDWARF_AUTH_CACHE_DIR
 
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT rabbit_password $RABBIT_PASSWORD
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT sql_connection `database_connection_url reddwarf`
@@ -336,13 +341,16 @@ function init_reddwarf() {
     reddwarf_configure_keystone
 
     msgout "DEBUG" "Making a temporary reddwarf config file..."
-    fix_rd_configfile
+    fix_rd_configfiles
 
     msgout "DEBUG" "Initializing the Reddwarf Database..."
     reddwarf_manage db_sync
 
     msgout "DEBUG" "Adding reddwarf specific flavours..."
     add_flavors
+
+    msgout "DEBUG" "Removing old certs from reddwarf cache dir.."
+    rm -fr $REDDWARF_AUTH_CACHE_DIR/*
 
     msgout "DEBUG" "$mod:-->"
 }
@@ -351,8 +359,8 @@ function init_reddwarf() {
 function start_reddwarf() {
     local mod="start_reddwarf"
     msgout "DEBUG" "$mod<-- "
-    screen_it rd-api "cd $REDDWARF_DIR; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf | tee $REDDWARF_CONF_DIR/reddwarf-api.log"
-    screen_it rd-tmgr "cd $REDDWARF_DIR; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf | tee $REDDWARF_CONF_DIR/reddwarf-taskmanager.log"
+    screen_it rd-api "cd $REDDWARF_DIR; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-api.log"
+    screen_it rd-tmgr "cd $REDDWARF_DIR; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-taskmanager.log"
     msgout "DEBUG" "$mod:-->"
 }
 
