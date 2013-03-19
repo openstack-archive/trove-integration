@@ -383,6 +383,12 @@ RABBIT_PASSWORD=$RABBIT_PASSWORD
 SERVICE_TOKEN=$SERVICE_TOKEN
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 SERVICE_PASSWORD=$SERVICE_PASSWORD
+# Set Cinder Volume from Redstack so that later Redstack can help manage
+# reconnecting Volume Group to Backing File
+DEST=$DEST
+DATA_DIR=$DATA_DIR
+VOLUME_GROUP=${VOLUME_GROUP}
+VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
@@ -579,6 +585,10 @@ function cmd_unit_tests() {
 ###############################################################################
 
 function cmd_start_deps() {
+    if ! sudo vgs $VOLUME_GROUP; then
+        exclaim "Reconnection Volume Group to Backing File"
+        sudo losetup -f --show ${VOLUME_BACKING_FILE}
+    fi
     if [[ -e $PATH_DEVSTACK_SRC/stack-screenrc ]]; then
         screen -dm -c $PATH_DEVSTACK_SRC/stack-screenrc
     fi

@@ -98,7 +98,7 @@ Allows the services to continue running in the background
 
 #### Initialize the database and setup everything
 
-    $ ./redstack initalize
+    $ ./redstack initialize
 
 #### Build the image and add it to glance
 
@@ -120,7 +120,7 @@ Allows the services to continue running in the background
 
 ### Reset your environment
 
-#### Stop all the services running in the screens and refresh the envirnoment:
+#### Stop all the services running in the screens and refresh the environment:
 
     $ killall -9 screen
 
@@ -135,6 +135,19 @@ Allows the services to continue running in the background
     $ ./redstack initialize
     $ ./redstack build-image mysql
     $ ./redstack start
+
+***
+
+### Recover after reboot
+If the VM was restarted, then the process for bringing up Openstack and Reddwarf if quite simple
+
+    $./redstack start-deps
+    $./redstack start
+
+use screen to ensure all modules have started without error
+
+    $screen -r stack
+    $screen -r reddwarf
 
 ***
 
