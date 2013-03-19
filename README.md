@@ -98,7 +98,7 @@ Allows the services to continue running in the background
 
 #### Initialize the database and setup everything
 
-    $ ./redstack initalize
+    $ ./redstack initialize
 
 #### Build the image and add it to glance
 
@@ -120,7 +120,7 @@ Allows the services to continue running in the background
 
 ### Reset your environment
 
-#### Stop all the services running in the screens and refresh the envirnoment:
+#### Stop all the services running in the screens and refresh the environment:
 
     $ killall -9 screen
 
@@ -135,6 +135,24 @@ Allows the services to continue running in the background
     $ ./redstack initialize
     $ ./redstack build-image mysql
     $ ./redstack start
+
+***
+
+### Recover after reboot
+It is likely that Cinder will lose its reference to the logical volume after reboot.  Before you start dependencies issue the following command.
+
+    $sudo losetup -f --show /opt/stack/data/stack-volumes-backing-file
+
+you can then start the stack dependencies and reddwarf using
+
+    $./redstack start-deps
+    $./redstack start
+
+use
+
+    $screen -r stack
+
+and look in the cinder screens to ensure that it started correctly and can obtain volume status
 
 ***
 
