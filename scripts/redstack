@@ -690,6 +690,9 @@ function cmd_initialize() {
     rd_manage db_sync
 
     add_flavors
+    
+    exclaim "Removing data from nova signing dir"
+    rm -fr /tmp/keystone-signing-nova/*
 }
 
 
