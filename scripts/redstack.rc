@@ -47,6 +47,16 @@ PATH_ENV_CONF="$PATH_INTEGRATION_CONF/env.rc"
 PACKAGES_DIR=/var/lib/packages/debian/
 BUILD_DIR=/tmp/build/
 
+# Destination path for installation
+DEST=/opt/stack
+
+# Destination for working data
+DATA_DIR=${DEST}/data
+
+# Cinder Volume Group Name
+VOLUME_GROUP=${VOLUME_GROUP:-stack-volumes}
+VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE:-${DATA_DIR}/${VOLUME_GROUP}-backing-file}
+
 # Passwords used by devstack.
 MYSQL_PASSWORD=e1a2c042c828d3566d0a
 RABBIT_PASSWORD=f7999d1955c5014aa32c
