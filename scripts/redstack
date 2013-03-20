@@ -729,11 +729,13 @@ function init_fake_mode() {
     # You could think of this fake mode, which runs in the VM as being
     # slightly less fake than the default one which runs outside of it.
     CONF_FILE=/tmp/reddwarf.conf.test
+    INI_CONF_FILE=/tmp/api-paste.ini.test
     cp $PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test $CONF_FILE
+    cp $PATH_REDDWARF/etc/reddwarf/api-paste.ini.test $INI_CONF_FILE
     # Switch keystone from the fake class to the real one.
     sed -i \
-        "s/reddwarf.tests.fakes.keystone/keystone.middleware.auth_token/g" \
-        $CONF_FILE
+        "s/reddwarf.tests.fakes.keystone/keystoneclient.middleware.auth_token/g" \
+        $INI_CONF_FILE
     sed -i "s/log_file = rdtest.log//g" $CONF_FILE
     cd $PATH_REDDWARF
     set -e
@@ -755,7 +757,7 @@ function cmd_start_fake() {
     init_fake_mode
     init_reddwarf_screen
     CONF_FILE=/tmp/reddwarf.conf.test
-    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
+    screen_it reddwarf "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
@@ -766,8 +768,7 @@ function cmd_run() {
 function cmd_run_fake() {
     init_fake_mode
     CONF_FILE=/tmp/reddwarf.conf.test
-    bin/reddwarf-api --config-file=$CONF_FILE $@ \
-        repo_path=reddwarf_test.sqlite
+    bin/reddwarf-api --config-file=$CONF_FILE $@
 }
 
 ###############################################################################
