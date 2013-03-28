@@ -229,8 +229,7 @@ function fix_rd_configfiles() {
     iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf filter:tokenauth admin_token $SERVICE_TOKEN
 
     iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
-    sed -i "s/e1a2c042c828d3566d0a/$ADMIN_PASSWORD/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
-    sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
+    iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT sql_connection `database_connection_url reddwarf`
 }
 
 ###############################################################################
