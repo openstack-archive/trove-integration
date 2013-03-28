@@ -230,6 +230,7 @@ function fix_rd_configfiles() {
 
     iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
     iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT sql_connection `database_connection_url reddwarf`
+    sed -i "s/localhost/$NETWORK_GATEWAY/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
 }
 
 ###############################################################################
