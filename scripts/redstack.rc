@@ -19,6 +19,10 @@ PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
 PATH_NOVA=$DEST/nova
 PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
 
+# Path to Swift and python-swiftclient (installed by devstack).
+PATH_SWIFT=$DEST/swift
+PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
+
 # reddwarf information
 REPO_REDDWARF=https://github.com/stackforge/reddwarf.git
 BRANCH_REDDWARF=master
@@ -49,3 +53,6 @@ RABBIT_PASSWORD=f7999d1955c5014aa32c
 SERVICE_TOKEN=be19c524ddc92109a224
 ADMIN_PASSWORD=3de4922d8b6ac5a1aad9
 SERVICE_PASSWORD=7de4162d826bc5a11ad9
+
+# Swift hash used by devstack.
+SWIFT_HASH=12go358snjw24501
