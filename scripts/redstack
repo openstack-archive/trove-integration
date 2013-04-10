@@ -629,7 +629,7 @@ function cmd_start() {
 function cmd_start_fake() {
     init_fake_mode
     CONF_FILE=/tmp/reddwarf.conf.test
-    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
+    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
