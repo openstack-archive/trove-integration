@@ -629,7 +629,7 @@ function cmd_start() {
 function cmd_start_fake() {
     init_fake_mode
     CONF_FILE=/tmp/reddwarf.conf.test
-    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@ repo_path=reddwarf_test.sqlite"
+    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
@@ -652,6 +652,7 @@ function cmd_run_fake() {
 function cmd_stop() {
     screen -S stack -p rd-api -X stuff $'\003 exit \015'
     screen -S stack -p rd-tmgr -X stuff $'\003 exit \015'
+    screen -S stack -p rd-fake -X stuff $'\003 exit \015'
 }
 
 
