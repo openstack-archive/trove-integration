@@ -26,6 +26,8 @@ function build_vm() {
     
     mkdir -p $VM_PATH
     export RELEASE=precise
+    export DIB_RELEASE=$RELEASE
+    export DIB_CLOUD_IMAGES=cloud-images.ubuntu.com
     export HOST_USERNAME
     export GUEST_USERNAME
     export NETWORK_GATEWAY
