@@ -26,6 +26,7 @@ function build_vm() {
     
     mkdir -p $VM_PATH
     export RELEASE=precise
+    export DIB-RELEASE=$RELEASE
     export HOST_USERNAME
     export GUEST_USERNAME
     export NETWORK_GATEWAY
