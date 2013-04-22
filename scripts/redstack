@@ -320,6 +320,8 @@ SERVICE_PASSWORD=$SERVICE_PASSWORD
 FLAT_INTERFACE=br100
 REDDWARF_LOGDIR=$REDDWARF_LOGDIR
 REDDWARF_AUTH_CACHE_DIR=$REDDWARF_AUTH_CACHE_DIR
+# Enable Swift
+ENABLED_SERVICES+=,swift
 SWIFT_HASH=$SWIFT_HASH
 # Set Cinder Volume from Redstack so that later Redstack can help manage
 # reconnecting Volume Group to Backing File
