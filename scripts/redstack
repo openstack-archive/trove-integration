@@ -247,6 +247,9 @@ function install_diskimagebuilder() {
         echo "Cloning from git."
         mkdir -p $PATH_DISKIMAGEBUILDER
         git clone $REPO_DISKIMAGEBUILDER $PATH_DISKIMAGEBUILDER
+        COMMIT_DISKIMAGEBUILDER=${COMMIT_DISKIMAGEBUILDER:-HEAD}
+        cd $PATH_DISKIMAGEBUILDER
+        git reset $COMMIT_DISKIMAGEBUILDER --hard
         # link files so that reddwarf and disk image builder can be updated independently
         echo "Linking Reddwarf Elements to Disk Image Builder"
         ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-guest $PATH_DISKIMAGEBUILDER/elements/reddwarf-guest
