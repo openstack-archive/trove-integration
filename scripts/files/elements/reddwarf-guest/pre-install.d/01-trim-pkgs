@@ -23,10 +23,6 @@ apt-get -y purge accountsservice\
                  bootchart\
                  busybox-static\
                  byobu\
-                 cloud-init\
-                 cloud-initramfs-growroot\
-                 cloud-initramfs-rescuevol\
-                 cloud-utils\
                  command-not-found\
                  command-not-found-data\
                  cpp\
@@ -37,7 +33,6 @@ apt-get -y purge accountsservice\
                  dnsutils\
                  dosfstools\
                  ed\
-                 euca2ools\
                  fonts-ubuntu-font-family-console\
                  friendly-recovery\
                  ftp\
@@ -58,13 +53,11 @@ apt-get -y purge accountsservice\
                  iptables\
                  iputils-tracepath\
                  irqbalance\
-                 iso-codes\
                  landscape-client\
                  landscape-common\
                  language-selector-common\
                  laptop-detect\
                  libaccountsservice0\
-                 libasn1-8-heimdal\
                  libatk1.0-0\
                  libatk1.0-data\
                  libbind9-80\
@@ -76,8 +69,6 @@ apt-get -y purge accountsservice\
                  libcap2\
                  libclass-accessor-perl\
                  libcairo2\
-                 libcurl3\
-                 libcurl3-gnutls\
                  libcwidget3\
                  libcups2\
                  libdatrie1\
@@ -94,18 +85,13 @@ apt-get -y purge accountsservice\
                  libgdk-pixbuf2.0-0\
                  libgdk-pixbuf2.0-common\
                  libgomp1\
-                 libgssapi3-heimdal\
                  libgudev-1.0-0\
-                 libhcrypto4-heimdal\
-                 libheimbase1-heimdal\
-                 libheimntlm0-heimdal\
                  libgtk2.0-0\
                  libgtk2.0-bin\
                  libgtk2.0-common\
                  libhtml-form-perl\
                  libhtml-format-perl\
                  libhtml-template-perl\
-                 libhx509-5-heimdal\
                  libio-socket-inet6-perl\
                  libio-string-perl\
                  libisc83\
@@ -115,8 +101,6 @@ apt-get -y purge accountsservice\
                  libjasper1\
                  libjpeg-turbo8\
                  libjpeg8\
-                 libkrb5-26-heimdal\
-                 libldap-2.4-2\
                  liblwres80\
                  libmailtools-perl\
                  libmpc2\
@@ -135,9 +119,6 @@ apt-get -y purge accountsservice\
                  libpolkit-gobject-1-0\
                  libreadline5\
                  libquadmath0\
-                 libroken18-heimdal\
-                 librtmp0\
-                 libsasl2-2\
                  libsasl2-modules\
                  libsensors4\
                  libsigc++-2.0-0c2a\
@@ -148,7 +129,6 @@ apt-get -y purge accountsservice\
                  libthai0\
                  libtiff4\
                  libusb-1.0-0\
-                 libwind0-heimdal\
                  libxapian22\
                  libxcb-render0\
                  libxcb-shm0\
@@ -186,39 +166,27 @@ apt-get -y purge accountsservice\
                  pppoeconf\
                  pybootchartgui\
                  python-apport\
-                 python-apt\
-                 python-apt-common\
-                 python-boto\
                  python-chardet\
-                 python-cheetah\
-                 python-configobj\
-                 python-crypto\
                  python-dbus\
                  python-dbus-dev\
                  python-debian\
                  python-cairo\
                  python-gdbm\
                  python-gi\
-                 python-gnupginterface\
                  python-gobject-2\
                  python-gtk2\
                  python-keyring\
                  python-launchpadlib\
                  python-lazr.restfulclient\
                  python-lazr.uri\
-                 python-m2crypto\
                  python-newt\
-                 python-oauth\
                  python-openid\
                  python-pam\
-                 python-paramiko\
                  python-pastescript\
                  python-problem-report\
-                 python-pycurl\
                  python-serial\
                  python-scgi\
                  python-simplejson\
-                 python-software-properties\
                  python-sqlalchemy-ext\
                  python-support\
                  python-twisted-bin\
@@ -241,7 +209,6 @@ apt-get -y purge accountsservice\
                  ttf-dejavu-core\
                  ubuntu-standard\
                  ufw\
-                 unattended-upgrades\
                  update-manager-core\
                  update-notifier-common\
                  usbutils\
