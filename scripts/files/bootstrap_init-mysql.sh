@@ -19,7 +19,7 @@ sudo -u GUEST_USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHos
 apt-get update
 
 # Add extras which is _only_ in pip.....
-pip install extras
+pip install extras oslo.config
 
 # Disable AppArmor so that reddwarf guestagent can change the conf
 # TODO this should probably be done in the guest and then re-enabled install
