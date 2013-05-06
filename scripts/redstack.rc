@@ -37,7 +37,7 @@ PATH_PYTHON_REDDWARFCLIENT=$DEST/python-reddwarfclient
 REPO_DISKIMAGEBUILDER=https://github.com/stackforge/diskimage-builder.git
 BRANCH_DISKIMAGEBUILDER=master
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
-COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
+#COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
 
 # Openstack Github paths
 OPENSTACK_GITHUB=git://github.com/openstack
