@@ -667,7 +667,7 @@ function cmd_stop() {
 
 function cmd_int_tests() {
     exclaim "Running Reddwarf Integration Tests..."
-    if [ $FAKE_MODE ] && [ ! $USAGE_ENDPOINT ]; then
+    if [ ! $USAGE_ENDPOINT ]; then
         export USAGE_ENDPOINT=reddwarf.tests.util.usage.FakeVerifier
     fi
     cd $REDSTACK_SCRIPTS
