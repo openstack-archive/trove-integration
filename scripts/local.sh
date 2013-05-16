@@ -240,15 +240,16 @@ function fix_rd_configfiles() {
 
 function add_flavor() {
     local mod="add_flavor"
-    msgout "DEBUG" "$mod<-- $FLAVOR_ID ($FLAVOR_NAME), memory=$FLAVOR_MEMORY_MB, root_gb=$FLAVOR_ROOT_GB VCPUS=$5"
+    msgout "DEBUG" "$mod<-- $FLAVOR_ID ($FLAVOR_NAME), memory=$FLAVOR_MEMORY_MB, root_gb=$FLAVOR_ROOT_GB, VCPUS=$5, EPHEMERAL=$6"
     FLAVOR_NAME=$1
     FLAVOR_ID=$2
     FLAVOR_MEMORY_MB=$3
     FLAVOR_ROOT_GB=$4
     FLAVOR_VCPUS=$5
+    FLAVOR_EPHEMERAL=$6
 
     if [[ -z $(nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$REDDWARF_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$REDDWARF_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS
+        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$REDDWARF_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
     fi
     msgout "DEBUG" "$mod:-->"
 }
@@ -258,11 +259,14 @@ function add_flavors() {
     msgout "DEBUG" "$mod<-- "
     # Incredibly useful for testing resize in a VM.
     set +e
-    add_flavor 'tinier' 6 506 10 1
+    add_flavor 'tinier' 6 506 10 1 0
     # It can also be useful to have a flavor with 512 megs and a bit of disk space.
-    add_flavor 'm1.rd-tiny' 7 512 2 1
+    add_flavor 'm1.rd-tiny' 7 512 2 1 0
     # It's also useful to have a flavor that is slightly bigger than tiny but smaller than small...
-    add_flavor 'm1.rd-smaller' 8 768 2 1
+    add_flavor 'm1.rd-smaller' 8 768 2 1 0
+    # Flavors with ephemeral is needed for ephemeral support...
+    add_flavor 'eph.rd-tiny' 9 512 2 1 1
+    add_flavor 'eph.rd-smaller' 10 768 2 1 2
     set -e
     msgout "DEBUG" "$mod:-->"
 }
