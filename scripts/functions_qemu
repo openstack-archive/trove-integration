@@ -51,11 +51,7 @@ function cmd_build_image() {
         exclaim "Warning: You did not pass in a valid image type, the image may fail"
         exit 1
     fi
-    
-    if [ $SERVICE_TYPE == percona ] ; then
-        iniset $REDDWARF_CONF_DIR/reddwarf-guestagent.conf DEFAULT mysql_pkg percona-server-server-5.5
-    fi
-    
+
     iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT service_type $SERVICE_TYPE
 
     USERNAME=`whoami`
