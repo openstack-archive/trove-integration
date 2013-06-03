@@ -274,6 +274,9 @@ if __name__ == '__main__':
             "services.initialize",
             "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
+            "dbaas_quotas",
+            "dbaas.api.security_groups",
+            "dbaas.api.backups",
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
             "dbaas.api.instances.actions.stop",
@@ -307,7 +310,6 @@ if __name__ == '__main__':
                            depends_on_groups=black_box_mgmt_groups)
         heavy_black_box_groups = [
             "dbaas.api.instances.pagination",
-            "dbaas.api.instances.quotas",
             "dbaas.api.instances.delete",
             "dbaas.api.instances.status",
             "dbaas.api.instances.down",
