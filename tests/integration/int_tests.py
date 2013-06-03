@@ -243,6 +243,7 @@ if __name__ == '__main__':
         from reddwarf.tests.api import root
         from reddwarf.tests.api import users
         from reddwarf.tests.api import user_access
+        from reddwarf.tests.api import backups
         from reddwarf.tests.api.mgmt import accounts
         from reddwarf.tests.api.mgmt import admin_required
         from tests.api.mgmt import hosts
@@ -274,6 +275,9 @@ if __name__ == '__main__':
             "services.initialize",
             "dbaas.guest.initialize",  # instances.GROUP_START,
             "dbaas.preinstance",
+            "dbaas_quotas",
+            "dbaas.api.security_groups",
+            backups.GROUP,
             "dbaas.api.instances.actions.resize.instance",
             "dbaas.api.instances.actions.restart",
             "dbaas.api.instances.actions.stop",
@@ -307,7 +311,6 @@ if __name__ == '__main__':
                            depends_on_groups=black_box_mgmt_groups)
         heavy_black_box_groups = [
             "dbaas.api.instances.pagination",
-            "dbaas.api.instances.quotas",
             "dbaas.api.instances.delete",
             "dbaas.api.instances.status",
             "dbaas.api.instances.down",
