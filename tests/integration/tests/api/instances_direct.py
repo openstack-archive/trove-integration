@@ -30,8 +30,6 @@ class AdditionalDeleteInstanceTests(object):
     @test(enabled=rpc.DIRECT_ACCESS and not CONFIG.fake_mode)
     def queue_is_deleted(self):
         """Makes sure the queue is cleaned up."""
-        raise SkipTest("We need delete_queue in RPC oslo code")
-
         rabbit = rpc.Rabbit()
         queue_name = "guestagent.%s" % instance_info.id
         count = rabbit.get_queue_items(queue_name)
