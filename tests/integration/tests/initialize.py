@@ -84,8 +84,8 @@ class Daemon(object):
       enabled=START_SERVICES and (not KEYSTONE_ALL))
 def start_keystone_all():
     """Starts the Keystone API."""
-    Daemon(service_path_root="keystone_code_root",
-           service_path="%s/bin/keystone-all",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/keystone-all",
            extra_cmds=['--config-file'],
            conf_file_name="keystone_conf").run()
 
@@ -96,8 +96,8 @@ def start_glance_registry():
     """Starts the Glance Registry."""
     Daemon(alternate_path="/usr/bin/glance-registry",
            conf_file_name="glance_reg_conf",
-           service_path_root="glance_code_root",
-           service_path="%s/bin/glance-registry").run()
+           service_path_root="usr_bin_dir",
+           service_path="%s/glance-registry").run()
 
 
 @test(groups=["services.initialize", "services.initialize.glance"],
@@ -106,16 +106,16 @@ def start_glance_api():
     """Starts the Glance API."""
     Daemon(alternate_path="/usr/bin/glance-api",
            conf_file_name="glance_reg_conf",
-           service_path_root="glance_code_root",
-           service_path="%s/bin/glance-api").run()
+           service_path_root="usr_bin_dir",
+           service_path="%s/glance-api").run()
 
 
 @test(groups=["services.initialize"], depends_on_classes=[start_glance_api],
       enabled=START_SERVICES)
 def start_nova_network():
     """Starts the Nova Network Service."""
-    Daemon(service_path_root="nova_code_root",
-           service_path="%s/bin/nova-network",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/nova-network",
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
@@ -123,8 +123,8 @@ def start_nova_network():
 @test(groups=["services.initialize"], enabled=START_SERVICES)
 def start_scheduler():
     """Starts the Scheduler Service."""
-    Daemon(service_path_root="nova_code_root",
-           service_path="%s/bin/nova-scheduler",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/nova-scheduler",
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
@@ -133,8 +133,8 @@ def start_scheduler():
       enabled=START_SERVICES)
 def start_compute():
     """Starts the Nova Compute Service."""
-    Daemon(service_path_root="nova_code_root",
-           service_path="%s/bin/nova-compute",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/nova-compute",
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
@@ -143,8 +143,8 @@ def start_compute():
       enabled=START_SERVICES and USE_NOVA_VOLUME)
 def start_volume():
     """Starts the Nova Compute Service."""
-    Daemon(service_path_root="nova_code_root",
-           service_path="%s/bin/nova-volume",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/nova-volume",
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
@@ -155,8 +155,8 @@ def start_volume():
       enabled=START_SERVICES)
 def start_nova_api():
     """Starts the Nova Compute Service."""
-    Daemon(service_path_root="nova_code_root",
-           service_path="%s/bin/nova-api",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/nova-api",
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
