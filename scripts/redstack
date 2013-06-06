@@ -157,6 +157,7 @@ function configure_keystone_for_test_users() {
     REDDWARF_TENANT=`get_attribute_id tenant reddwarf 1`
     ADMIN_ROLE=`get_attribute_id role admin 1`
     REDDWARF_ROLE=`get_attribute_id role reddwarf 1`
+    MEMBER_ROLE=`get_attribute_id role Member 1`
     DAFFY_TENANT=`get_attribute_id tenant daffy 1`
     if [ -z $DAFFY_TENANT ]; then
         DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN tenant-create --name=daffy`
@@ -178,6 +179,7 @@ function configure_keystone_for_test_users() {
 
     REDDWARF_USER=`keystone_add_user chunk chunk chunk@example.com`
     keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $MEMBER_ROLE
 
     REDDWARF_USER=`keystone_add_user daffy daffy daffy@example.com`
     keystone_add_user_role $DAFFY_TENANT $REDDWARF_USER $DAFFY_ROLE
