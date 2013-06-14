@@ -24,12 +24,12 @@ PATH_SWIFT=$DEST/swift
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 
 # reddwarf information
-REPO_REDDWARF=https://github.com/stackforge/reddwarf.git
+REPO_REDDWARF=https://github.com/openstack/trove.git
 BRANCH_REDDWARF=master
 PATH_REDDWARF=$DEST/reddwarf
 
 # reddwarfclient information
-REPO_REDDWARFCLIENT=https://github.com/stackforge/python-reddwarfclient.git
+REPO_REDDWARFCLIENT=https://github.com/openstack/python-troveclient.git
 BRANCH_REDDWARFCLIENT=master
 PATH_PYTHON_REDDWARFCLIENT=$DEST/python-reddwarfclient
 
