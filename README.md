@@ -1,4 +1,4 @@
-## Integration dev scripts, tests and docs for Reddwarf.
+## Integration dev scripts, tests and docs for Trove.
 
 ***
 
@@ -39,19 +39,19 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
 #### Clone this repo:
 
-    $ git clone https://github.com/stackforge/reddwarf-integration.git
+    $ git clone https://github.com/openstack/trove-integration.git
 
 #### Go into the scripts directory:
 
-    $ cd reddwarf-integration/scripts/
+    $ cd trove-integration/scripts/
 
 #### Running redstack is the core script:
 *Run this to get the command list with a short description of each*
 
     $ ./redstack
 
-#### Install all the dependencies and then install reddwarf via devstack.
-*This Brings up reddwarf (rd-api rd-tmgr) and initializes the reddwarf database.*
+#### Install all the dependencies and then install trove via redstack.
+*This brings up trove (rd-api rd-tmgr) and initializes the reddwarf database.*
 
     $ ./redstack install
 
@@ -81,7 +81,7 @@ Allows the services to continue running in the background
 
     $ ./redstack kick-start mysql
 
-#### Start up the reddwarf services in a screen session
+#### Start up the trove services in a screen session
 
     $ ./redstack start
 
@@ -138,12 +138,12 @@ Allows the services to continue running in the background
 ***
 
 ### Recover after reboot
-If the VM was restarted, then the process for bringing up Openstack and Reddwarf if quite simple
+If the VM was restarted, then the process for bringing up Openstack and Trove is quite simple
 
     $./redstack start-deps
     $./redstack start
 
-use screen to ensure all modules have started without error
+Use screen to ensure all modules have started without error
 
     $screen -r stack
     $screen -r reddwarf
