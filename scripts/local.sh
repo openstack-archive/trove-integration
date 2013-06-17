@@ -68,9 +68,9 @@ REDDWARF_SERVICE_PROTOCOL=${REDDWARF_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
 # reddwarf service git paths
 GIT_BASE=https://github.com
-REDDWARF_REPO=${GIT_BASE}/stackforge/reddwarf.git
+REDDWARF_REPO=${GIT_BASE}/openstack/trove.git
 REDDWARF_BRANCH=master
-REDDWARFCLIENT_REPO=${GIT_BASE}/stackforge/python-reddwarfclient.git
+REDDWARFCLIENT_REPO=${GIT_BASE}/openstack/python-troveclient.git
 REDDWARFCLIENT_BRANCH=master
 
 # Support potential entry-points for console scripts
