@@ -1,4 +1,4 @@
-## Integration dev scripts, tests and docs for Reddwarf.
+## Integration dev scripts, tests and docs for Trove.
 
 ***
 
