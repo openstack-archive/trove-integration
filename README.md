@@ -10,13 +10,13 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
 #### Make sure we have git installed:
 
-    $ apt-get update
-    $ apt-get install git-core -y
+    # apt-get update
+    # apt-get install git-core -y
 
-#### Add a user that is not root if you do not already have one:
+#### Add a user named ubuntu if you do not already have one:
 
-    $ adduser ubuntu
-    $ visudo
+    # adduser ubuntu
+    # visudo
 
   add this line to the file below the root user
 
@@ -24,17 +24,17 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     **OR use this if you dont want to type your password to sudo a command**
 
-    ubuntu  ALL=(ALL:NOPASSWD) ALL
+    ubuntu  ALL=(ALL) NOPASSWD: ALL
 
   if /dev/pts/0 does not have read/write for your user
 
-    $ chmod 660 /dev/pts/0
+    # chmod 660 /dev/pts/0
 
   *Note that this number can change and if you can not connect to the screen session then the /dev/pts/# needs modding like above.*
 
 #### Login with ubuntu:
 
-    $ su ubuntu
+    # su ubuntu
     $ cd ~
 
 #### Clone this repo:
@@ -106,6 +106,10 @@ Allows the services to continue running in the background
     $ ./redstack build-image mysql
 
 ***
+
+#### You may need to add this iptables rule
+
+    $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE 
 
 #### Running the reddwarf client (It's so easy!)
 *This sets of the authorization endpoint and gets a token for you*
