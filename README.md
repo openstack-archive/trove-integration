@@ -24,7 +24,7 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     **OR use this if you dont want to type your password to sudo a command**
 
-    ubuntu  ALL=(ALL:NOPASSWD) ALL
+    ubuntu  ALL=(ALL) NOPASSWD: ALL
 
   if /dev/pts/0 does not have read/write for your user
 
