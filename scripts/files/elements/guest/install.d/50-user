@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CONTEXT: GUEST during CONSTRUCTION as ROOT
-# PURPOSE: Add the guest image user that will own the reddwarf agent source...if the user does not already exist
+# PURPOSE: Add the guest image user that will own the trove agent source...if the user does not already exist
 
 set -e
 set -o xtrace

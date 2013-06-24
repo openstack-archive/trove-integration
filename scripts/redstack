@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# RedStack, the Reddwarf Dev Machine Controller                               #
+# RedStack, the Trove Dev Machine Controller                               #
 ###############################################################################
 #                                                                             #
 # This script provides all the functionality to run all the steps from        #
@@ -11,7 +11,7 @@
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
-REDDWARF_CONF_DIR=/etc/reddwarf
+TROVE_CONF_DIR=/etc/trove
 
 USERHOME=$HOME
 # Load options not checked into VCS.
@@ -36,14 +36,14 @@ NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
 KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
 KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
-REDDWARF_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+TROVE_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
 
-# PATH_REDDWARF more than likely has file separators, which sed does not like
+# PATH_TROVE more than likely has file separators, which sed does not like
 # This will escape them
-ESCAPED_PATH_REDDWARF=`echo $PATH_REDDWARF | sed 's/\//\\\\\//g'`
+ESCAPED_PATH_TROVE=`echo $PATH_TROVE | sed 's/\//\\\\\//g'`
 ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
-REDDWARF_AUTH_CACHE_DIR=${REDDWARF_AUTH_CACHE_DIR:-/var/cache/reddwarf}
-REDDWARF_LOGDIR=${REDDWARF_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
+TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
+TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
@@ -114,7 +114,7 @@ function keystone_add_user() {
     USER_NAME=$1
     USER_PASS=$2
     USER_EMAIL=$3
-    # Create the user "reddwarf"
+    # Create the user "trove"
     USER_UUID=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN user-list | grep $USER_NAME | awk '{print $2}'`
     if [ -z $USER_UUID ]; then
         USER_UUID=`echo_id_from_table keystone \
@@ -147,16 +147,16 @@ function keystone_manage () {
 }
 
 function get_attribute_id() {
-    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2 " | get_field $3
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2 " | get_field $3
 
 }
 
 function configure_keystone_for_test_users() {
     exclaim "Configuring keystone..."
 
-    REDDWARF_TENANT=`get_attribute_id tenant reddwarf 1`
+    TROVE_TENANT=`get_attribute_id tenant trove 1`
     ADMIN_ROLE=`get_attribute_id role admin 1`
-    REDDWARF_ROLE=`get_attribute_id role reddwarf 1`
+    TROVE_ROLE=`get_attribute_id role trove 1`
     MEMBER_ROLE=`get_attribute_id role Member 1`
     DAFFY_TENANT=`get_attribute_id tenant daffy 1`
     if [ -z $DAFFY_TENANT ]; then
@@ -173,27 +173,27 @@ function configure_keystone_for_test_users() {
     #                   That way we will still catch errors if our calls to
     #                   keystone fail, but can run kickstart twice w/o install.
     set +e
-    REDDWARF_USER=`keystone_add_user Boss admin boss@example.com`
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $ADMIN_ROLE
+    TROVE_USER=`keystone_add_user Boss admin boss@example.com`
+    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
+    keystone_add_user_role $TROVE_TENANT $TROVE_USER $ADMIN_ROLE
 
-    REDDWARF_USER=`keystone_add_user chunk chunk chunk@example.com`
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $MEMBER_ROLE
+    TROVE_USER=`keystone_add_user chunk chunk chunk@example.com`
+    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
+    keystone_add_user_role $TROVE_TENANT $TROVE_USER $MEMBER_ROLE
 
-    REDDWARF_USER=`keystone_add_user daffy daffy daffy@example.com`
-    keystone_add_user_role $DAFFY_TENANT $REDDWARF_USER $DAFFY_ROLE
+    TROVE_USER=`keystone_add_user daffy daffy daffy@example.com`
+    keystone_add_user_role $DAFFY_TENANT $TROVE_USER $DAFFY_ROLE
 
-    REDDWARF_USER=`keystone_add_user examples examples examples@example.com`
-    keystone_add_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    TROVE_USER=`keystone_add_user examples examples examples@example.com`
+    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
     set -e
 
     # Add the tenant id's into test.conf
     DEMO_TENANT=`get_attribute_id tenant demo 1`
-    sed -i "s/%reddwarf_tenant_id%/$REDDWARF_TENANT/g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s/%trove_tenant_id%/$TROVE_TENANT/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 }
 
 ###############################################################################
@@ -203,7 +203,7 @@ function configure_keystone_for_test_users() {
 # Install all the required dependencies
 ###############################################################################
 
-function install_reddwarf_packages() {
+function install_trove_packages() {
     # Called after devstack.
     exclaim "Installing dependencies (part 2)..."
     # The default version of pip Ubuntu installs is old.
@@ -216,8 +216,8 @@ function install_reddwarf_packages() {
     # Needed to install client on fresh VM
     pkg_install libxslt1-dev
 
-    exclaim "Installing Reddwarf Client..."
-    pushd $PATH_PYTHON_REDDWARFCLIENT
+    exclaim "Installing Trove Client..."
+    pushd $PATH_PYTHON_TROVECLIENT
     sudo python setup.py develop
     popd
 
@@ -252,11 +252,11 @@ function install_diskimagebuilder() {
         COMMIT_DISKIMAGEBUILDER=${COMMIT_DISKIMAGEBUILDER:-HEAD}
         cd $PATH_DISKIMAGEBUILDER
         git reset $COMMIT_DISKIMAGEBUILDER --hard
-        # link files so that reddwarf and disk image builder can be updated independently
-        echo "Linking Reddwarf Elements to Disk Image Builder"
-        ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-guest $PATH_DISKIMAGEBUILDER/elements/reddwarf-guest
-        ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-mysql $PATH_DISKIMAGEBUILDER/elements/reddwarf-mysql
-        ln -s $REDSTACK_SCRIPTS/files/elements/reddwarf-percona $PATH_DISKIMAGEBUILDER/elements/reddwarf-percona
+        # link files so that trove and disk image builder can be updated independently
+        echo "Linking Trove Elements to Disk Image Builder"
+        ln -s $REDSTACK_SCRIPTS/files/elements/trove-guest $PATH_DISKIMAGEBUILDER/elements/trove-guest
+        ln -s $REDSTACK_SCRIPTS/files/elements/trove-mysql $PATH_DISKIMAGEBUILDER/elements/trove-mysql
+        ln -s $REDSTACK_SCRIPTS/files/elements/trove-percona $PATH_DISKIMAGEBUILDER/elements/trove-percona
     fi
 }
 
@@ -323,8 +323,8 @@ SERVICE_TOKEN=$SERVICE_TOKEN
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 SERVICE_PASSWORD=$SERVICE_PASSWORD
 FLAT_INTERFACE=br100
-REDDWARF_LOGDIR=$REDDWARF_LOGDIR
-REDDWARF_AUTH_CACHE_DIR=$REDDWARF_AUTH_CACHE_DIR
+TROVE_LOGDIR=$TROVE_LOGDIR
+TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 # Enable Swift
 ENABLED_SERVICES+=,swift
 SWIFT_HASH=$SWIFT_HASH
@@ -337,7 +337,7 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$REDDWARF_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
 " > localrc
     if [ -n "$USING_VAGRANT" ]
     then
@@ -358,8 +358,8 @@ function ensure_local_sources() {
     exclaim "Making sure local sources are up to date..."
     # this method will only clone if the sources dont exist,
     # or if RECLONE=yes is set
-    git_clone $REPO_REDDWARF $PATH_REDDWARF $BRANCH_REDDWARF
-    git_clone $REPO_REDDWARFCLIENT $PATH_PYTHON_REDDWARFCLIENT $BRANCH_REDDWARFCLIENT
+    git_clone $REPO_TROVE $PATH_TROVE $BRANCH_TROVE
+    git_clone $REPO_TROVECLIENT $PATH_PYTHON_TROVECLIENT $BRANCH_TROVECLIENT
 }
 
 function cmd_install() {
@@ -369,7 +369,7 @@ function cmd_install() {
     install_reviews_on_top_of_devstack
     run_devstack
     ensure_local_sources
-    install_reddwarf_packages
+    install_trove_packages
     install_diskimagebuilder
     exclaim "FINISHED INSTALL"
 }
@@ -433,7 +433,7 @@ function add_dbass_mycnf_to_package_repo() {
     exclaim "Building and uploading dbaasmycnf package..."
     mkdir -p $PACKAGES_DIR
     mkdir -p $BUILD_DIR
-    cp -R $PATH_REDDWARF/contrib/dbaas-mycnf $BUILD_DIR
+    cp -R $PATH_TROVE/contrib/dbaas-mycnf $BUILD_DIR
     cd $BUILD_DIR/dbaas-mycnf
     sudo -E ./builddeb.sh
     sudo -E reprepro -Vb $PACKAGES_DIR remove squeeze dbaas-mycnf
@@ -445,8 +445,8 @@ function cmd_build() {
     exclaim "Calling setup for all dependencies..."
     setup_py $PATH_NOVA
     setup_py $PATH_PYTHON_NOVACLIENT
-    setup_py $PATH_PYTHON_REDDWARFCLIENT
-    setup_py $PATH_REDDWARF
+    setup_py $PATH_PYTHON_TROVECLIENT
+    setup_py $PATH_TROVE
     create_package_repo
     munge_apache2
     add_dbass_mycnf_to_package_repo
@@ -484,8 +484,8 @@ function cmd_set_image() {
     GLANCE_IMAGEID=$1
     SERVICE_TYPE=$2
     #TODO(hub-cap): Upload this sucker to our database.
-    # This should be a reddwarf-manage function
-    exclaim "Registering Glance image $GLANCE_IMAGEID with Reddwarf..."
+    # This should be a trove-manage function
+    exclaim "Registering Glance image $GLANCE_IMAGEID with Trove..."
 
     rd_manage image_update $SERVICE_TYPE $GLANCE_IMAGEID
 }
@@ -496,14 +496,14 @@ function upload_image_to_glance() {
     IMAGE_NAME=$1
     CONTAINER_FORMAT=$2
     DISK_FORMAT=$3
-    REDDWARF_TENANT=$4
+    TROVE_TENANT=$4
     IMAGE_LOC=$5
     SERVICE_TYPE=$6
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
         --name="$IMAGE_NAME" --public \
         --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
-        --owner=$REDDWARF_TENANT < $IMAGE_LOC`
+        --owner=$TROVE_TENANT < $IMAGE_LOC`
 
     echo "IMAGE ID: $GLANCE_IMAGEID"
     if [ -z "$GLANCE_IMAGEID" ];
@@ -521,8 +521,8 @@ function upload_image_to_glance() {
 ###############################################################################
 
 function cmd_unit_tests() {
-    exclaim "Running Reddwarf Unit Tests..."
-    $PATH_REDDWARF/run_tests.sh -N
+    exclaim "Running Trove Unit Tests..."
+    $PATH_TROVE/run_tests.sh -N
 }
 
 ###############################################################################
@@ -546,30 +546,30 @@ function cmd_stop_deps() {
 
 
 ###############################################################################
-# Initialize Reddwarf
+# Initialize Trove
 ###############################################################################
 
 function rd_manage() {
-    cd $PATH_REDDWARF
-    bin/reddwarf-manage --config-file=$REDDWARF_CONF_DIR/reddwarf.conf $@
+    cd $PATH_TROVE
+    bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf $@
 }
 
 function mod_test_conf() {
-    cp $REDSTACK_SCRIPTS/conf/test_begin.conf $REDDWARF_CONF_DIR/test.conf
-    sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $REDDWARF_CONF_DIR/test.conf
+    cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
+    sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $TROVE_CONF_DIR/test.conf
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
     if [ -e $EXTRA_CONF ]; then
-        cat $EXTRA_CONF >> $REDDWARF_CONF_DIR/test.conf
+        cat $EXTRA_CONF >> $TROVE_CONF_DIR/test.conf
     fi
-    cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $REDDWARF_CONF_DIR/test.conf
+    cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $TROVE_CONF_DIR/test.conf
 
     #Add the paths to the test conf
-    sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s,%nova_path%,$PATH_NOVA,g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s,%glance_path%,$PATH_GLANCE,g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s,%reddwarf_path%,$PATH_REDDWARF,g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s,%service_host%,$SERVICE_HOST,g" $REDDWARF_CONF_DIR/test.conf
-    sed -i "s,%swifth_path%,$PATH_SWIFT,g" $REDDWARF_CONF_DIR/test.conf
+    sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%nova_path%,$PATH_NOVA,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%glance_path%,$PATH_GLANCE,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%trove_path%,$PATH_TROVE,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%service_host%,$SERVICE_HOST,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
 }
 
 function cmd_test_init() {
@@ -583,9 +583,9 @@ function cmd_test_init() {
 }
 
 function cmd_initialize() {
-    exclaim '(Re)Initializing Reddwarf'
+    exclaim '(Re)Initializing Trove'
 
-    echo "Stopping Reddwarf Services"
+    echo "Stopping Trove Services"
     cmd_stop
 
     exclaim "Reinitilizing via devstack local.sh"
@@ -598,7 +598,7 @@ function cmd_initialize() {
 
 
 ###############################################################################
-# Start Reddwarf specific daemons interactively in a screen session
+# Start Trove specific daemons interactively in a screen session
 ###############################################################################
 
 function screen_it {
@@ -612,47 +612,47 @@ function init_fake_mode() {
     # takes advantage of the running keystone service we have in our VM.
     # You could think of this fake mode, which runs in the VM as being
     # slightly less fake than the default one which runs outside of it.
-    CONF_FILE=/tmp/reddwarf.conf.test
-    cp $PATH_REDDWARF/etc/reddwarf/reddwarf.conf.test $CONF_FILE
+    CONF_FILE=/tmp/trove.conf.test
+    cp $PATH_TROVE/etc/trove/trove.conf.test $CONF_FILE
     # Switch keystone from the fake class to the real one.
     sed -i \
-        "s/reddwarf.tests.fakes.keystone/keystone.middleware.auth_token/g" \
+        "s/trove.tests.fakes.keystone/keystone.middleware.auth_token/g" \
         $CONF_FILE
     sed -i "s/log_file = rdtest.log//g" $CONF_FILE
-    cd $PATH_REDDWARF
+    cd $PATH_TROVE
     set -e
-    rm -f reddwarf_test.sqlite
+    rm -f trove_test.sqlite
     set +e
-    bin/reddwarf-manage --config-file=$CONF_FILE db_sync
-    sqlite3 reddwarf_test.sqlite \
+    bin/trove-manage --config-file=$CONF_FILE db_sync
+    sqlite3 trove_test.sqlite \
         "INSERT INTO service_images VALUES('1','mysql','fake');"
 }
 
 function cmd_start() {
-    screen_it rd-api "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-api.log"
-    screen_it rd-tmgr "cd $PATH_REDDWARF; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-taskmanager.log"
+    screen_it rd-api "cd $PATH_TROVE; bin/trove-api --config-file=$TROVE_CONF_DIR/trove.conf 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
+    screen_it rd-tmgr "cd $PATH_TROVE; bin/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
 }
 
 function cmd_start_fake() {
     init_fake_mode
-    CONF_FILE=/tmp/reddwarf.conf.test
-    screen_it rd-fake "cd $PATH_REDDWARF; bin/reddwarf-api --config-file=$CONF_FILE $@"
+    CONF_FILE=/tmp/trove.conf.test
+    screen_it rd-fake "cd $PATH_TROVE; bin/trove-api --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
-    cd $PATH_REDDWARF; bin/reddwarf-api \
-        --config-file=$REDDWARF_CONF_DIR/reddwarf.conf $@
+    cd $PATH_TROVE; bin/trove-api \
+        --config-file=$TROVE_CONF_DIR/trove.conf $@
 }
 
 function cmd_run_fake() {
     init_fake_mode
-    CONF_FILE=/tmp/reddwarf.conf.test
-    bin/reddwarf-api --config-file=$CONF_FILE $@ \
-        repo_path=reddwarf_test.sqlite
+    CONF_FILE=/tmp/trove.conf.test
+    bin/trove-api --config-file=$CONF_FILE $@ \
+        repo_path=trove_test.sqlite
 }
 
 ###############################################################################
-# Stop any active Reddwarf screen session
+# Stop any active Trove screen session
 ###############################################################################
 ###############################################################################
 
@@ -668,12 +668,12 @@ function cmd_stop() {
 ###############################################################################
 
 function cmd_int_tests() {
-    exclaim "Running Reddwarf Integration Tests..."
+    exclaim "Running Trove Integration Tests..."
     if [ ! $USAGE_ENDPOINT ]; then
-        export USAGE_ENDPOINT=reddwarf.tests.util.usage.FakeVerifier
+        export USAGE_ENDPOINT=trove.tests.util.usage.FakeVerifier
     fi
     cd $REDSTACK_SCRIPTS
-    export TEST_CONF=$REDDWARF_CONF_DIR/test.conf
+    export TEST_CONF=$TROVE_CONF_DIR/test.conf
     if [ $# -lt 1 ]; then
         args="--group=blackbox"
     else
@@ -689,9 +689,9 @@ function cmd_int_tests() {
 }
 
 function cmd_int_tests_simple() {
-    exclaim "Running Reddwarf Simple Integration Tests..."
+    exclaim "Running Trove Simple Integration Tests..."
     cd $REDSTACK_SCRIPTS
-    export TEST_CONF=$REDDWARF_CONF_DIR/test.conf
+    export TEST_CONF=$TROVE_CONF_DIR/test.conf
     if [ $# -lt 1 ]; then
         args="--group=simple_blackbox"
     else
@@ -707,10 +707,10 @@ function cmd_int_tests_simple() {
 }
 
 function cmd_int_tests_white_box() {
-    export PYTHONPATH=$PYTHONPATH:$REDDWARF_SOURCE
+    export PYTHONPATH=$PYTHONPATH:$TROVE_SOURCE
     export PYTHONPATH=$PYTHONPATH:$PATH_NOVA
     cmd_int_tests --test-config white_box=True \
-        --config-file=$REDDWARF_CONF_DIR/reddwarf.conf \
+        --config-file=$TROVE_CONF_DIR/trove.conf \
         --nova-flags=/etc/nova/nova.conf $@
 }
 
@@ -729,7 +729,7 @@ function cmd_example_tests() {
     \"replace_dns_hostname\": \"e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com\",
     \"username\":\"examples\",
     \"password\":\"examples\",
-    \"tenant\":\"reddwarf\"
+    \"tenant\":\"trove\"
 }" > /tmp/example-tests.conf
     python $REDSTACK_TESTS/examples/examples/example_generation.py /tmp/example-tests.conf
     pushd $REDSTACK_TESTS/../apidocs
@@ -748,9 +748,9 @@ function mysql_nova() {
     mysql -u root -p$MYSQL_PASSWORD nova --execute "$@"
 }
 
-function mysql_reddwarf() {
-    echo mysql reddwarf --execute "$@"
-    mysql -u root -p$MYSQL_PASSWORD reddwarf --execute "$@"
+function mysql_trove() {
+    echo mysql trove --execute "$@"
+    mysql -u root -p$MYSQL_PASSWORD trove --execute "$@"
 }
 
 function cmd_nova_client() {
@@ -758,12 +758,12 @@ function cmd_nova_client() {
     TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
     if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
         nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
+            --os_tenant_name=trove --os_username=radmin --os_password=radmin \
             --service_type=compute --region_name=RegionOne \
             --service_name='nova' $@
     else
         nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin \
+            --os_tenant_name=trove --os_username=radmin --os_password=radmin \
             --service_type=volume --region_name=RegionOne \
             --service_name='cinder' $@
     fi
@@ -771,28 +771,28 @@ function cmd_nova_client() {
 
 function cmd_swift_client() {
     swift --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=reddwarf --os_username=radmin --os_password=radmin $@
+            --os_tenant_name=trove --os_username=radmin --os_password=radmin $@
 }
 
 function cmd_glance_client() {
-    REDDWARF_TENANT=`get_attribute_id tenant reddwarf 1`
+    TROVE_TENANT=`get_attribute_id tenant trove 1`
     glance --os-auth-url=http://localhost:35357/v2.0 \
         --os-username=radmin --os-password=radmin \
-        --os-tenant-id $REDDWARF_TENANT $@
+        --os-tenant-id $TROVE_TENANT $@
 }
 
 function cmd_rd_client() {
-    # This serves as an example of how to call the Reddwarf client script.
-    reddwarf-cli --username=radmin --apikey=radmin --tenant=reddwarf \
+    # This serves as an example of how to call the Trove client script.
+    trove-cli --username=radmin --apikey=radmin --tenant=trove \
         --auth_url=http://localhost:35357/v2.0/tokens auth login
-    reddwarf-cli $@
+    trove-cli $@
 }
 
 function cmd_rd_mgmt_client() {
-    # This serves as an example of how to call the Reddwarf managment client script.
-    reddwarf-cli --username=radmin --apikey=radmin --tenant=reddwarf \
+    # This serves as an example of how to call the Trove managment client script.
+    trove-cli --username=radmin --apikey=radmin --tenant=trove \
         --auth_url=http://localhost:35357/v2.0/tokens auth login
-    reddwarf-mgmt-cli $@
+    trove-mgmt-cli $@
 }
 
 function cmd_delete_nova_instance() {
@@ -804,7 +804,7 @@ function cmd_delete_nova_instance() {
 }
 
 function cmd_wipe_logs() {
-    for file in `ls $REDDWARF_LOGDIR/*.log`
+    for file in `ls $TROVE_LOGDIR/*.log`
     do
         echo "Reseting log file $file..."
         echo "Reset at `date`" > $file
@@ -812,12 +812,12 @@ function cmd_wipe_logs() {
 }
 
 function cmd_rd_sql() {
-    mysql -u root -p$MYSQL_PASSWORD reddwarf
+    mysql -u root -p$MYSQL_PASSWORD trove
 }
 
 function cmd_fake_sql() {
-    pushd $PATH_REDDWARF
-    sqlite3 reddwarf_test.sqlite $@
+    pushd $PATH_TROVE
+    sqlite3 trove_test.sqlite $@
     popd
 }
 
@@ -867,8 +867,8 @@ function cmd_clear() {
     clean_instances
     mysql_nova "DELETE FROM instance_info_caches;"
     mysql_nova "DELETE FROM instances;"
-    mysql_reddwarf "DELETE FROM instances;"
-    mysql_reddwarf "DELETE FROM service_statuses;"
+    mysql_trove "DELETE FROM instances;"
+    mysql_trove "DELETE FROM service_statuses;"
     cmd_wipe_queues
 }
 
@@ -879,7 +879,7 @@ function cmd_kick_start() {
 }
 
 function cmd_post_devstack() {
-    install_reddwarf_packages
+    install_trove_packages
     install_diskimagebuilder
     cmd_build
     cmd_test_init
@@ -887,7 +887,7 @@ function cmd_post_devstack() {
 }
 
 function cmd_reset_task() {
-    mysql_reddwarf "UPDATE instances SET task_id=1 WHERE id='$1'"
+    mysql_trove "UPDATE instances SET task_id=1 WHERE id='$1'"
 }
 
 function cmd_update_projects() {
@@ -932,21 +932,21 @@ function print_usage() {
           build           - Build the packages (including the agent) and set up the apt repo
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image and adds it to glance
-          initialize      - Reinitialize the reddwarf database, users, services, and test config
+          initialize      - Reinitialize the trove database, users, services, and test config
           post-devstack   - Configures testing environment, builds image and uploads to glance
 
         --helper for environment--
-          kick-start      - kick start the setup of reddwarf.
+          kick-start      - kick start the setup of trove.
                             (redstack build/test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding pacakges from scratch
 
-        --reddwarf dependency services--
-          start-deps      - Start or resume daemons Reddwarf depends on.
-          stop-deps       - Kill daemons Reddwarf depends on.
+        --trove dependency services--
+          start-deps      - Start or resume daemons Trove depends on.
+          stop-deps       - Kill daemons Trove depends on.
 
-        --reddwarf services--
-          start           - Start or resume daemons Reddwarf depends on.
-          stop            - Kill daemons Reddwarf depends on.
+        --trove services--
+          start           - Start or resume daemons Trove depends on.
+          stop            - Kill daemons Trove depends on.
 
         --tests--
           unit-tests      - Run the unit tests.dependencies
@@ -958,18 +958,18 @@ function print_usage() {
           glance-client   - Runs glance client with admin user.
           nova-client     - Runs Nova client with admin user.
           swift-client    - Runs Swift client with admin user.
-          rd-client       - Runs Reddwarf client with admin user.
-          rd-mgmt-client  - Runs Reddwarf management client with admin user.
+          rd-client       - Runs Trove client with admin user.
+          rd-mgmt-client  - Runs Trove management client with admin user.
                             * Shows a valid token.
           wipe-logs       - Resets all log files.
           nova-delete     - Deletes a nova instance.
-          rd-sql          - Opens the Reddwarf MySQL database.
+          rd-sql          - Opens the Trove MySQL database.
           vagrant-ssh     - Runs a command from the host on the server.
           set-image       - Sets the image without building it.
           clear           - Destroy instances and rabbit queues.
           run             - Starts RD but not in a screen.
           run-fake        - Runs the server in fake mode.
-          update-projects - Git pull on all the daemons reddwarf dependencies.
+          update-projects - Git pull on all the daemons trove dependencies.
           reset-task      - Sets an instance task to NONE.
           wipe-queues     - Resets RabbitMQ queues.
     "

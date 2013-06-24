@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# local.sh to install reddwarf
-# Install and start Reddwarf (DBaaS) service
+# local.sh to install trove
+# Install and start Trove (DBaaS) service
 
 # Dependencies:
 # - functions
@@ -16,7 +16,7 @@ DEST=${DEST:-/opt/stack}
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 source $TOP_DIR/stackrc
 source $TOP_DIR/localrc
-ENABLED_SERVICES+=,reddwarf,rd-api,rd-tmgr
+ENABLED_SERVICES+=,trove,rd-api,rd-tmgr
 source $TOP_DIR/functions
 source $TOP_DIR/lib/database
 
@@ -49,35 +49,35 @@ DATABASE_PASSWORD=${DATABASE_PASSWORD:-$MYSQL_PASSWORD}
 BASE_SQL_CONN=${BASE_SQL_CONN:-${DATABASE_TYPE}://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST}
 
 # Set up default configuration
-REDDWARF_DIR=$DEST/reddwarf/
-REDDWARFCLIENT_DIR=$DEST/python-reddwarfclient/
-REDDWARF_PACKAGES_DIR=/var/lib/packages/debian/
-REDDWARF_BUILD_DIR=/tmp/build/
-REDDWARF_INTEGRATION_CONF_DIR=/tmp/reddwarf-integration/
-REDDWARF_ENV_CONF_PATH=$REDDWARF_INTEGRATION_CONF_DIR/env.rc
-REDDWARF_CONF_DIR=/etc/reddwarf/
-REDDWARF_LOCAL_CONF_DIR=$REDDWARF_DIR/etc/reddwarf/
-REDDWARF_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
-REDDWARF_LOGDIR=${REDDWARF_LOGDIR:-/var/log/reddwarf}
-REDDWARF_AUTH_CACHE_DIR=${REDDWARF_AUTH_CACHE_DIR:-/var/cache/reddwarf}
+TROVE_DIR=$DEST/trove/
+TROVECLIENT_DIR=$DEST/python-troveclient/
+TROVE_PACKAGES_DIR=/var/lib/packages/debian/
+TROVE_BUILD_DIR=/tmp/build/
+TROVE_INTEGRATION_CONF_DIR=/tmp/trove-integration/
+TROVE_ENV_CONF_PATH=$TROVE_INTEGRATION_CONF_DIR/env.rc
+TROVE_CONF_DIR=/etc/trove/
+TROVE_LOCAL_CONF_DIR=$TROVE_DIR/etc/trove/
+TROVE_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
+TROVE_LOGDIR=${TROVE_LOGDIR:-/var/log/trove}
+TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 
-# Set Reddwarf interface related configuration
-REDDWARF_SERVICE_HOST=${REDDWARF_SERVICE_HOST:-$SERVICE_HOST}
-REDDWARF_SERVICE_PORT=${REDDWARF_SERVICE_PORT:-8779}
-REDDWARF_SERVICE_PROTOCOL=${REDDWARF_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+# Set Trove interface related configuration
+TROVE_SERVICE_HOST=${TROVE_SERVICE_HOST:-$SERVICE_HOST}
+TROVE_SERVICE_PORT=${TROVE_SERVICE_PORT:-8779}
+TROVE_SERVICE_PROTOCOL=${TROVE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
-# reddwarf service git paths
+# trove service git paths
 GIT_BASE=https://github.com
-REDDWARF_REPO=${GIT_BASE}/openstack/trove.git
-REDDWARF_BRANCH=master
-REDDWARFCLIENT_REPO=${GIT_BASE}/openstack/python-troveclient.git
-REDDWARFCLIENT_BRANCH=master
+TROVE_REPO=${GIT_BASE}/openstack/trove.git
+TROVE_BRANCH=master
+TROVECLIENT_REPO=${GIT_BASE}/openstack/python-troveclient.git
+TROVECLIENT_BRANCH=master
 
 # Support potential entry-points for console scripts
-if [ -d $REDDWARF_DIR/bin ] ; then
-    REDDWARF_BIN_DIR=$REDDWARF_DIR/bin
+if [ -d $TROVE_DIR/bin ] ; then
+    TROVE_BIN_DIR=$TROVE_DIR/bin
 else
-    REDDWARF_BIN_DIR=/usr/local/bin
+    TROVE_BIN_DIR=/usr/local/bin
 fi
 
 ###############################################################################
@@ -98,34 +98,34 @@ function msgout() {
     return 0
 }
 
-function reddwarf_mysql_nova() {
+function trove_mysql_nova() {
     echo mysql nova --execute "$@"
     mysql -u root -p$DATABASE_PASSWORD nova --execute "$@"
 }
 
-function reddwarf_manage() {
-    cd $REDDWARF_DIR
-    bin/reddwarf-manage --config-file=$REDDWARF_CONF_DIR/reddwarf.conf $@
+function trove_manage() {
+    cd $TROVE_DIR
+    bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf $@
 }
 
 ###############################################################################
-# Configure Keystone for Reddwarf related helper functions
+# Configure Keystone for Trove related helper functions
 ###############################################################################
 
-function reddwarf_get_attribute_id() {
-    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep $2 | get_field $3
+function trove_get_attribute_id() {
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep $2 | get_field $3
 }
 
-function reddwarf_add_keystone_user() {
+function trove_add_keystone_user() {
     # Adds a user. Prints the UUID to standard out.
     USER_NAME=$1
     USER_PASS=$2
     USER_EMAIL=$3
     USER_TENANT=$4
-    # Create the user "reddwarf"
-    USER_UUID=`reddwarf_get_attribute_id user $USER_NAME 1`
+    # Create the user "trove"
+    USER_UUID=`trove_get_attribute_id user $USER_NAME 1`
     if [ -z "$USER_UUID" ]; then
-        USER_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN user-create \
+        USER_UUID=$(keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-create \
             --name=$USER_NAME \
             --pass=$USER_PASS \
             --email=$USER_EMAIL \
@@ -135,103 +135,103 @@ function reddwarf_add_keystone_user() {
     echo $USER_UUID
 }
 
-function reddwarf_create_keystone_user_role() {
+function trove_create_keystone_user_role() {
     TENANT_UUID=$1
     USER_UUID=$2
     ROLE_UUID=$3
-    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN user-role-add \
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-role-add \
         --tenant_id $TENANT_UUID \
         --user_id $USER_UUID \
         --role_id $ROLE_UUID
 }
 
-function reddwarf_create() {
-    keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-create \
+function trove_create() {
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-create \
              --name $2 \
              | grep " id " | get_field 2
 }
 
-function reddwarf_configure_keystone() {
+function trove_configure_keystone() {
     msgout "DEBUG" "Configuring keystone..."
-    # Create the "reddwarf" tenant
+    # Create the "trove" tenant
     # First we should check if these exist
-    REDDWARF_TENANT=`reddwarf_get_attribute_id tenant reddwarf 1`
-    if [ -z "$REDDWARF_TENANT" ]; then
-        REDDWARF_TENANT=$(reddwarf_create tenant reddwarf)
+    TROVE_TENANT=`trove_get_attribute_id tenant trove 1`
+    if [ -z "$TROVE_TENANT" ]; then
+        TROVE_TENANT=$(trove_create tenant trove)
     fi
 
-    # Create the reddwarf role if it doesn't exist.
+    # Create the trove role if it doesn't exist.
     # Admin role should already exist
-    ADMIN_ROLE=`reddwarf_get_attribute_id role admin 1`
-    REDDWARF_ROLE=`reddwarf_get_attribute_id role reddwarf 1`
-    if [ -z "$REDDWARF_ROLE" ]; then
-        REDDWARF_ROLE=$(reddwarf_create role reddwarf)
+    ADMIN_ROLE=`trove_get_attribute_id role admin 1`
+    TROVE_ROLE=`trove_get_attribute_id role trove 1`
+    if [ -z "$TROVE_ROLE" ]; then
+        TROVE_ROLE=$(trove_create role trove)
     fi
 
-    REDDWARF_USER=$(reddwarf_add_keystone_user reddwarf REDDWARF-PASS reddwarf@example.com $REDDWARF_TENANT)
-    reddwarf_create_keystone_user_role $REDDWARF_TENANT $REDDWARF_USER $REDDWARF_ROLE
+    TROVE_USER=$(trove_add_keystone_user trove TROVE-PASS trove@example.com $TROVE_TENANT)
+    trove_create_keystone_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
 
-    RADMIN_USER=$(reddwarf_add_keystone_user radmin radmin radmin@example.com $REDDWARF_TENANT)
-    reddwarf_create_keystone_user_role $REDDWARF_TENANT $RADMIN_USER $REDDWARF_ROLE
-    reddwarf_create_keystone_user_role $REDDWARF_TENANT $RADMIN_USER $ADMIN_ROLE
+    RADMIN_USER=$(trove_add_keystone_user radmin radmin radmin@example.com $TROVE_TENANT)
+    trove_create_keystone_user_role $TROVE_TENANT $RADMIN_USER $TROVE_ROLE
+    trove_create_keystone_user_role $TROVE_TENANT $RADMIN_USER $ADMIN_ROLE
 
-    mkdir -p ${REDDWARF_INTEGRATION_CONF_DIR}
-    touch $REDDWARF_ENV_CONF_PATH
-    iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_TENANT $REDDWARF_TENANT
-    iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_USER $REDDWARF_USER
-    iniset $REDDWARF_ENV_CONF_PATH DEFAULT REDDWARF_ROLE $REDDWARF_ROLE
+    mkdir -p ${TROVE_INTEGRATION_CONF_DIR}
+    touch $TROVE_ENV_CONF_PATH
+    iniset $TROVE_ENV_CONF_PATH DEFAULT TROVE_TENANT $TROVE_TENANT
+    iniset $TROVE_ENV_CONF_PATH DEFAULT TROVE_USER $TROVE_USER
+    iniset $TROVE_ENV_CONF_PATH DEFAULT TROVE_ROLE $TROVE_ROLE
 
     # Now attempt a login to check it's working
-    curl -d '{"auth":{"passwordCredentials":{"username": "reddwarf", "password": "REDDWARF-PASS"},"tenantName":"reddwarf"}}' \
-     -H "Content-type: application/json" $REDDWARF_AUTH_ENDPOINT/tokens
+    curl -d '{"auth":{"passwordCredentials":{"username": "trove", "password": "TROVE-PASS"},"tenantName":"trove"}}' \
+     -H "Content-type: application/json" $TROVE_AUTH_ENDPOINT/tokens
 
-    # Register reddwarf service.
-    REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-list | grep "reddwarf" | get_field 1)
-    if [ -z $REDDWARF_SERVICE_UUID ]; then
-        REDDWARF_SERVICE_UUID=$(keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN service-create \
-            --name=reddwarf \
+    # Register trove service.
+    TROVE_SERVICE_UUID=$(keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN service-list | grep "trove" | get_field 1)
+    if [ -z $TROVE_SERVICE_UUID ]; then
+        TROVE_SERVICE_UUID=$(keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN service-create \
+            --name=trove \
             --type=database \
-            --description="Reddwarf Database as a Service" \
+            --description="Trove Database as a Service" \
             | grep " id " | get_field 2)
-        keystone --endpoint $REDDWARF_AUTH_ENDPOINT --token $SERVICE_TOKEN endpoint-create \
+        keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN endpoint-create \
             --region RegionOne \
-            --service_id $REDDWARF_SERVICE_UUID \
-            --publicurl "$REDDWARF_SERVICE_PROTOCOL://$REDDWARF_SERVICE_HOST:$REDDWARF_SERVICE_PORT/v1.0/\$(tenant_id)s" \
-            --adminurl "$REDDWARF_SERVICE_PROTOCOL://$REDDWARF_SERVICE_HOST:$REDDWARF_SERVICE_PORT/v1.0/\$(tenant_id)s" \
-            --internalurl "$REDDWARF_SERVICE_PROTOCOL://$REDDWARF_SERVICE_HOST:$REDDWARF_SERVICE_PORT/v1.0/\$(tenant_id)s"
+            --service_id $TROVE_SERVICE_UUID \
+            --publicurl "$TROVE_SERVICE_PROTOCOL://$TROVE_SERVICE_HOST:$TROVE_SERVICE_PORT/v1.0/\$(tenant_id)s" \
+            --adminurl "$TROVE_SERVICE_PROTOCOL://$TROVE_SERVICE_HOST:$TROVE_SERVICE_PORT/v1.0/\$(tenant_id)s" \
+            --internalurl "$TROVE_SERVICE_PROTOCOL://$TROVE_SERVICE_HOST:$TROVE_SERVICE_PORT/v1.0/\$(tenant_id)s"
     fi
 }
 
 ###############################################################################
-# Setup Reddwarf Config file and related functions
+# Setup Trove Config file and related functions
 ###############################################################################
 
 function fix_rd_configfiles() {
-    # Create the reddwarf conf dir and cache dirs if they don't exist
-    sudo mkdir -p ${REDDWARF_CONF_DIR}
-    sudo mkdir -p ${REDDWARF_AUTH_CACHE_DIR}
-    sudo chown -R $USER: ${REDDWARF_CONF_DIR}
-    sudo chown -R $USER: ${REDDWARF_AUTH_CACHE_DIR}
+    # Create the trove conf dir and cache dirs if they don't exist
+    sudo mkdir -p ${TROVE_CONF_DIR}
+    sudo mkdir -p ${TROVE_AUTH_CACHE_DIR}
+    sudo chown -R $USER: ${TROVE_CONF_DIR}
+    sudo chown -R $USER: ${TROVE_AUTH_CACHE_DIR}
 
-    # Copy conf files over to the reddwarf conf dir
-    cd $REDDWARF_DIR
-    cp etc/reddwarf/reddwarf.conf.sample $REDDWARF_CONF_DIR/reddwarf.conf
-    cp etc/reddwarf/api-paste.ini $REDDWARF_CONF_DIR/api-paste.ini
-    cp etc/reddwarf/reddwarf-taskmanager.conf.sample $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf
+    # Copy conf files over to the trove conf dir
+    cd $TROVE_DIR
+    cp etc/trove/trove.conf.sample $TROVE_CONF_DIR/trove.conf
+    cp etc/trove/api-paste.ini $TROVE_CONF_DIR/api-paste.ini
+    cp etc/trove/trove-taskmanager.conf.sample $TROVE_CONF_DIR/trove-taskmanager.conf
 
     # Fix the tokens in the conf files
-    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT rabbit_password $RABBIT_PASSWORD
-    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT sql_connection `database_connection_url reddwarf`
-    iniset $REDDWARF_CONF_DIR/api-paste.ini filter:tokenauth admin_token $SERVICE_TOKEN
-    iniset $REDDWARF_CONF_DIR/api-paste.ini filter:tokenauth signing_dir $REDDWARF_AUTH_CACHE_DIR
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT rabbit_password $RABBIT_PASSWORD
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT sql_connection `database_connection_url trove`
+    iniset $TROVE_CONF_DIR/api-paste.ini filter:tokenauth admin_token $SERVICE_TOKEN
+    iniset $TROVE_CONF_DIR/api-paste.ini filter:tokenauth signing_dir $TROVE_AUTH_CACHE_DIR
 
-    iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT rabbit_password $RABBIT_PASSWORD
-    iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf DEFAULT sql_connection `database_connection_url reddwarf`
-    iniset $REDDWARF_CONF_DIR/reddwarf-taskmanager.conf filter:tokenauth admin_token $SERVICE_TOKEN
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT rabbit_password $RABBIT_PASSWORD
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT sql_connection `database_connection_url trove`
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf filter:tokenauth admin_token $SERVICE_TOKEN
 
-    iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
-    iniset $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample DEFAULT sql_connection `database_connection_url reddwarf`
-    sed -i "s/localhost/$NETWORK_GATEWAY/g" $REDDWARF_LOCAL_CONF_DIR/reddwarf-guestagent.conf.sample
+    iniset $TROVE_LOCAL_CONF_DIR/trove-guestagent.conf.sample DEFAULT rabbit_password $RABBIT_PASSWORD
+    iniset $TROVE_LOCAL_CONF_DIR/trove-guestagent.conf.sample DEFAULT sql_connection `database_connection_url trove`
+    sed -i "s/localhost/$NETWORK_GATEWAY/g" $TROVE_LOCAL_CONF_DIR/trove-guestagent.conf.sample
 }
 
 ###############################################################################
@@ -248,8 +248,8 @@ function add_flavor() {
     FLAVOR_VCPUS=$5
     FLAVOR_EPHEMERAL=$6
 
-    if [[ -z $(nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$REDDWARF_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$REDDWARF_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+    if [[ -z $(nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
+        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
     fi
     msgout "DEBUG" "$mod:-->"
 }
@@ -275,107 +275,107 @@ function add_flavors() {
 # stack.sh entry points
 ###############################################################################
 
-# cleanup_reddwarfclient() - Remove residual data files, anything left over from previous
+# cleanup_troveclient() - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
-function cleanup_reddwarfclient() {
-    local mod="cleanup_reddwarfclient"
+function cleanup_troveclient() {
+    local mod="cleanup_troveclient"
     # This function intentionally left blank
     msgout "DEBUG" "$mod:<-- "
     msgout "DEBUG" "$mod:--> "
 }
 
-# cleanup_reddwarf() - Remove residual data files, anything left over from previous
+# cleanup_trove() - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
-function cleanup_reddwarf() {
-    local mod="cleanup_reddwarf"
+function cleanup_trove() {
+    local mod="cleanup_trove"
     # This function intentionally left blank
     msgout "DEBUG" "$mod:<-- "
     msgout "DEBUG" "$mod:--> "
 }
 
-# configure_reddwarfclient() - Set config files, create data dirs, etc
-function configure_reddwarfclient() {
-    local mod="configure_reddwarfclient"
+# configure_troveclient() - Set config files, create data dirs, etc
+function configure_troveclient() {
+    local mod="configure_troveclient"
     msgout "DEBUG" "$mod<-- "
-    setup_develop $REDDWARFCLIENT_DIR
+    setup_develop $TROVECLIENT_DIR
     msgout "DEBUG" "$mod:-->"
 }
 
-# configure_reddwarf() - Set config files, create data dirs, etc
-function configure_reddwarf() {
-    local mod="configure_reddwarf"
-    msgout "DEBUG" "$mod<-- ($REDDWARF_DIR)"
+# configure_trove() - Set config files, create data dirs, etc
+function configure_trove() {
+    local mod="configure_trove"
+    msgout "DEBUG" "$mod<-- ($TROVE_DIR)"
 
     install_package libxslt1-dev python-pexpect
-    setup_develop $REDDWARF_DIR
+    setup_develop $TROVE_DIR
 
-    # Create the reddwarf build dir if it doesn't exist
-    sudo mkdir -p ${REDDWARF_BUILD_DIR}
-    sudo chown -R $USER: ${REDDWARF_BUILD_DIR}
+    # Create the trove build dir if it doesn't exist
+    sudo mkdir -p ${TROVE_BUILD_DIR}
+    sudo chown -R $USER: ${TROVE_BUILD_DIR}
 
     msgout "DEBUG" "$mod:-->"
 }
 
-# install_reddwarfclient() - Collect source and prepare
-function install_reddwarfclient() {
-    local mod="install_reddwarfclient"
+# install_troveclient() - Collect source and prepare
+function install_troveclient() {
+    local mod="install_troveclient"
     msgout "DEBUG" "$mod<-- "
-    git_clone $REDDWARFCLIENT_REPO $REDDWARFCLIENT_DIR $REDDWARFCLIENT_BRANCH
+    git_clone $TROVECLIENT_REPO $TROVECLIENT_DIR $TROVECLIENT_BRANCH
     msgout "DEBUG" "$mod:-->"
 }
 
-# install_reddwarf() - Collect source and prepare
-function install_reddwarf() {
-    local mod="install_reddwarf"
+# install_trove() - Collect source and prepare
+function install_trove() {
+    local mod="install_trove"
     msgout "DEBUG" "$mod<-- "
-    git_clone $REDDWARF_REPO $REDDWARF_DIR $REDDWARF_BRANCH
+    git_clone $TROVE_REPO $TROVE_DIR $TROVE_BRANCH
     msgout "DEBUG" "$mod:-->"
 }
 
-# init_reddwarf() - Initializes Reddwarf Database as a Service
-function init_reddwarf() {
-    local mod="init_reddwarf"
+# init_trove() - Initializes Trove Database as a Service
+function init_trove() {
+    local mod="init_trove"
     msgout "DEBUG" "$mod<-- "
 
-    msgout "DEBUG" "(Re)Creating reddwarf db..."
-    recreate_database reddwarf utf8
+    msgout "DEBUG" "(Re)Creating trove db..."
+    recreate_database trove utf8
 
-    mkdir -p $REDDWARF_INTEGRATION_CONF_DIR
+    mkdir -p $TROVE_INTEGRATION_CONF_DIR
 
     msgout "DEBUG" "Creating Keystone users..."
-    reddwarf_configure_keystone
+    trove_configure_keystone
 
-    msgout "DEBUG" "Making a temporary reddwarf config file..."
+    msgout "DEBUG" "Making a temporary trove config file..."
     fix_rd_configfiles
 
-    msgout "DEBUG" "Initializing the Reddwarf Database..."
-    reddwarf_manage db_sync
+    msgout "DEBUG" "Initializing the Trove Database..."
+    trove_manage db_sync
 
-    msgout "DEBUG" "Adding reddwarf specific flavours..."
+    msgout "DEBUG" "Adding trove specific flavours..."
     add_flavors
 
-    msgout "DEBUG" "Removing old certs from reddwarf cache dir.."
-    rm -fr $REDDWARF_AUTH_CACHE_DIR/*
+    msgout "DEBUG" "Removing old certs from trove cache dir.."
+    rm -fr $TROVE_AUTH_CACHE_DIR/*
 
     msgout "DEBUG" "$mod:-->"
 }
 
-# start_reddwarf() - Start running processes, including screen
-function start_reddwarf() {
-    local mod="start_reddwarf"
+# start_trove() - Start running processes, including screen
+function start_trove() {
+    local mod="start_trove"
     msgout "DEBUG" "$mod<-- "
-    screen_it rd-api "cd $REDDWARF_DIR; bin/reddwarf-api --config-file=$REDDWARF_CONF_DIR/reddwarf.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-api.log"
-    screen_it rd-tmgr "cd $REDDWARF_DIR; bin/reddwarf-taskmanager --config-file=$REDDWARF_CONF_DIR/reddwarf-taskmanager.conf 2>&1 | tee $REDDWARF_LOGDIR/reddwarf-taskmanager.log"
+    screen_it rd-api "cd $TROVE_DIR; bin/trove-api --config-file=$TROVE_CONF_DIR/trove.conf 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
+    screen_it rd-tmgr "cd $TROVE_DIR; bin/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
     msgout "DEBUG" "$mod:-->"
 }
 
 function devstack_post_install_hook() {
-    install_reddwarf
-    install_reddwarfclient
-    configure_reddwarf
-    configure_reddwarfclient
-    init_reddwarf
-    start_reddwarf
+    install_trove
+    install_troveclient
+    configure_trove
+    configure_troveclient
+    init_trove
+    start_trove
 }
 
 devstack_post_install_hook

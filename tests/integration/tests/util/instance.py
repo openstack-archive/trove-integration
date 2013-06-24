@@ -21,10 +21,10 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import assert_is_not_none
 from proboscis.asserts import fail
 
-from reddwarfclient.exceptions import NotFound as NotFound404
+from troveclient.exceptions import NotFound as NotFound404
 from tests.util import report
 from tests.util import test_config
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 from tests import WHITE_BOX
 
 if WHITE_BOX:
@@ -36,11 +36,11 @@ if WHITE_BOX:
     # from nova import utils
     # from nova.compute import power_state
     # from nova import exception
-    # from reddwarf.api.common import dbaas_mapping
-    # from reddwarf.compute.manager import ReddwarfInstanceMetaData
-    # from reddwarf.compute.manager import VALID_ABORT_STATES
-    # from reddwarf.db import api as dbapi
-    # from reddwarf.utils import poll_until
+    # from trove.api.common import dbaas_mapping
+    # from trove.compute.manager import TroveInstanceMetaData
+    # from trove.compute.manager import VALID_ABORT_STATES
+    # from trove.db import api as dbapi
+    # from trove.utils import poll_until
 
     # FLAGS = flags.FLAGS
 
@@ -140,7 +140,7 @@ class InstanceTest(object):
 
     def _get_instance_volume(self):
         """After _create_instance is called, this will return the volume ID."""
-        metadata = ReddwarfInstanceMetaData(self.db,
+        metadata = TroveInstanceMetaData(self.db,
             context.get_admin_context(), self.local_id)
         assert_is_not_none(metadata.volume)
         self.volume_id = metadata.volume_id
@@ -205,7 +205,7 @@ class InstanceTest(object):
         poll_until(self._get_compute_instance_state,
                          lambda state: state in VALID_ABORT_STATES,
                          sleep_time=1,
-                         time_out=FLAGS.reddwarf_instance_suspend_time_out)
+                         time_out=FLAGS.trove_instance_suspend_time_out)
 
     def _check_volume_detached(self):
         result = self.db.volume_get(context.get_admin_context(),

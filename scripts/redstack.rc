@@ -2,10 +2,10 @@
 [ -z $SERVICE_HOST ] && SERVICE_HOST=localhost
 [ -z $DEST ] && DEST=/opt/stack
 [ -z $NETWORK_GATEWAY ] && NETWORK_GATEWAY=10.0.0.1
-REDDWARF_SOURCE=$DEST/reddwarf
+TROVE_SOURCE=$DEST/trove
 PATH_INTEGRATION_CONF="/tmp/integration"
 
-# devstack is either a shared folder or is downloaded by reddwarf-ci install.
+# devstack is either a shared folder or is downloaded by trove-ci install.
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 PATH_DEVSTACK_OUTPUT=$DEST
 REPO_DEVSTACK=git://github.com/openstack-dev/devstack.git
@@ -23,15 +23,15 @@ PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
 PATH_SWIFT=$DEST/swift
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 
-# reddwarf information
-REPO_REDDWARF=https://github.com/openstack/trove.git
-BRANCH_REDDWARF=master
-PATH_REDDWARF=$DEST/reddwarf
+# trove information
+REPO_TROVE=https://github.com/openstack/trove.git
+BRANCH_TROVE=master
+PATH_TROVE=$DEST/trove
 
-# reddwarfclient information
-REPO_REDDWARFCLIENT=https://github.com/openstack/python-troveclient.git
-BRANCH_REDDWARFCLIENT=master
-PATH_PYTHON_REDDWARFCLIENT=$DEST/python-reddwarfclient
+# troveclient information
+REPO_TROVECLIENT=https://github.com/openstack/python-troveclient.git
+BRANCH_TROVECLIENT=master
+PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 
 # diskimage-builder information
 REPO_DISKIMAGEBUILDER=https://github.com/stackforge/diskimage-builder.git

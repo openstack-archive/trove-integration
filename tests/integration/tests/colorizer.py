@@ -339,7 +339,7 @@ if __name__ == '__main__':
     # front of it, automatically add that so we don't have to type as much
     show_elapsed = True
     argv = []
-    test_fixture = os.getenv("UNITTEST_FIXTURE", "reddwarf")
+    test_fixture = os.getenv("UNITTEST_FIXTURE", "trove")
     for x in sys.argv:
         if x.startswith('test_'):
             argv.append('%s.tests.%s' % (test_fixture, x))

@@ -7,4 +7,4 @@ python-keystoneclient
 python-novaclient
 python-proboscis
 python-quantumclient
-python-reddwarfclient
+python-troveclient

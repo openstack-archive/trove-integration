@@ -29,7 +29,7 @@
 # This emulates the old way we did things, which was to load the config
 # as a module.
 # TODO(tim.simpson): Change all references from "test_config" to CONFIG.
-from reddwarf.tests.config import CONFIG as test_config
+from trove.tests.config import CONFIG as test_config
 
 import re
 import subprocess
@@ -45,7 +45,7 @@ except ImportError:
 
 from sqlalchemy import create_engine
 
-from reddwarfclient import exceptions
+from troveclient import exceptions
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -55,26 +55,26 @@ from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
 from proboscis import SkipTest
-from reddwarfclient import Dbaas
-from reddwarfclient.client import ReddwarfHTTPClient
+from troveclient import Dbaas
+from troveclient.client import TroveHTTPClient
 from tests.util import test_config
-from reddwarf.tests.util.client import TestClient as TestClient
+from trove.tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 
 # Import these older methods from their new home.
 # TODO(tim.simpson): Change tests to import these functions from their new home.
-from reddwarf.tests.util import assert_http_code
-from reddwarf.tests.util import create_client
-from reddwarf.tests.util import create_dbaas_client
-from reddwarf.tests.util import create_nova_client
-from reddwarf.tests.util import process
-from reddwarf.tests.util import string_in_list
-from reddwarf.tests.util import PollTimeOut
-from reddwarf.tests.util import poll_until
-from reddwarf.tests.util import LocalSqlClient
-from reddwarf.tests.util import check
+from trove.tests.util import assert_http_code
+from trove.tests.util import create_client
+from trove.tests.util import create_dbaas_client
+from trove.tests.util import create_nova_client
+from trove.tests.util import process
+from trove.tests.util import string_in_list
+from trove.tests.util import PollTimeOut
+from trove.tests.util import poll_until
+from trove.tests.util import LocalSqlClient
+from trove.tests.util import check
 
 
 WHITE_BOX = test_config.white_box
@@ -211,7 +211,7 @@ def wait_for_compute_service():
 
 def should_run_rsdns_tests():
     """If true, then the RS DNS tests should also be run."""
-    return test_config.values.get("reddwarf_dns_support", False)
+    return test_config.values.get("trove_dns_support", False)
 
 
 

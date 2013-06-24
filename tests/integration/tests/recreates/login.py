@@ -2,7 +2,7 @@ from proboscis import test
 
 from tests.util import create_dbaas_client
 from tests.util import test_config
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 
 @test(groups=["recreates.login"])

@@ -15,9 +15,9 @@
 
 import unittest
 
-from reddwarf.tests.util.users import Requirements
-from reddwarf.tests.util.users import ServiceUser
-from reddwarf.tests.util.users import Users
+from trove.tests.util.users import Requirements
+from trove.tests.util.users import ServiceUser
+from trove.tests.util.users import Users
 
 USER_LIST = [
     {"auth_user":"admin",

@@ -13,8 +13,8 @@ from proboscis import TestProgram
 from proboscis.asserts import *
 from proboscis.asserts import Check
 
-from reddwarfclient import Dbaas
-from reddwarfclient import ReddwarfHTTPClient
+from troveclient import Dbaas
+from troveclient import TroveHTTPClient
 
 
 from client import ConfigFile
@@ -273,10 +273,10 @@ def load_config_file():
     if not conf:
         fail("Missing conf file.")
 
-def create_client(cls=ReddwarfHTTPClient):
+def create_client(cls=TroveHTTPClient):
     client = Dbaas(conf.username, conf.password, tenant=conf.tenant,
                    auth_url="blah/", auth_strategy='fake',
-                   insecure=True, service_type='reddwarf',
+                   insecure=True, service_type='trove',
                    service_url=conf.dbaas_url, client_cls=cls)
     return client
 

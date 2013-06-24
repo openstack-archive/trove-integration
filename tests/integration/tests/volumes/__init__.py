@@ -22,4 +22,4 @@
 
 # Is a set of tests written directly against the VolumeManager and VolumeClient
 # classes which doesn't require standing up Nova daemons or anything.
-VOLUMES_DRIVER = "reddwarf.volumes.driver"
+VOLUMES_DRIVER = "trove.volumes.driver"

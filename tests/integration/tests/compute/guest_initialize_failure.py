@@ -39,7 +39,7 @@ from tests.util import process
 from tests.util import restart_compute_service
 from tests.util import string_in_list
 from tests.util import TestClient
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 from tests.util.instance import InstanceTest
 from tests import WHITE_BOX
@@ -56,12 +56,12 @@ if WHITE_BOX:
     # from nova.compute import power_state
     # from nova.compute import vm_states
     # from nova.notifier import api as notifier
-    # from reddwarf.api.common import dbaas_mapping
-    # from reddwarf.db import api as dbapi
-    # from reddwarf.utils import poll_until
-    # from reddwarf.scheduler import simple  # import used for FLAG values
+    # from trove.api.common import dbaas_mapping
+    # from trove.db import api as dbapi
+    # from trove.utils import poll_until
+    # from trove.scheduler import simple  # import used for FLAG values
     # from nova import flags
-    # from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    # from trove.compute.manager import TroveInstanceMetaData
     # FLAGS = flags.FLAGS
 
 VOLUME_TIME_OUT = 30
@@ -120,7 +120,7 @@ class VerifyManagerAbortsInstanceWhenVolumeFails(InstanceTest):
         wait_until_scheduler_is_ready()
         test_config.volume_service.stop()
         assert_false(test_config.volume_service.is_running)
-        restart_compute_service(['--reddwarf_volume_time_out=%d'
+        restart_compute_service(['--trove_volume_time_out=%d'
                                  % VOLUME_TIME_OUT])
         self.init("TEST_FAIL_VOLUME_")
         self.instance_exists = False
@@ -139,22 +139,22 @@ class VerifyManagerAbortsInstanceWhenVolumeFails(InstanceTest):
     def create_instance(self):
         """Create a new instance."""
         self.abort_count = count_notifications(notifier.ERROR,
-            "reddwarf.instance.abort.volume")
+            "trove.instance.abort.volume")
         self._create_instance()
         # Use an admin context to avoid the possibility that in between the
         # previous line and this one the request goes through and the instance
         # is deleted.
-        metadata = ReddwarfInstanceMetaData(self.db,
+        metadata = TroveInstanceMetaData(self.db,
             context.get_admin_context(), self.local_id)
         self.volume_id = metadata.volume_id
 
     @test(depends_on=[create_instance])
     def wait_for_failure(self):
-        """Make sure the Reddwarf Compute Manager FAILS a timed-out volume."""
+        """Make sure the Trove Compute Manager FAILS a timed-out volume."""
         self.instance_exists = True
         self.wait_for_rest_api_to_show_status_as_failed(VOLUME_TIME_OUT + 30)
         abort_count2 = count_notifications(notifier.ERROR,
-                                           "reddwarf.instance.abort.volume")
+                                           "trove.instance.abort.volume")
         assert_true(self.abort_count < abort_count2)
 
     @test(depends_on=[wait_for_failure])
@@ -190,7 +190,7 @@ class VerifyManagerAbortsInstanceWhenGuestInstallFails(InstanceTest):
     def setUp(self):
         """Sets up the client."""
         wait_until_scheduler_is_ready()
-        restart_compute_service(['--reddwarf_guest_initialize_time_out=%d'
+        restart_compute_service(['--trove_guest_initialize_time_out=%d'
                                  % GUEST_INSTALL_TIMEOUT])
         self.init("TEST_FAIL_GUEST_")
 
@@ -221,9 +221,9 @@ class VerifyManagerAbortsInstanceWhenGuestInstallFails(InstanceTest):
     @test(depends_on=[wait_for_compute_host_up])
     def create_instance(self):
         self.abort_count = count_notifications(notifier.ERROR,
-                                               "reddwarf.instance.abort.guest")
+                                               "trove.instance.abort.guest")
         self._create_instance()
-        metadata = ReddwarfInstanceMetaData(self.db,
+        metadata = TroveInstanceMetaData(self.db,
             context.get_admin_context(), self.local_id)
         self.volume_id = metadata.volume_id
         assert_is_not_none(metadata.volume)
@@ -270,7 +270,7 @@ class VerifyManagerAbortsInstanceWhenGuestInstallFails(InstanceTest):
 
     @test(depends_on=[should_have_created_volume])
     def destroy_guest_and_wait_for_failure(self):
-        """Make sure the Reddwarf Compute Manager FAILS a timed-out guest."""
+        """Make sure the Trove Compute Manager FAILS a timed-out guest."""
 
         # Utterly kill the guest install.
         process("sudo rm -rf /vz/private/%s/bin" % str(self.local_id))
@@ -297,7 +297,7 @@ class VerifyManagerAbortsInstanceWhenGuestInstallFails(InstanceTest):
         #                   to such.  Although maybe that's overkill.
         self._assert_status_failure(self._get_status_tuple())
         abort_count2 = count_notifications(notifier.ERROR,
-                                           "reddwarf.instance.abort.guest")
+                                           "trove.instance.abort.guest")
         assert_true(self.abort_count < abort_count2)
 
     @test(depends_on=[destroy_guest_and_wait_for_failure])

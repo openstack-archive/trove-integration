@@ -76,13 +76,13 @@ MAIN_RUNNER = None
 
 def initialize_rdl_config(config_file):
     import optparse
-    from reddwarf.common import config
-    from reddwarf import version
+    from trove.common import config
+    from trove import version
 
     def create_options(parser):
         parser.add_option('-p', '--port', dest="port", metavar="PORT",
                           type=int, default=9898,
-                          help="Port the Reddwarf API host listens on. "
+                          help="Port the Trove API host listens on. "
                          "Default: %default")
         config.add_common_options(parser)
         config.add_log_options(parser)
@@ -94,7 +94,7 @@ def initialize_rdl_config(config_file):
         usage=usage())
     create_options(oparser)
     (options, args) = config.parse_options(oparser, cli_args=[config_file])
-    conf = config.Config.load_paste_config('reddwarf', options, args)
+    conf = config.Config.load_paste_config('trove', options, args)
     config.setup_logging(options, conf)
 
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # Many of the test decorators depend on configuration values, so before
     # start importing modules we have to load the test config followed by the
     # flag files.
-    from reddwarf.tests.config import CONFIG
+    from trove.tests.config import CONFIG
 
     # Find config file.
     if not "TEST_CONF" in os.environ:
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # Set up the report, and print out how we're running the tests.
     from tests.util import report
     from datetime import datetime
-    report.log("Reddwarf Integration Tests, %s" % datetime.now())
+    report.log("Trove Integration Tests, %s" % datetime.now())
     report.log("Invoked via command: " + str(sys.argv))
     report.log("Groups = " + str(groups))
     report.log("Test conf file = %s" % os.environ["TEST_CONF"])
@@ -228,28 +228,28 @@ if __name__ == '__main__':
     if not ADD_DOMAINS:
         from tests import initialize
         from tests.api import delete_all
-        from reddwarf.tests.api import flavors
-        from reddwarf.tests.api import versions
-        from reddwarf.tests.api import instances
-        from reddwarf.tests.api.instances import GROUP_START_SIMPLE
+        from trove.tests.api import flavors
+        from trove.tests.api import versions
+        from trove.tests.api import instances
+        from trove.tests.api.instances import GROUP_START_SIMPLE
         from tests.api import instances_direct
-        from reddwarf.tests.api import instances_actions
-        from reddwarf.tests.api import instances_mysql_down
+        from trove.tests.api import instances_actions
+        from trove.tests.api import instances_mysql_down
         from tests.api import instances_pagination
-        from reddwarf.tests.api import instances_delete
+        from trove.tests.api import instances_delete
         from tests.api import instances_quotas
         from tests.api import instances_states
-        from reddwarf.tests.api import databases
-        from reddwarf.tests.api import root
-        from reddwarf.tests.api import users
-        from reddwarf.tests.api import user_access
-        from reddwarf.tests.api import backups
-        from reddwarf.tests.api.mgmt import accounts
-        from reddwarf.tests.api.mgmt import admin_required
+        from trove.tests.api import databases
+        from trove.tests.api import root
+        from trove.tests.api import users
+        from trove.tests.api import user_access
+        from trove.tests.api import backups
+        from trove.tests.api.mgmt import accounts
+        from trove.tests.api.mgmt import admin_required
         from tests.api.mgmt import hosts
         from tests.api.mgmt import update_hosts
-        from reddwarf.tests.api.mgmt import instances
-        from reddwarf.tests.api.mgmt import storage
+        from trove.tests.api.mgmt import instances
+        from trove.tests.api.mgmt import storage
         from tests.dns import dns
         from tests.guest import amqp_restarts
         from tests.reaper import volume_reaping

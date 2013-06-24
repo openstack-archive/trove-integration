@@ -17,7 +17,7 @@ from proboscis import test
 
 from tests.util import test_config
 from tests.util import create_dbaas_client
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 
 GROUP = "dbaas.api.instances.actions"

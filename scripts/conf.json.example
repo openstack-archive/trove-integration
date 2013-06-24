@@ -6,7 +6,7 @@
     "nova":null,
     "python_keystoneclient":null,
     "python_novaclient":null,
-    "reddwarf":null,
-    "python_reddwarfclient":null,
+    "trove":null,
+    "python_troveclient":null,
     "tempest":null
 }
