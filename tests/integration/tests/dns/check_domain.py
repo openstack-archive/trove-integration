@@ -35,12 +35,12 @@ if WHITE_BOX:
     from nova import utils
     from nova import flags
     import rsdns
-    from reddwarf.dns.rsdns.driver import create_client_with_flag_values
-    from reddwarf.dns.driver import DnsEntry
-    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
-    from reddwarf.dns.rsdns.driver import RsDnsDriver
-    from reddwarf.dns.rsdns.driver import RsDnsZone
-    from reddwarf.utils import poll_until
+    from trove.dns.rsdns.driver import create_client_with_flag_values
+    from trove.dns.driver import DnsEntry
+    from trove.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from trove.dns.rsdns.driver import RsDnsDriver
+    from trove.dns.rsdns.driver import RsDnsZone
+    from trove.utils import poll_until
     FLAGS = flags.FLAGS
     TEST_CONTENT = "126.1.1.1"
     TEST_NAME = "hiwassup.%s" % FLAGS.dns_domain_name

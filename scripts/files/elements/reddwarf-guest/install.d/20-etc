@@ -1,8 +1,0 @@
-#!/bin/sh
-
-# CONTEXT: GUEST during CONSTRUCTION as ROOT
-# PURPOSE: take "staged" reddwarf-guest.conf file and put it in the init directory on guest image
-
-dd if=/tmp/in_target.d/reddwarf-guest.conf of=/etc/init/reddwarf-guest.conf
-
-

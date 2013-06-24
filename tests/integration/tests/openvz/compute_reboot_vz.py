@@ -29,9 +29,9 @@ from proboscis.asserts import fail
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from reddwarf.tests.api.instances import GROUP_START
-from reddwarf.tests.api.instances import GROUP_TEST
-from reddwarf.tests.api.instances import instance_info
+from trove.tests.api.instances import GROUP_START
+from trove.tests.api.instances import GROUP_TEST
+from trove.tests.api.instances import instance_info
 
 from tests.util import TestClient
 from tests.util import check_database
@@ -42,7 +42,7 @@ from tests.util import restart_compute_service
 from tests.util import string_in_list
 from tests.util import test_config
 from tests.util.instance import InstanceTest
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 from tests import WHITE_BOX
 
@@ -60,11 +60,11 @@ if WHITE_BOX:
     # from nova.scheduler.driver import Scheduler
     # from nova.virt import openvz_conn
 
-    # from reddwarf.api.common import dbaas_mapping
-    # from reddwarf.db import api as dbapi
-    # from reddwarf.utils import poll_until
-    # from reddwarf.scheduler import simple  # import used for FLAG values
-    # from reddwarf.compute.manager import ReddwarfInstanceMetaData
+    # from trove.api.common import dbaas_mapping
+    # from trove.db import api as dbapi
+    # from trove.utils import poll_until
+    # from trove.scheduler import simple  # import used for FLAG values
+    # from trove.compute.manager import TroveInstanceMetaData
 
     # FLAGS = flags.FLAGS
 

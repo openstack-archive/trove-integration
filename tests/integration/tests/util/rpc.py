@@ -35,8 +35,8 @@ if test_config.values.get('rabbit_runs_locally', False) == True:
 
         def declare_queue(self, topic):
             """Call this to declare a queue from Python."""
-            #from reddwarf.rpc.impl_kombu import Connection
-            from reddwarf.openstack.common.rpc import create_connection
+            #from trove.rpc.impl_kombu import Connection
+            from trove.openstack.common.rpc import create_connection
             with create_connection() as conn:
                 consumer = conn.declare_topic_consumer(topic=topic)
 

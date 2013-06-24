@@ -43,10 +43,10 @@ if WHITE_BOX:
     # from nova import exception
     # from nova import flags
     # from nova import utils
-    # from reddwarf import exception as reddwarf_exception
-    # from reddwarf.utils import poll_until
-    # from reddwarf import volume
-    # from reddwarf.tests.volume import driver as test_driver
+    # from trove import exception as trove_exception
+    # from trove.utils import poll_until
+    # from trove import volume
+    # from trove.tests.volume import driver as test_driver
 
     # FLAGS = flags.FLAGS
 
@@ -408,7 +408,7 @@ class ResizeVolume(VolumeTest):
     def test_resizefs_rescan(self):
         self.story.client.resize_fs(self.story.context,
                                     self.story.volume_id)
-        expected = "reddwarf.tests.volume.driver.ISCSITestDriver"
+        expected = "trove.tests.volume.driver.ISCSITestDriver"
         if FLAGS.volume_driver is expected:
             size = self.story.resize_volume_size * \
                    test_driver.TESTS_VOLUME_SIZE_MULTIPLIER * 1024 * 1024
@@ -451,7 +451,7 @@ class GrabUuid(VolumeTest):
         """DevicePathInvalidForUuid is raised if device_path is wrong."""
         client = self.story.client
         device_path = "gdfjghsfjkhggrsyiyerreygghdsghsdfjhf"
-        self.assertRaises(reddwarf_exception.DevicePathInvalidForUuid,
+        self.assertRaises(trove_exception.DevicePathInvalidForUuid,
                           client.get_uuid, device_path)
 
 
@@ -529,7 +529,7 @@ class ConfirmMissing(VolumeTest):
             self.fail("Expecting an error but did not get one.")
         except exception.Error:
             pass
-        except reddwarf_exception.ISCSITargetNotDiscoverable:
+        except trove_exception.ISCSITargetNotDiscoverable:
             pass
 
     @time_out(60)

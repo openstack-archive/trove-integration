@@ -4,12 +4,12 @@ import unittest
 from proboscis import test
 from proboscis.decorators import time_out
 
-from reddwarfclient import Dbaas
+from troveclient import Dbaas
 
-from reddwarf.tests.api.instances import instance_info
-from reddwarf.tests.api.instances import GROUP_START as INSTANCE_START
-from reddwarf.tests.api.instances import GROUP_TEST
-from reddwarf.tests.api.instances import GROUP_STOP as INSTANCE_STOP
+from trove.tests.api.instances import instance_info
+from trove.tests.api.instances import GROUP_START as INSTANCE_START
+from trove.tests.api.instances import GROUP_TEST
+from trove.tests.api.instances import GROUP_STOP as INSTANCE_STOP
 from tests import WHITE_BOX
 
 
@@ -21,8 +21,8 @@ if WHITE_BOX:
     # from nova import flags
     # from nova import utils
 
-    # from reddwarf import exception
-    # from reddwarf.utils import poll_until
+    # from trove import exception
+    # from trove.utils import poll_until
 
     # FLAGS = flags.FLAGS
 

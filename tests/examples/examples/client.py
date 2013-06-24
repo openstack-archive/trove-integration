@@ -8,8 +8,8 @@ from urlparse import urlparse
 import xml.dom.minidom
 
 from proboscis.asserts import *
-from reddwarfclient.client import ReddwarfHTTPClient
-from reddwarfclient.xml import ReddwarfXmlClient
+from troveclient.client import TroveHTTPClient
+from troveclient.xml import TroveXmlClient
 
 
 print_req = True
@@ -219,7 +219,7 @@ def write_to_snippet(self, args, kwargs, resp, body):
         }
 
 
-class JsonClient(ReddwarfHTTPClient):
+class JsonClient(TroveHTTPClient):
 
     content_type = 'json'
 
@@ -227,7 +227,7 @@ class JsonClient(ReddwarfHTTPClient):
         return write_to_snippet(self, *args, **kwargs)
 
 
-class XmlClient(ReddwarfXmlClient):
+class XmlClient(TroveXmlClient):
 
     content_type = 'xml'
 

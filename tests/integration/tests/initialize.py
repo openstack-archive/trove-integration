@@ -164,9 +164,9 @@ def start_nova_api():
 @test(groups=["services.initialize"],
       depends_on_classes=[start_nova_api],
       enabled=START_SERVICES)
-def start_reddwarf_api():
-    """Starts the Reddwarf Service."""
-    Daemon(service_path_root="reddwarf_code_root",
-           service_path="%s/bin/reddwarf-api",
+def start_trove_api():
+    """Starts the Trove Service."""
+    Daemon(service_path_root="trove_code_root",
+           service_path="%s/bin/trove-api",
            extra_cmds=['--config-file='],
-           conf_file_name="reddwarf_conf").run()
+           conf_file_name="trove_conf").run()

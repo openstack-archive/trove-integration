@@ -22,7 +22,7 @@ function build_vm() {
 
     readonly SSH_DIR=${HOMEDIR}/.ssh
     manage_ssh_keys
-    MYSQL_ELEMENT="reddwarf-${SERVICE_TYPE}"
+    MYSQL_ELEMENT="${SERVICE_TYPE}"
     
     mkdir -p $VM_PATH
     export RELEASE=precise
@@ -33,9 +33,10 @@ function build_vm() {
     export NETWORK_GATEWAY
     export REDSTACK_SCRIPTS
     export SERVICE_TYPE
-    export ESCAPED_PATH_REDDWARF
+    export ESCAPED_PATH_TROVE
     export SSH_DIR
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x vm reddwarf-guest ${MYSQL_ELEMENT}
+    export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM_PATH}/${UBUNTU_DISTRO_NAME}_mysql_image" -x vm guest ${MYSQL_ELEMENT}
 }
 
 function cmd_build_image() {
@@ -52,7 +53,7 @@ function cmd_build_image() {
         exit 1
     fi
 
-    iniset $REDDWARF_CONF_DIR/reddwarf.conf DEFAULT service_type $SERVICE_TYPE
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT service_type $SERVICE_TYPE
 
     USERNAME=`whoami`
     mkdir -p $USERHOME/images
@@ -70,10 +71,10 @@ function cmd_build_image() {
     fi
 
     QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    REDDWARF_TOKEN=`retrieve_token reddwarf REDDWARF-PASS reddwarf`
+    TROVE_TOKEN=`retrieve_token trove TROVE-PASS trove`
 
     # Now upload it
-    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_${SERVICE_TYPE}_image" ovf qcow2 $REDDWARF_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+    upload_image_to_glance "${UBUNTU_DISTRO_NAME}_${SERVICE_TYPE}_image" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
 }
 
 function clean_instances() {

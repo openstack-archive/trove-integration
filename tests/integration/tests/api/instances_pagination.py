@@ -13,11 +13,11 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import Check
 from proboscis.asserts import fail
 
-from reddwarfclient import exceptions
+from troveclient import exceptions
 from tests import util
 from tests.util import create_dbaas_client
 from tests.util import test_config
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 
 class TestBase(object):

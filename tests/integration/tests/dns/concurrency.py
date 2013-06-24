@@ -47,7 +47,7 @@ from tests import WHITE_BOX
 
 
 if WHITE_BOX:
-    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from trove.dns.rsdns.driver import RsDnsInstanceEntryFactory
     from nova import flags
     from nova import utils
     FLAGS = flags.FLAGS
