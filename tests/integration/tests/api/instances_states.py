@@ -23,7 +23,7 @@ from proboscis.asserts import assert_equal
 import tests
 from tests.util import test_config
 from tests.util import create_dbaas_client
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 from tests.util import poll_until
 from tests import FAKE_MODE
 

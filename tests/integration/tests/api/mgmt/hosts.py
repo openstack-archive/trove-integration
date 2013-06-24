@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from reddwarfclient import exceptions
+from troveclient import exceptions
 
 from proboscis import before_class
 from proboscis import test
@@ -25,11 +25,11 @@ from proboscis.asserts import fail
 from proboscis.check import Check
 
 import tests
-from reddwarf.tests.api.instances import create_new_instance
-from reddwarf.tests.api.instances import instance_info
+from trove.tests.api.instances import create_new_instance
+from trove.tests.api.instances import instance_info
 from tests.util import test_config
 from tests.util import create_dbaas_client
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 
 GROUP = "dbaas.api.mgmt.hosts"
 

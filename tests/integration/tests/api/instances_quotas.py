@@ -2,7 +2,7 @@ from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_raises
 
-from reddwarfclient import exceptions
+from troveclient import exceptions
 from tests.util import test_config
 from tests.util import create_client
 from tests.util import poll_until
@@ -20,8 +20,8 @@ class InstanceQuotas(object):
     @test
     def test_too_many_instances(self):
         self.created_instances = []
-        if 'reddwarf_max_instances_per_user' in test_config.values:
-            too_many = test_config.values['reddwarf_max_instances_per_user']
+        if 'trove_max_instances_per_user' in test_config.values:
+            too_many = test_config.values['trove_max_instances_per_user']
             already_there = len(self.client.instances.list())
             flavor = 1
             for i in range(too_many - already_there):

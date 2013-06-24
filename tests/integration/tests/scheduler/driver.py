@@ -21,7 +21,7 @@ from nose.tools import assert_almost_equal
 from nose.tools import assert_equal
 from nose.tools import assert_not_almost_equal
 from nose.tools import assert_true
-from reddwarfclient import exceptions
+from troveclient import exceptions
 from proboscis import test
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
@@ -33,7 +33,7 @@ from tests.util import TestClient
 from tests.util import count_notifications
 from tests.util import create_dbaas_client
 from tests.util import test_config
-from reddwarf.tests.util.users import Requirements
+from trove.tests.util.users import Requirements
 from tests.volumes import VOLUMES_DRIVER
 
 if WHITE_BOX:
@@ -46,7 +46,7 @@ if WHITE_BOX:
     # from nova.notifier import api as notifier
     # from nova.utils import LoopingCall
 
-    # from reddwarf.utils import poll_until
+    # from trove.utils import poll_until
     # FLAGS = flags.FLAGS
 
 GROUP = SCHEDULER_DRIVER_GROUP

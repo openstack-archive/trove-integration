@@ -7,4 +7,4 @@ set -e
 set -o xtrace
 
 
-sudo dd if=/tmp/in_target.d/reddwarf-source-host.list of=/etc/apt/sources.list.d/reddwarf-source-host.list
+sudo dd if=/tmp/in_target.d/trove-source-host.list of=/etc/apt/sources.list.d/trove-source-host.list

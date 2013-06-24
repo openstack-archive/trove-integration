@@ -26,9 +26,9 @@ from tests import WHITE_BOX
 if WHITE_BOX:
     from nova import flags
     from rsdns.client.records import Record
-    from reddwarf.dns.rsdns.driver import EntryToRecordConverter
-    from reddwarf.dns.rsdns.driver import RsDnsInstanceEntryFactory
-    from reddwarf.dns.rsdns.driver import RsDnsZone
+    from trove.dns.rsdns.driver import EntryToRecordConverter
+    from trove.dns.rsdns.driver import RsDnsInstanceEntryFactory
+    from trove.dns.rsdns.driver import RsDnsZone
     FLAGS = flags.FLAGS
     driver = None
     DEFAULT_ZONE = RsDnsZone(1, "dbaas.rackspace.org")

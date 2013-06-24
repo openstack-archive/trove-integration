@@ -15,11 +15,11 @@
 from proboscis.asserts import *
 from proboscis import test
 from proboscis import SkipTest
-from reddwarf.tests.config import CONFIG
-from reddwarf.tests.api.instances import GROUP
-from reddwarf.tests.api.instances import GROUP_STOP
-from reddwarf.tests.api.instances import DeleteInstance
-from reddwarf.tests.api.instances import instance_info
+from trove.tests.config import CONFIG
+from trove.tests.api.instances import GROUP
+from trove.tests.api.instances import GROUP_STOP
+from trove.tests.api.instances import DeleteInstance
+from trove.tests.api.instances import instance_info
 from tests.util import rpc
 
 # (cp16net) turn this test off because rpc code has no delete_queue method

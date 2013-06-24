@@ -50,8 +50,8 @@ from tests.util.rpc import Rabbit
 
 
 if WHITE_BOX:
-    from reddwarf.common.context import ReddwarfContext
-    from reddwarf.openstack.common import rpc
+    from trove.common.context import TroveContext
+    from trove.openstack.common import rpc
 
 
 def topic_name():
@@ -82,7 +82,7 @@ class WhenAgentRunsAsRabbitGoesUpAndDown(object):
     @time_out(25)
     def _send_msg_with_timeout(self):
         self.rabbit.declare_queue(topic_name())
-        context = ReddwarfContext(is_admin=True, limit=5, marker=None)
+        context = TroveContext(is_admin=True, limit=5, marker=None)
         version = rpc.call(context,
                            topic_name(),
                 {"method": "version",

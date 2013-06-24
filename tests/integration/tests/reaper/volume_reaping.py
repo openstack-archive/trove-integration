@@ -17,7 +17,7 @@ from datetime import timedelta
 
 from nose.tools import assert_raises
 
-from reddwarfclient.exceptions import NotFound
+from troveclient.exceptions import NotFound
 
 from proboscis import after_class
 from proboscis import before_class
@@ -45,12 +45,12 @@ if WHITE_BOX:
     # from nova import utils
     # from nova.db import api as db_api
 
-    # from reddwarf.compute.manager import ReddwarfInstanceInitializer
-    # from reddwarf.reaper import driver  # Do this to get the FLAG values.
+    # from trove.compute.manager import TroveInstanceInitializer
+    # from trove.reaper import driver  # Do this to get the FLAG values.
 
     # FLAGS = flags.FLAGS
 
-GROUP = 'reddwarf.reaper'
+GROUP = 'trove.reaper'
 
 
 @test(groups=[GROUP, GROUP + ".volume"],
@@ -81,15 +81,15 @@ class ReaperShouldKillOlderUnattachedVolumes(InstanceTest):
     @test(depends_on=[create_instance])
     def wait_for_volume(self):
         """Wait for the volume to become ready."""
-        initializer = ReddwarfInstanceInitializer(None, db_api,
+        initializer = TroveInstanceInitializer(None, db_api,
                                                   context.get_admin_context(),
                                                   None, self.volume_id)
-        initializer.wait_until_volume_is_ready(FLAGS.reddwarf_volume_time_out)
+        initializer.wait_until_volume_is_ready(FLAGS.trove_volume_time_out)
 
     @test(depends_on=[wait_for_volume])
     def make_volume_look_old(self):
         """Set the volume's updated_at time to long ago."""
-        expiration_time = FLAGS.reddwarf_reaper_orphan_volume_expiration_time
+        expiration_time = FLAGS.trove_reaper_orphan_volume_expiration_time
         updated_at = utils.utcnow() - timedelta(seconds=expiration_time * 2)
         db_api.volume_update(context.get_admin_context(), self.volume_id,
                             {"updated_at": updated_at})
@@ -104,6 +104,6 @@ class ReaperShouldKillOlderUnattachedVolumes(InstanceTest):
         wait_for_compute_service()
         # When the compute service comes back online, periodic tasks will
         # see the instance and delete it.
-        time_out = FLAGS.reddwarf_volume_time_out + 30
+        time_out = FLAGS.trove_volume_time_out + 30
         assert_raises(NotFound, self.dbaas.instances.get, self.id)
         #TODO: Make sure quotas aren't affected.
