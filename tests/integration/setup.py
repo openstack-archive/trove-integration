@@ -19,7 +19,7 @@ def read(fname):
 
 
 setup(
-    name="Reddwarf Integration Tests",
+    name="Trove Integration Tests",
     version="0.0.9.9",
     author='OpenStack',
     description="Runs integration tests on Ridley.",

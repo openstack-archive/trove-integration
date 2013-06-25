@@ -252,11 +252,6 @@ function install_diskimagebuilder() {
         COMMIT_DISKIMAGEBUILDER=${COMMIT_DISKIMAGEBUILDER:-HEAD}
         cd $PATH_DISKIMAGEBUILDER
         git reset $COMMIT_DISKIMAGEBUILDER --hard
-        # link files so that trove and disk image builder can be updated independently
-        echo "Linking Trove Elements to Disk Image Builder"
-        ln -s $REDSTACK_SCRIPTS/files/elements/trove-guest $PATH_DISKIMAGEBUILDER/elements/trove-guest
-        ln -s $REDSTACK_SCRIPTS/files/elements/trove-mysql $PATH_DISKIMAGEBUILDER/elements/trove-mysql
-        ln -s $REDSTACK_SCRIPTS/files/elements/trove-percona $PATH_DISKIMAGEBUILDER/elements/trove-percona
     fi
 }
 
