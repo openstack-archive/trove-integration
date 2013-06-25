@@ -51,7 +51,7 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
     $ ./redstack
 
 #### Install all the dependencies and then install trove via redstack.
-*This brings up trove (rd-api rd-tmgr) and initializes the reddwarf database.*
+*This brings up trove (rd-api rd-tmgr) and initializes the trove database.*
 
     $ ./redstack install
 
@@ -111,7 +111,7 @@ Allows the services to continue running in the background
 
     $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE 
 
-#### Running the reddwarf client (It's so easy!)
+#### Running the trove client (It's so easy!)
 *This sets of the authorization endpoint and gets a token for you*
 
     $ ./redstack rd-client
@@ -150,7 +150,6 @@ If the VM was restarted, then the process for bringing up Openstack and Trove is
 Use screen to ensure all modules have started without error
 
     $screen -r stack
-    $screen -r reddwarf
 
 ***
 

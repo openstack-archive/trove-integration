@@ -430,7 +430,7 @@
 					overcommit multiplier.</para>
 			</listitem>
 			<listitem security="internal">
-				<para>Fixed the reddwarf-api issues with rabbit
+				<para>Fixed the trove-api issues with rabbit
 					connections. Using openstack-common rpc.</para>
 			</listitem>
 			<listitem security="internal">

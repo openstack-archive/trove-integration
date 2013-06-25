@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Specify the path to the RDL repo as argument one.
+# Specify the path to the Trove repo as argument one.
 # This script will create a .pid file and report in the current directory.
 
 set -e
 if [ $# -lt 1 ]; then
-    echo "Please give the path to the RDL repo as argument one."
+    echo "Please give the path to the Trove repo as argument one."
     exit 5
 else
-    RDL_PATH=$1
+    TROVE_PATH=$1
 fi
 if [ $# -lt 2 ]; then
-    echo "Please give the path to the RD Client as argument two."
+    echo "Please give the path to the Trove Client as argument two."
     exit 5
 else
-    RDC_PATH=$2
+    TROVECLIENT_PATH=$2
 fi
 shift;
 shift;
@@ -22,7 +22,7 @@ shift;
 PID_FILE="`pwd`.pid"
 
 function start_server() {
-    pushd $RDL_PATH
+    pushd $TROVE_PATH
     bin/start_server.sh --pid_file=$PID_FILE
     popd
 }
@@ -30,7 +30,7 @@ function start_server() {
 function stop_server() {
     if [ -f $PID_FILE ];
     then
-        pushd $RDL_PATH
+        pushd $TROVE_PATH
         bin/stop_server.sh $PID_FILE
         popd
     else
@@ -44,10 +44,10 @@ function on_error() {
 
 trap on_error EXIT  # Proceed to trap - END in event of failure.
 
-REDDWARF_CLIENT_PATH=$RDC_PATH tox -e py26
+TROVE_CLIENT_PATH=$TROVECLIENT_PATH tox -e py26
 start_server
-.tox/py26/bin/pip install -U $RDC_PATH
-PYTHONPATH=$PYTHONPATH:$RDC_PATH .tox/py26/bin/python int_tests.py \
+.tox/py26/bin/pip install -U $TROVECLIENT_PATH
+PYTHONPATH=$PYTHONPATH:$TROVECLIENT_PATH .tox/py26/bin/python int_tests.py \
     --conf=localhost.test.conf -- $@
 stop_server
 

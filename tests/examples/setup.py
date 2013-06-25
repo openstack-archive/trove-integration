@@ -19,7 +19,7 @@ def read(fname):
 
 
 setup(
-    name="Reddwarf Example Generator",
+    name="Trove Example Generator",
     version="0.0.9.9",
     author='OpenStack',
     description="Generates documentation examples.",
