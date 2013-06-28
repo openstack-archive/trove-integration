@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+1: Tim Simpson <tim.simpson@rackspace.com>
+Approved+1: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 28 Jun 2013 23:49:41 +0000
+Reviewed-on: https://review.openstack.org/34482
+Project: openstack/trove-integration
+Branch: refs/heads/master
