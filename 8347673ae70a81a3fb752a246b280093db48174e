@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: SlickNik <SlickNik@gmail.com>
+Code-Review+2: SlickNik <SlickNik@gmail.com>
+Code-Review+1: Kenneth Wilke <kenneth.wilke@rackspace.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 02 Jul 2013 22:00:20 +0000
+Reviewed-on: https://review.openstack.org/35391
+Project: openstack/trove-integration
+Branch: refs/heads/master
