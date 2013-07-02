@@ -63,7 +63,7 @@ function cmd_build_image() {
     readonly VM_PATH=$USERHOME/images/${UBUNTU_DISTRO_NAME}_${SERVICE_TYPE}_image
 
     # If the path doesnt exist, build it, otherwise just upload it
-    if [ ! -d $VM_PATH ]
+    if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ]
     then
         build_vm $USERHOME $USERNAME $UBUNTU_DISTRO_NAME $VM_PATH $SERVICE_TYPE
     else
