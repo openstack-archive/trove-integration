@@ -12,6 +12,9 @@ chmod 0440 $TEMPFILE
 sudo chown root:root $TEMPFILE
 sudo mv $TEMPFILE /etc/sudoers.d/60_trove_guest
 
+# Some installs have issues with the user homedir
+sudo chown GUEST_USERNAME /home/GUEST_USERNAME
+
 # Copies all the trove code to the guest image
 sudo -u GUEST_USERNAME rsync -e'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' HOST_USERNAME@NETWORK_GATEWAY:PATH_TROVE/ /home/GUEST_USERNAME/trove
 
