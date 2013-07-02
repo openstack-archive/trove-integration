@@ -752,21 +752,21 @@ function cmd_nova_client() {
     # This serves as an example of how to call the Nova client script.
     TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
     if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
-        nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=trove --os_username=radmin --os_password=radmin \
-            --service_type=compute --region_name=RegionOne \
-            --service_name='nova' $@
+        nova --os-auth-url=http://localhost:35357/v2.0 \
+            --os-tenant-name=trove --os-username=radmin --os-password=radmin \
+            --os-region-name=RegionOne \
+            --service-type=compute --service-name='nova' $@
     else
         nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=trove --os_username=radmin --os_password=radmin \
-            --service_type=volume --region_name=RegionOne \
-            --service_name='cinder' $@
+            --os_tenant-name=trove --os-username=radmin --os-password=radmin \
+            --os-region-name=RegionOne \
+            --service-type=volume --service-name='cinder' $@
     fi
 }
 
 function cmd_swift_client() {
-    swift --os_auth_url=http://localhost:35357/v2.0 \
-            --os_tenant_name=trove --os_username=radmin --os_password=radmin $@
+    swift --os-auth-url=http://localhost:35357/v2.0 \
+            --os-tenant-name=trove --os-username=radmin --os-password=radmin $@
 }
 
 function cmd_glance_client() {
