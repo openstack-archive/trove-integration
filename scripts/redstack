@@ -309,7 +309,8 @@ function run_devstack() {
     # Kill the lock files, just in case they persist and can't be overwritten.
     rm -rf $USERHOME/nova_locks/*
 
-    echo "
+    params="
+# Trove-integration
 # Set some arguments for devstack.
 # These passwords originally come from redstack.rc.
 MYSQL_PASSWORD=$MYSQL_PASSWORD
@@ -333,7 +334,19 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
-" > localrc
+"
+    if [ -f localrc ]; then
+        #If localrc exist, check if the variables are already in it
+        is_in_localrc=`grep "# Trove-integration" localrc | wc -l`
+        if [ $is_in_localrc == 0 ]; then
+            #Otherwise append them to the existing file
+            echo "$params" >> localrc
+        fi
+        else
+        #If localrc doesn't exist, create it
+        echo "$params" > localrc
+    fi
+
     if [ -n "$USING_VAGRANT" ]
     then
         echo "
