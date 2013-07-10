@@ -309,31 +309,44 @@ function run_devstack() {
     # Kill the lock files, just in case they persist and can't be overwritten.
     rm -rf $USERHOME/nova_locks/*
 
-    echo "
-# Set some arguments for devstack.
-# These passwords originally come from redstack.rc.
-MYSQL_PASSWORD=$MYSQL_PASSWORD
-RABBIT_PASSWORD=$RABBIT_PASSWORD
-SERVICE_TOKEN=$SERVICE_TOKEN
-ADMIN_PASSWORD=$ADMIN_PASSWORD
-SERVICE_PASSWORD=$SERVICE_PASSWORD
-FLAT_INTERFACE=br100
-TROVE_LOGDIR=$TROVE_LOGDIR
-TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
-# Enable Swift
-ENABLED_SERVICES+=,swift
-SWIFT_HASH=$SWIFT_HASH
-# Set Cinder Volume from Redstack so that later Redstack can help manage
-# reconnecting Volume Group to Backing File
-DEST=$DEST
-DATA_DIR=$DATA_DIR
-VOLUME_GROUP=${VOLUME_GROUP}
-VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
-# The lock_path is by default /opt/stack/nova; if this path is a shared
-# folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
-# to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
-" > localrc
+    localrcvars="\n
+# Trove-integration\n
+# Set some arguments for devstack.\n
+# These passwords originally come from redstack.rc.\n
+MYSQL_PASSWORD=$MYSQL_PASSWORD\n
+RABBIT_PASSWORD=$RABBIT_PASSWORD\n
+SERVICE_TOKEN=$SERVICE_TOKEN\n
+ADMIN_PASSWORD=$ADMIN_PASSWORD\n
+SERVICE_PASSWORD=$SERVICE_PASSWORD\n
+FLAT_INTERFACE=br100\n
+TROVE_LOGDIR=$TROVE_LOGDIR\n
+TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR\n
+# Enable Swift\n
+ENABLED_SERVICES+=,swift\n
+SWIFT_HASH=$SWIFT_HASH\n
+# Set Cinder Volume from Redstack so that later Redstack can help manage\n
+# reconnecting Volume Group to Backing File\n
+DEST=$DEST\n
+DATA_DIR=$DATA_DIR\n
+VOLUME_GROUP=${VOLUME_GROUP}\n
+VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}\n
+# The lock_path is by default /opt/stack/nova; if this path is a shared\n
+# folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS\n
+# to force lock_path to /tmp.\n
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)\n
+\n"
+    if [ -f localrc ]; then
+        #If localrc exist, check if the variables are already in it
+        is_in_localrc=`grep "# Trove-integration" localrc | wc -l`
+        if [ $is_in_localrc == 0 ]; then
+            #Otherwise append them to the existing file
+            echo -e $params >> localrc
+        fi
+        else
+        #If localrc doesn't exist, create it
+        echo -e $params > localrc
+    fi
+
     if [ -n "$USING_VAGRANT" ]
     then
         echo "
