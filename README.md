@@ -28,7 +28,7 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
   if /dev/pts/0 does not have read/write for your user
 
-    # chmod 660 /dev/pts/0
+    # chmod 666 /dev/pts/0
 
   *Note that this number can change and if you can not connect to the screen session then the /dev/pts/# needs modding like above.*
 
@@ -81,16 +81,6 @@ Allows the services to continue running in the background
 
     $ ./redstack kick-start mysql
 
-#### Start up the trove services in a screen session
-
-    $ ./redstack start
-
- or, to run outside of a screen:
-
-    $ ./redstack run
-
-***
-
 *Optional commands if you did not run kick-start*
 
 #### Build the packages
@@ -107,7 +97,7 @@ Allows the services to continue running in the background
 
 ***
 
-#### You may need to add this iptables rule
+#### You may need to add this iptables rule, be sure to save it!
 
     $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE 
 
@@ -128,7 +118,7 @@ Allows the services to continue running in the background
 #### Stop all the services running in the screens and refresh the environment:
 
     $ killall -9 screen
-
+    $ screen -wipe
     $ RECLONE=yes ./redstack install
     $ ./redstack kick-start mysql
 
