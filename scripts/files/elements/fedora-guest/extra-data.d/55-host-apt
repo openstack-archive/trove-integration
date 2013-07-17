@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# CONTEXT: GUEST during CONSTUCTION as ROOT
+# PURPOSE: adds the trove host as an apt repo to get so that the guest can get the conf file for mysql
+
+set -e
+set -o xtrace
+
+# Apt specific
