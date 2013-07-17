@@ -396,58 +396,6 @@ function setup_py() {
     popd
 }
 
-function create_package_repo() {
-    exclaim "Installing Apt Repo...using reprepro"
-    pkg_install reprepro apache2 bc debhelper
-
-    # install the apt repo from /var/www
-    # add distributions file to conf
-    sudo mkdir -p $PACKAGES_DIR/{conf,incoming}
-
-    echo 'Origin: Rackspace
-Label: Rackspace
-Codename: squeeze
-Architectures: i386 amd64
-Components: main
-Description: Rackspace DBaaS APT Repository' | sudo tee $PACKAGES_DIR/conf/distributions
-}
-
-function munge_apache2() {
-    exclaim "Munging configs for apache2 (horizon has altered the default)"
-
-    # If the Additional Listen port is not in the conf, add it
-    is_in_portsfile=`grep 'Listen 8090' /etc/apache2/ports.conf |wc -l`
-    if [ $is_in_portsfile == 0 ]
-    then
-        echo "Listen 8090" | sudo tee -a /etc/apache2/ports.conf
-    fi
-
-    # Add the vhost for 8090 because horizon is using 80, and swift-proxy is using 8080
-    echo "<VirtualHost *:8090>
-
-    DocumentRoot /var/lib/packages
-
-    ErrorLog /var/log/apache2/error.log
-    LogLevel warn
-    CustomLog /var/log/apache2/access.log combined
-</VirtualHost>
-    " | sudo tee /etc/apache2/sites-available/001-apt-repo
-
-    sudo a2ensite 001-apt-repo
-    sudo service apache2 reload
-}
-
-function add_dbass_mycnf_to_package_repo() {
-    exclaim "Building and uploading dbaasmycnf package..."
-    mkdir -p $PACKAGES_DIR
-    mkdir -p $BUILD_DIR
-    cp -R $PATH_TROVE/contrib/dbaas-mycnf $BUILD_DIR
-    cd $BUILD_DIR/dbaas-mycnf
-    sudo -E ./builddeb.sh
-    sudo -E reprepro -Vb $PACKAGES_DIR remove squeeze dbaas-mycnf
-    sudo -E reprepro --ignore=wrongdistribution -Vb $PACKAGES_DIR include squeeze *.changes
-}
-
 function cmd_build() {
     # Run setup.py for all projects.
     exclaim "Calling setup for all dependencies..."
@@ -455,11 +403,6 @@ function cmd_build() {
     setup_py $PATH_PYTHON_NOVACLIENT
     setup_py $PATH_PYTHON_TROVECLIENT
     setup_py $PATH_TROVE
-    create_package_repo
-    munge_apache2
-    add_dbass_mycnf_to_package_repo
-    # Set up the host IP in the apt-repo-list
-    sed -i "s,%network_gateway%,$NETWORK_GATEWAY,g" $REDSTACK_SCRIPTS/files/apt_repo.list
 }
 
 
@@ -937,7 +880,7 @@ function print_usage() {
     Commands :
         --setup environment--
           install         - Install all the required dependencies and bring up rd-api and rd-tmgr
-          build           - Build the packages (including the agent) and set up the apt repo
+          build           - Build the packages (including the agent)
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image and adds it to glance
           initialize      - Reinitialize the trove database, users, services, and test config

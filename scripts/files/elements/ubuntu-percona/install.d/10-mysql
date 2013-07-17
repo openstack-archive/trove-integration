@@ -8,4 +8,3 @@ set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get -y install percona-toolkit percona-server-common-5.5  percona-server-server-5.5 percona-server-test-5.5  percona-server-client-5.5 percona-xtrabackup
-
