@@ -6,5 +6,5 @@
 set -e
 set -o xtrace
 
-
+# This will dissapear soon enough
 sudo dd if=/tmp/in_target.d/trove-source-host.list of=/etc/apt/sources.list.d/trove-source-host.list
