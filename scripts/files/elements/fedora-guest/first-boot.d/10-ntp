@@ -1,0 +1,26 @@
+#!/bin/bash
+ntpfile=`mktemp`
+cat << EOF > $ntpfile
+server ntp.ubuntu.com iburst
+server 127.127.1.0
+fudge 127.127.1.0 stratum 10
+EOF
+
+mv /etc/ntp.conf /etc/ntp.conf.orig
+mv $ntpfile /etc/ntp.conf
+service ntp restart
+
+TEMPFILE=`mktemp`
+echo "foo ALL=(ALL) NOPASSWD:ALL" > $TEMPFILE
+chmod 0440 $TEMPFILE
+sudo chown root:root $TEMPFILE
+sudo mv $TEMPFILE /etc/sudoers.d/60_trove_guest
+
+if ! id -u foo >/dev/null 2>&1; then
+    useradd -m foo -s /bin/bash
+    passwd foo <<_EOF_
+foo
+foo
+_EOF_
+fi
+

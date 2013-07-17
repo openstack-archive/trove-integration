@@ -507,6 +507,11 @@ function upload_image_to_glance() {
     TROVE_TENANT=$4
     IMAGE_LOC=$5
     SERVICE_TYPE=$6
+    echo "GLANCE_IMAGEID=image-create \
+        --name="$IMAGE_NAME" --public \
+        --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
+        --owner=$TROVE_TENANT < $IMAGE_LOC
+    "
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
         --name="$IMAGE_NAME" --public \
