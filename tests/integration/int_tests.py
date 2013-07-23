@@ -279,7 +279,10 @@ if __name__ == '__main__':
             "dbaas.api.security_groups",
             backups.GROUP,
             "dbaas.api.instances.actions.resize.instance",
-            "dbaas.api.instances.actions.restart",
+            # TODO(SlickNik): The restart tests fail intermittently so pulling
+            # them out of the blackbox group temporarily. Refer to Trove bug:
+            # https://bugs.launchpad.net/trove/+bug/1204233
+            # "dbaas.api.instances.actions.restart",
             "dbaas.api.instances.actions.stop",
             "dbaas.guest.shutdown",
             versions.GROUP,
