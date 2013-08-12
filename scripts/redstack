@@ -301,13 +301,8 @@ function run_review_for() {
 }
 
 function fixup_broken_devstack() {
-    pushd $PATH_DEVSTACK_SRC
-    pkg_install curl
-    $PATH_DEVSTACK_SRC/tools/install_pip.sh
-    # Nasty Hack to deal with the prettytable junk in devstack (hub_cap/vipul)
-    sudo pip install PrettyTable==0.7.2
-    sudo chmod -R a+r /usr/local/lib/python2.7/
-    popd
+    # Nothing to do here, devstack is working
+    :
 }
 
 function run_devstack() {
