@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Approved+1: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 13 Aug 2013 04:22:02 +0000
+Reviewed-on: https://review.openstack.org/41595
+Project: openstack/trove-integration
+Branch: refs/heads/master
