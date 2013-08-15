@@ -715,12 +715,12 @@ function cmd_nova_client() {
     TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
     if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
         nova --os-auth-url=http://localhost:35357/v2.0 \
-            --os-tenant-name=trove --os-username=radmin --os-password=radmin \
+            --os-tenant-name=trove --os-username=demo --os-password=$ADMIN_PASSWORD \
             --os-region-name=RegionOne \
             --service-type=compute --service-name='nova' $@
     else
         nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os-tenant-name=trove --os-username=radmin --os-password=radmin \
+            --os-tenant-name=trove --os-username=demo --os-password=$ADMIN_PASSWORD \
             --os-region-name=RegionOne \
             --service-type=volume --service-name='cinder' $@
     fi
@@ -728,26 +728,26 @@ function cmd_nova_client() {
 
 function cmd_swift_client() {
     swift --os-auth-url=http://localhost:35357/v2.0 \
-            --os-tenant-name=trove --os-username=radmin --os-password=radmin $@
+            --os-tenant-name=trove --os-username=demo --os-password=$ADMIN_PASSWORD $@
 }
 
 function cmd_glance_client() {
-    TROVE_TENANT=`get_attribute_id tenant trove 1`
+    TROVE_TENANT=`get_attribute_id tenant demo 1`
     glance --os-auth-url=http://localhost:35357/v2.0 \
-        --os-username=radmin --os-password=radmin \
+        --os-username=demo --os-password=$ADMIN_PASSWORD \
         --os-tenant-id $TROVE_TENANT $@
 }
 
 function cmd_rd_client() {
     # This serves as an example of how to call the Trove client script.
-    trove-cli --username=radmin --apikey=radmin --tenant=trove \
+    trove-cli --username=demo --apikey=$ADMIN_PASSWORD --tenant=demo \
         --auth_url=http://localhost:35357/v2.0/tokens auth login
     trove-cli $@
 }
 
 function cmd_rd_mgmt_client() {
     # This serves as an example of how to call the Trove managment client script.
-    trove-cli --username=radmin --apikey=radmin --tenant=trove \
+    trove-cli --username=demo --apikey=$ADMIN_PASSWORD --tenant=demo \
         --auth_url=http://localhost:35357/v2.0/tokens auth login
     trove-mgmt-cli $@
 }
@@ -954,7 +954,7 @@ function run_command() {
         "int-tests-wb" ) shift; cmd_int_tests_white_box $@;;
         "simple-tests") shift; cmd_int_tests_simple $@;;
         "stop" ) cmd_stop;;
-        "glance-client" ) shift; cmd_glance_client;;
+        "glance-client" ) shift; cmd_glance_client $@;;
         "nova-client" ) shift; cmd_nova_client $@;;
         "rd-client" ) shift; cmd_rd_client $@;;
         "rd-mgmt-client" ) shift; cmd_rd_mgmt_client $@;;
