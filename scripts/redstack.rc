@@ -34,7 +34,7 @@ BRANCH_TROVECLIENT=master
 PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 
 # diskimage-builder information
-REPO_DISKIMAGEBUILDER=https://git.openstack.org/stackforge/diskimage-builder.git
+REPO_DISKIMAGEBUILDER=https://git.openstack.org/openstack/diskimage-builder.git
 BRANCH_DISKIMAGEBUILDER=master
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 #COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
