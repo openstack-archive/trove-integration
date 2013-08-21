@@ -458,7 +458,7 @@ function upload_image_to_glance() {
     SERVICE_TYPE=$6
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
-        --name="$IMAGE_NAME" --public \
+        --name="$IMAGE_NAME" --is-public \
         --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
         --owner=$TROVE_TENANT < $IMAGE_LOC`
 
