@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Code-Review+1: Conrad Weidenkeller <conrad.weidenkeller@rackspace.com>
+Approved+1: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review+1: Jessica Lucci <jessicalucci14@gmail.com>
+Code-Review+1: Andrea Giardini <contact@andreagiardini.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 21 Aug 2013 16:16:49 +0000
+Reviewed-on: https://review.openstack.org/42730
+Project: openstack/trove-integration
+Branch: refs/heads/master
