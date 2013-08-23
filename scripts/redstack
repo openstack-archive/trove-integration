@@ -352,6 +352,12 @@ EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660
         echo "$params" > localrc
     fi
 
+    if [ -n "$USE_UUID_TOKEN" ];  then
+        echo "
+KEYSTONE_TOKEN_FORMAT=UUID
+" >> localrc
+    fi
+
     if [ -n "$USING_VAGRANT" ]
     then
         echo "
