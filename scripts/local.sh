@@ -16,7 +16,7 @@ DEST=${DEST:-/opt/stack}
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 source $TOP_DIR/stackrc
 source $TOP_DIR/localrc
-ENABLED_SERVICES+=,trove,rd-api,rd-tmgr
+ENABLED_SERVICES+=,trove,rd-api,rd-tmgr,t-cond
 source $TOP_DIR/functions
 source $TOP_DIR/lib/database
 
@@ -366,6 +366,7 @@ function start_trove() {
     msgout "DEBUG" "$mod<-- "
     screen_it rd-api "cd $TROVE_DIR; bin/trove-api --config-file=$TROVE_CONF_DIR/trove.conf 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
     screen_it rd-tmgr "cd $TROVE_DIR; bin/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
+    screen_it t-cond "cd $TROVE_DIR; bin/trove-conductor 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
     msgout "DEBUG" "$mod:-->"
 }
 
