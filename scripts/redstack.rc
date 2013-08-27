@@ -39,6 +39,11 @@ BRANCH_DISKIMAGEBUILDER=master
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 #COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
 
+# tripleo elements information
+REPO_TRIPLEO_ELEMENTS=https://git.openstack.org/openstack/tripleo-image-elements
+BRANCH_TRIPLEO_ELEMENTS=master
+PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
+
 # Openstack Github paths
 OPENSTACK_GITHUB=git://git.openstack.org/openstack
 
