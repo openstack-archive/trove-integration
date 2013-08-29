@@ -67,7 +67,7 @@ TROVE_SERVICE_PORT=${TROVE_SERVICE_PORT:-8779}
 TROVE_SERVICE_PROTOCOL=${TROVE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
 # trove service git paths
-GIT_BASE=https://github.com
+GIT_BASE=https://git.openstack.org
 TROVE_REPO=${GIT_BASE}/openstack/trove.git
 TROVE_BRANCH=master
 TROVECLIENT_REPO=${GIT_BASE}/openstack/python-troveclient.git

@@ -857,7 +857,7 @@ function cmd_update_projects() {
   for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
      if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
           echo "Creating a new clone of $project..."
-          git_clone https://github.com/openstack/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
+          git_clone https://git.openstack.org/openstack/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
       else
           echo "$project was already cloned or exists pulling changes"
           cd $PATH_DEVSTACK_OUTPUT/$project

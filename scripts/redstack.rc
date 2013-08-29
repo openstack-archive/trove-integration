@@ -8,7 +8,7 @@ PATH_INTEGRATION_CONF="/tmp/integration"
 # devstack is either a shared folder or is downloaded by trove-ci install.
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 PATH_DEVSTACK_OUTPUT=$DEST
-REPO_DEVSTACK=git://github.com/openstack-dev/devstack.git
+REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
 
 PATH_GLANCE=$DEST/glance
 
@@ -24,23 +24,23 @@ PATH_SWIFT=$DEST/swift
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 
 # trove information
-REPO_TROVE=https://github.com/openstack/trove.git
+REPO_TROVE=https://git.openstack.org/openstack/trove.git
 BRANCH_TROVE=master
 PATH_TROVE=$DEST/trove
 
 # troveclient information
-REPO_TROVECLIENT=https://github.com/openstack/python-troveclient.git
+REPO_TROVECLIENT=https://git.openstack.org/openstack/python-troveclient.git
 BRANCH_TROVECLIENT=master
 PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 
 # diskimage-builder information
-REPO_DISKIMAGEBUILDER=https://github.com/stackforge/diskimage-builder.git
+REPO_DISKIMAGEBUILDER=https://git.openstack.org/stackforge/diskimage-builder.git
 BRANCH_DISKIMAGEBUILDER=master
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 #COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
 
 # Openstack Github paths
-OPENSTACK_GITHUB=git://github.com/openstack
+OPENSTACK_GITHUB=git://git.openstack.org/openstack
 
 PATH_ENV_CONF="$PATH_INTEGRATION_CONF/env.rc"
 
