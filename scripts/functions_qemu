@@ -41,6 +41,8 @@ function build_vm() {
     export ESCAPED_PATH_TROVE
     export SSH_DIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements
+    export GUEST_LOGDIR
+    export ESCAPED_GUEST_LOGDIR
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
 
@@ -60,6 +62,17 @@ function cmd_build_image() {
     fi
 
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT service_type $SERVICE_TYPE
+
+    GUEST_LOGDIR=$(iniget $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
+    GUEST_LOGFILE=$(iniget $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
+
+    if [ -z $GUEST_LOGDIR ] || [ -z $GUEST_LOGFILE ]
+    then
+        exclaim "error: log_dir and log_file are required in: " $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample
+        exit 1
+    fi
+
+    ESCAPED_GUEST_LOGDIR=`echo $GUEST_LOGDIR | sed 's/\//\\\\\//g'`
 
     USERNAME=`whoami`
     # To change the distro, edit the redstack.rc file
