@@ -249,7 +249,9 @@ function add_flavor() {
     FLAVOR_EPHEMERAL=$6
 
     if [[ -z $(nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+        # Creating flavors using trove create flavors API
+        trove-cli --auth_url=$TROVE_AUTH_ENDPOINT/tokens --username=$OS_USER --apikey=$ADMIN_PASSWORD --tenant=$OS_TENANT auth login
+        trove-mgmt-cli flavor create --name $FLAVOR_NAME --ram $FLAVOR_MEMORY_MB --disk $FLAVOR_ROOT_GB --vcpus $FLAVOR_VCPUS --flavor_id $FLAVOR_ID --ephemeral $FLAVOR_EPHEMERAL --service_type mysql
     fi
     msgout "DEBUG" "$mod:-->"
 }
@@ -351,8 +353,7 @@ function init_trove() {
     msgout "DEBUG" "Initializing the Trove Database..."
     trove_manage db_sync
 
-    msgout "DEBUG" "Adding trove specific flavours..."
-    add_flavors
+    # Moved add flavor step to execute after trove API starts since flavors are to be created now from trove instead of nova
 
     msgout "DEBUG" "Removing old certs from trove cache dir.."
     rm -fr $TROVE_AUTH_CACHE_DIR/*
@@ -376,6 +377,9 @@ function devstack_post_install_hook() {
     configure_troveclient
     init_trove
     start_trove
+    # Flavors from trove could be created only once trove API starts after configuration
+    add_flavors
+
 }
 
 devstack_post_install_hook
