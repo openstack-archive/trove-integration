@@ -194,6 +194,8 @@ function configure_keystone_for_test_users() {
     sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
+    ADMIN_TENANT=`get_attribute_id tenant admin 1`
+    sed -i "s/%admin_tenant_id%/$ADMIN_TENANT/g" $TROVE_CONF_DIR/test.conf
 }
 
 ###############################################################################
