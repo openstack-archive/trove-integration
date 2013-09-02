@@ -10,4 +10,7 @@ yum install -y python-devel libxml2-devel libxslt-devel python-setuptools python
     python-routes python-eventlet python-webob python-kombu python-paste-deploy python-paste python-netaddr \
     python-httplib2 python-iso8601 python-pexpect MySQL-python python-migrate python-pip python-anyjson gcc
 
-pip-python install extras python-novaclient python-swiftclient python-cinderclient amqp oslo.config babel python-heatclient
+# install oslo.config from source than pypi (which is older)
+pip-python install http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
+
+pip-python install extras python-novaclient python-swiftclient python-cinderclient amqp babel python-heatclient

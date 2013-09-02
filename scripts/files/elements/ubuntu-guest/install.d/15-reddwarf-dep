@@ -11,4 +11,7 @@ apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools python-
     python-routes python-eventlet python-webob python-pastedeploy python-paste python-netaddr \
     python-httplib2 python-iso8601 python-pexpect python-mysqldb python-migrate
 
-pip install extras python-novaclient python-swiftclient python-cinderclient oslo.config kombu>2.4.7 six babel python-heatclient
+# install oslo.config from source than pypi (which is older)
+pip install http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
+
+pip install extras python-novaclient python-swiftclient python-cinderclient kombu>2.4.7 six babel python-heatclient
