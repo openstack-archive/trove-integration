@@ -267,7 +267,17 @@ function add_flavors() {
     # Flavors with ephemeral is needed for ephemeral support...
     add_flavor 'eph.rd-tiny' 9 512 2 1 1
     add_flavor 'eph.rd-smaller' 10 768 2 1 2
-    set -e
+    # Adding flavor mappings to service_flavors table
+    trove-manage flavor_update mysql 1
+    trove-manage flavor_update mysql 2
+    trove-manage flavor_update mysql 3
+    trove-manage flavor_update mysql 4
+    trove-manage flavor_update mysql 5
+    trove-manage flavor_update mysql 6
+    trove-manage flavor_update mysql 7
+    trove-manage flavor_update mysql 8
+    trove-manage flavor_update mysql 9
+    trove-manage flavor_update mysql 10
     msgout "DEBUG" "$mod:-->"
 }
 
