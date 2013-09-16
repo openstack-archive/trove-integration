@@ -3,14 +3,6 @@
 # Additional functions that would mostly just pertain to a Ubuntu + Qemu setup
 #
 
-function install_prep_packages() {
-    # Called before devstack
-    exclaim 'Updating dependencies (part 1a)...'
-    pkg_update
-    exclaim 'Installing dependencies (part 1b)...'
-    pkg_install git-core kvm-ipxe
-}
-
 function build_vm() {
     exclaim "Actually building the image, this can take up to 15 minutes"
 
@@ -63,12 +55,12 @@ function cmd_build_image() {
 
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT service_type $SERVICE_TYPE
 
-    GUEST_LOGDIR=$(iniget $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
-    GUEST_LOGFILE=$(iniget $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
+    GUEST_LOGDIR=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
+    GUEST_LOGFILE=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
 
     if [ -z $GUEST_LOGDIR ] || [ -z $GUEST_LOGFILE ]
     then
-        exclaim "error: log_dir and log_file are required in: " $TROVE_SOURCE/etc/trove/trove-guestagent.conf.sample
+        exclaim "error: log_dir and log_file are required in: " $PATH_TROVE/etc/trove/trove-guestagent.conf.sample
         exit 1
     fi
 
@@ -139,4 +131,3 @@ add_host_key_to_authorizedkeys () {
         echo "Keyfile already exists in authorized_keys - skipping"
     fi
 }
-
