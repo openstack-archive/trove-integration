@@ -2,59 +2,25 @@
 [ -z $SERVICE_HOST ] && SERVICE_HOST=localhost
 [ -z $DEST ] && DEST=/opt/stack
 [ -z $NETWORK_GATEWAY ] && NETWORK_GATEWAY=10.0.0.1
-TROVE_SOURCE=$DEST/trove
-PATH_INTEGRATION_CONF="/tmp/integration"
-
-# devstack is either a shared folder or is downloaded by trove-ci install.
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
+[ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
+
+# Paths for various OpenStack components
 PATH_DEVSTACK_OUTPUT=$DEST
-REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
-
-PATH_GLANCE=$DEST/glance
-
-PATH_KEYSTONE=$DEST/keystone
-PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
-
-# Path to Nova and python-novaclient (installed by devstack).
 PATH_NOVA=$DEST/nova
-PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
-
-# Path to Swift and python-swiftclient (installed by devstack).
+PATH_KEYSTONE=$DEST/keystone
+PATH_GLANCE=$DEST/glance
 PATH_SWIFT=$DEST/swift
-PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
-
-# trove information
-REPO_TROVE=https://git.openstack.org/openstack/trove.git
-BRANCH_TROVE=master
 PATH_TROVE=$DEST/trove
-
-# troveclient information
-REPO_TROVECLIENT=https://git.openstack.org/openstack/python-troveclient.git
-BRANCH_TROVECLIENT=master
+PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
+PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
+PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
-
-# diskimage-builder information
-REPO_DISKIMAGEBUILDER=https://git.openstack.org/openstack/diskimage-builder.git
-BRANCH_DISKIMAGEBUILDER=master
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
-#COMMIT_DISKIMAGEBUILDER=0a1bf74c323ea2f33495ed1525319bec7c384b04
-
-# tripleo elements information
-REPO_TRIPLEO_ELEMENTS=https://git.openstack.org/openstack/tripleo-image-elements
-BRANCH_TRIPLEO_ELEMENTS=master
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
-# Openstack Github paths
-OPENSTACK_GITHUB=git://git.openstack.org/openstack
-
-PATH_ENV_CONF="$PATH_INTEGRATION_CONF/env.rc"
-
-# Package repo directory
-PACKAGES_DIR=/var/lib/packages/debian/
-BUILD_DIR=/tmp/build/
-
-# Destination path for installation
-DEST=/opt/stack
+# OpenStack git source path
+OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
 
 # Destination for working data
 DATA_DIR=${DEST}/data
