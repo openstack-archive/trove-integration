@@ -11,7 +11,6 @@
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
-TROVE_CONF_DIR=/etc/trove
 
 USERHOME=$HOME
 # Load options not checked into VCS.
@@ -21,6 +20,12 @@ fi
 
 # Bail on errors.
 set -e
+
+# Get default host ip from interface
+function get_default_host_ip() {
+    host_iface=$(ip route | sed -n '/^default/{ s/.*dev \(\w\+\)\s\+.*/\1/; p; }' | head -1)
+    echo `LC_ALL=C ip -f inet addr show ${host_iface} | awk '/inet/ {split($2,parts,"/");  print parts[1]}' | head -1`
+}
 
 # Load global configuration variables.
 . $REDSTACK_SCRIPTS/redstack.rc
@@ -32,7 +37,10 @@ fi
 
 # Public facing bits
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+SERVICE_TENANT=${SERVICE_TENANT:-service}
 NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
+NETWORK_INTERFACE=${NETWORK_INTERFACE:-eth0}
+NETWORK_SUBNET=${NETWORK_SUBNET:-10.0.0.0/24}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
 KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
 KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
@@ -49,9 +57,11 @@ TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 . $REDSTACK_SCRIPTS/functions
 . $REDSTACK_SCRIPTS/functions_qemu
 
-if [ -f $PATH_ENV_CONF ]; then
-    source $PATH_ENV_CONF
+# Allow sourcing config values from env.rc for overrides
+if [ -f /tmp/integration/env.rc ]; then
+    source /tmp/integration/env.rc
 fi
+
 
 ###############################################################################
 # Utility functions
@@ -94,11 +104,6 @@ function set_http_proxy() {
     fi
 }
 
-function echo_id_from_table () {
-    # Given a command that returns a table, prints only the id part.
-    echo `$@ | grep ' id ' | awk '{print $4}'`
-}
-
 function get_ip_for_device() {
     /sbin/ifconfig $1 | awk '/inet addr/{gsub(/addr:/,"");print $2}'
 }
@@ -109,129 +114,137 @@ function ip_chunk() {
     get_ip_for_device $1 | cut -d. -f$2
 }
 
+function add_flavor() {
+    FLAVOR_NAME=$1
+    FLAVOR_ID=$2
+    FLAVOR_MEMORY_MB=$3
+    FLAVOR_ROOT_GB=$4
+    FLAVOR_VCPUS=$5
+    FLAVOR_EPHEMERAL=$6
+
+    if [[ -z $(nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
+        nova --os-username=$OS_USER --os-password=$ADMIN_PASSWORD --os-tenant-name=$OS_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+    fi
+}
+
+function get_attribute_id() {
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2" | get_field $3
+}
+
 function keystone_add_user() {
     # Adds a user. Prints the UUID to standard out.
     USER_NAME=$1
     USER_PASS=$2
     USER_EMAIL=$3
+    USER_TENANT=$4
     # Create the user "trove"
-    USER_UUID=`keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN user-list | grep $USER_NAME | awk '{print $2}'`
-    if [ -z $USER_UUID ]; then
-        USER_UUID=`echo_id_from_table keystone \
-                   --endpoint http://localhost:35357/v2.0  \
-                   --token $SERVICE_TOKEN user-create \
-                   --name=$USER_NAME --pass="$USER_PASS" --email=$USER_EMAIL`
+    USER_UUID=`get_attribute_id user $USER_NAME 1`
+    if [ -z "$USER_UUID" ]; then
+        USER_UUID=$(keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-create \
+            --name=$USER_NAME \
+            --pass=$USER_PASS \
+            --email=$USER_EMAIL \
+            --tenant_id $USER_TENANT \
+            | grep " id " | get_field 2)
+        echo $USER_UUID
     fi
-
-    echo $USER_UUID
 }
 
 function keystone_add_user_role() {
     TENANT_UUID=$1
     USER_UUID=$2
     ROLE_UUID=$3
-    echo "keystone --endpoint http://localhost:35357/v2.0
-        --token $SERVICE_TOKEN user-role-add
-        --tenant_id $TENANT_UUID
-        --user $USER_UUID
-        --role $ROLE_UUID"
-    keystone --endpoint http://localhost:35357/v2.0 \
-        --token $SERVICE_TOKEN user-role-add \
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-role-add \
         --tenant_id $TENANT_UUID \
-        --user-id $USER_UUID \
-        --role-id $ROLE_UUID
+        --user_id $USER_UUID \
+        --role_id $ROLE_UUID
 }
 
-function keystone_manage () {
-    keystone --endpoint http://localhost:35357/v2.0 --token $SERVICE_TOKEN $@
-}
-
-function get_attribute_id() {
-    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2 " | get_field $3
-
+function keystone_create() {
+    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-create \
+             --name $2 \
+             | grep " id " | get_field 2
 }
 
 function configure_keystone_for_test_users() {
     exclaim "Configuring keystone..."
 
+    # Create trove tenants for the tests if they don't exist.
+    # The demo tenant should already exist
+    DEMO_TENANT=`get_attribute_id tenant demo 1`
     TROVE_TENANT=`get_attribute_id tenant trove 1`
-    ADMIN_ROLE=`get_attribute_id role admin 1`
-    TROVE_ROLE=`get_attribute_id role trove 1`
-    MEMBER_ROLE=`get_attribute_id role Member 1`
+    if [ -z "$TROVE_TENANT" ]; then
+        TROVE_TENANT=$(keystone_create tenant trove)
+    fi
     DAFFY_TENANT=`get_attribute_id tenant daffy 1`
-    if [ -z $DAFFY_TENANT ]; then
-        DAFFY_TENANT=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN tenant-create --name=daffy`
+    if [ -z "$DAFFY_TENANT" ]; then
+        DAFFY_TENANT=$(keystone_create tenant daffy)
     fi
 
+    # Create trove roles for the tests if they don't exist.
+    # Member and admin roles should already exist
+    ADMIN_ROLE=`get_attribute_id role admin 1`
+    MEMBER_ROLE=`get_attribute_id role Member 1`
+    TROVE_ROLE=`get_attribute_id role trove 1`
+    if [ -z "$TROVE_ROLE" ]; then
+        TROVE_ROLE=$(keystone_create role trove)
+    fi
     DAFFY_ROLE=`get_attribute_id role daffy 1`
     if [ -z "$DAFFY_ROLE" ]; then
-        DAFFY_ROLE=`echo_id_from_table keystone --endpoint http://localhost:35357/v2.0 --token  $SERVICE_TOKEN role-create --name=daffy`
+        DAFFY_ROLE=$(keystone_create role daffy)
     fi
 
-    #TODO(tim.simpson): Write some code here that removes the roles so these
-    #                   command won't fail if you run them twice.
-    #                   That way we will still catch errors if our calls to
-    #                   keystone fail, but can run kickstart twice w/o install.
-    set +e
-    TROVE_USER=`keystone_add_user Boss admin boss@example.com`
-    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
-    keystone_add_user_role $TROVE_TENANT $TROVE_USER $ADMIN_ROLE
+    # Create trove users for the tests if they don't exist.
+    RADMIN_USER=$(keystone_add_user radmin radmin radmin@example.com $TROVE_TENANT)
+    if [ -n "$RADMIN_USER" ]; then
+        keystone_add_user_role $TROVE_TENANT $RADMIN_USER $TROVE_ROLE
+        keystone_add_user_role $TROVE_TENANT $RADMIN_USER $ADMIN_ROLE
+    fi
 
-    TROVE_USER=`keystone_add_user chunk chunk chunk@example.com`
-    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
-    keystone_add_user_role $TROVE_TENANT $TROVE_USER $MEMBER_ROLE
+    BOSS_USER=$(keystone_add_user Boss admin boss@example.com $TROVE_TENANT)
+    if [ -n "$BOSS_USER" ]; then
+        keystone_add_user_role $TROVE_TENANT $BOSS_USER $TROVE_ROLE
+        keystone_add_user_role $TROVE_TENANT $BOSS_USER $ADMIN_ROLE
+    fi
 
-    TROVE_USER=`keystone_add_user daffy daffy daffy@example.com`
-    keystone_add_user_role $DAFFY_TENANT $TROVE_USER $DAFFY_ROLE
+    CHUNK_USER=$(keystone_add_user chunk chunk chunk@example.com $TROVE_TENANT)
+    if [ -n "$CHUNK_USER" ]; then
+        keystone_add_user_role $TROVE_TENANT $CHUNK_USER $TROVE_ROLE
+        keystone_add_user_role $TROVE_TENANT $CHUNK_USER $MEMBER_ROLE
+    fi
 
-    TROVE_USER=`keystone_add_user examples examples examples@example.com`
-    keystone_add_user_role $TROVE_TENANT $TROVE_USER $TROVE_ROLE
-    set -e
+    DAFFY_USER=$(keystone_add_user daffy daffy daffy@example.com $TROVE_TENANT)
+    if [ -n "$DAFFY_USER" ]; then
+        keystone_add_user_role $DAFFY_TENANT $DAFFY_USER $DAFFY_ROLE
+    fi
+
+    EXAMPLES_USER=$(keystone_add_user examples examples examples@example.com $TROVE_TENANT)
+    if [ -n "$EXAMPLES_USER" ]; then
+        keystone_add_user_role $TROVE_TENANT $EXAMPLES_USER $TROVE_ROLE
+    fi
 
     # Add the tenant id's into test.conf
-    DEMO_TENANT=`get_attribute_id tenant demo 1`
     sed -i "s/%trove_tenant_id%/$TROVE_TENANT/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 }
 
-###############################################################################
-
 
 ###############################################################################
 # Install all the required dependencies
 ###############################################################################
 
-function install_trove_packages() {
-    # Called after devstack.
-    exclaim "Installing dependencies (part 2)..."
-    # The default version of pip Ubuntu installs is old.
-    cd /tmp
+function install_prep_packages() {
+    # Called before devstack
+    exclaim 'Updating dependencies (part 1a)...'
+    pkg_update
+    exclaim 'Installing dependencies (part 1b)...'
+    pkg_install git-core kvm-ipxe python-pip
     sudo pip install --upgrade pip
-
-    pkg_install python-pexpect
-    #TODO(tim.simpson): Install unstable branch for now.
-
-    # Needed to install client on fresh VM
-    pkg_install libxslt1-dev
-
-    exclaim "Installing Trove Client..."
-    pushd $PATH_PYTHON_TROVECLIENT
-    sudo python setup.py develop
-    popd
-
-    exclaim "Installing Proboscis."
-    sudo pip install openstack.nose_plugin
-    sudo pip install proboscis
-
-    pkg_install maven2
-
-    cd /tmp
 }
 
-
-function install_devstack() {
+function install_devstack_code() {
     exclaim "Installing devstack..."
     # Installs devstack (if needed).
     if [ ! -d $PATH_DEVSTACK_SRC ]; then
@@ -239,33 +252,7 @@ function install_devstack() {
         mkdir -p $PATH_DEVSTACK_SRC
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
-    cp $REDSTACK_SCRIPTS/local.sh $PATH_DEVSTACK_SRC
-}
 
-function install_diskimagebuilder() {
-    exclaim "Installing diskimage-builder..."
-    # Installs diskimage-builder (if needed).
-    if [ ! -d $PATH_DISKIMAGEBUILDER ]; then
-        echo "Cloning from git."
-        mkdir -p $PATH_DISKIMAGEBUILDER
-        git clone $REPO_DISKIMAGEBUILDER $PATH_DISKIMAGEBUILDER
-        COMMIT_DISKIMAGEBUILDER=${COMMIT_DISKIMAGEBUILDER:-HEAD}
-        cd $PATH_DISKIMAGEBUILDER
-        git reset $COMMIT_DISKIMAGEBUILDER --hard
-    fi
-}
-
-function install_tripleo_elements() {
-    exclaim "Installing tripleo elements"
-    # Installs tripleo elements (if needed).
-    if [ ! -d $PATH_TRIPLEO_ELEMENTS ]; then
-        echo "Cloning from git."
-        mkdir -p $PATH_TRIPLEO_ELEMENTS
-        git clone $REPO_TRIPLEO_ELEMENTS $PATH_TRIPLEO_ELEMENTS
-    fi
-}
-
-function install_devstack_code() {
     exclaim "Installing devstack projects..."
     # Ensures present user can get to the devstack dirs
     sudo mkdir -p $PATH_DEVSTACK_OUTPUT
@@ -273,16 +260,9 @@ function install_devstack_code() {
         sudo chown `whoami` $PATH_DEVSTACK_OUTPUT
     fi
     # Clones all of the code to where devstack expects it to be
-    cd $PATH_DEVSTACK_OUTPUT
-    for project in glance keystone nova python-keystoneclient python-novaclient swift python-swiftclient
-    do
-      if [ ! -d $project ]; then
-          echo "Creating a new clone of $project..."
-          git clone $OPENSTACK_GITHUB/$project
-      else
-          echo "$project was already cloned or exists in a shared folder, ignoring..."
-      fi
-    done
+    pushd $PATH_DEVSTACK_OUTPUT
+    cmd_clone_projects
+    popd
 }
 
 function install_reviews_on_top_of_devstack() {
@@ -294,6 +274,8 @@ function install_reviews_on_top_of_devstack() {
     run_review_for glance $PATH_GLANCE $REVIEW_GLANCE
     run_review_for swift $PATH_SWIFT $REVIEW_SWIFT
     run_review_for python-swiftclient $PATH_PYTHON_SWIFTCLIENT $REVIEW_PYTHON_SWIFTCLIENT
+    run_review_for trove $PATH_TROVE $REVIEW_TROVE
+    run_review_for python-troveclient $PATH_PYTHON_TROVECLIENT $REVIEW_PYTHON_TROVECLIENT
 }
 
 function run_review_for() {
@@ -317,116 +299,46 @@ function fixup_broken_devstack() {
 
 function run_devstack() {
     exclaim "Running devstack..."
-    cd $PATH_DEVSTACK_SRC
 
-    # Creating this lock directory seems sure-fire.
+    # (Re)Creating this lock directory seems sure-fire.
+    rm -rf $USERHOME/nova_locks
     mkdir -p $USERHOME/nova_locks
-    # Kill the lock files, just in case they persist and can't be overwritten.
-    rm -rf $USERHOME/nova_locks/*
 
-    params="
-# Trove-integration
-# Set some arguments for devstack.
-# These passwords originally come from redstack.rc.
-MYSQL_PASSWORD=$MYSQL_PASSWORD
-RABBIT_PASSWORD=$RABBIT_PASSWORD
-SERVICE_TOKEN=$SERVICE_TOKEN
-ADMIN_PASSWORD=$ADMIN_PASSWORD
-SERVICE_PASSWORD=$SERVICE_PASSWORD
-FLAT_INTERFACE=br100
-TROVE_LOGDIR=$TROVE_LOGDIR
-TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
-# Enable Swift
-ENABLED_SERVICES+=,swift
-ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
-SWIFT_HASH=$SWIFT_HASH
-# Set Cinder Volume from Redstack so that later Redstack can help manage
-# reconnecting Volume Group to Backing File
-DEST=$DEST
-DATA_DIR=$DATA_DIR
-VOLUME_GROUP=${VOLUME_GROUP}
-VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
-# The lock_path is by default /opt/stack/nova; if this path is a shared
-# folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
-# to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
-"
+    pushd $PATH_DEVSTACK_SRC
     if [ -f localrc ]; then
-        #If localrc exist, check if the variables are already in it
+        #Check if we have already configured localrc
         is_in_localrc=`grep "# Trove-integration" localrc | wc -l`
         if [ $is_in_localrc == 0 ]; then
             #Otherwise append them to the existing file
-            echo "$params" >> localrc
+            eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" >> localrc
         fi
-        else
+
+    else
         #If localrc doesn't exist, create it
-        echo "$params" > localrc
+        eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" > localrc
     fi
 
     if [ -n "$USE_UUID_TOKEN" ];  then
-        echo "
-KEYSTONE_TOKEN_FORMAT=UUID
-" >> localrc
+        echo "KEYSTONE_TOKEN_FORMAT=UUID" >> localrc
     fi
 
     if [ -n "$USING_VAGRANT" ]
     then
-        echo "
-# This is similar to code found at
-# https://github.com/bcwaldon/vagrant_devstack/blob/master/Vagrantfile
-# and seems to make instances ping'able in VirtualBox.
-FLAT_INTERFACE=eth1
-PUBLIC_INTERFACE=eth1
-FLOATING_RANGE=`ip_chunk eth0 1`.`ip_chunk eth0 2`.`ip_chunk eth0 3`.128/28
-HOST_IP=`ip_chunk eth0 1`.`ip_chunk eth0 2`.`ip_chunk eth0 3`.`ip_chunk eth0 4`
-" >> localrc
+        eval echo "\"$(cat $REDSTACK_SCRIPTS/vagrant.rc)\"" >> localrc
     fi
+
     ./stack.sh
+    popd
 }
 
-function ensure_local_sources() {
-    exclaim "Making sure local sources are up to date..."
-    # this method will only clone if the sources dont exist,
-    # or if RECLONE=yes is set
-    git_clone $REPO_TROVE $PATH_TROVE $BRANCH_TROVE
-    git_clone $REPO_TROVECLIENT $PATH_PYTHON_TROVECLIENT $BRANCH_TROVECLIENT
-}
 
 function cmd_install() {
     install_prep_packages
-    install_devstack
     install_devstack_code
     install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
-    ensure_local_sources
-    install_trove_packages
-    install_diskimagebuilder
-    install_tripleo_elements
     exclaim "FINISHED INSTALL"
-}
-
-
-
-###############################################################################
-# Build
-###############################################################################
-
-function setup_py() {
-    # Calls setup.py in the given directory.
-    echo "CD into $1"
-    pushd $1
-    sudo python setup.py develop
-    popd
-}
-
-function cmd_build() {
-    # Run setup.py for all projects.
-    exclaim "Calling setup for all dependencies..."
-    setup_py $PATH_NOVA
-    setup_py $PATH_PYTHON_NOVACLIENT
-    setup_py $PATH_PYTHON_TROVECLIENT
-    setup_py $PATH_TROVE
 }
 
 
@@ -434,7 +346,6 @@ function cmd_build() {
 # Build the image
 # see functions_qemu
 ###############################################################################
-
 
 # Grab a numbered field from python prettytable output
 # Fields are numbered starting with 1
@@ -529,6 +440,11 @@ function rd_manage() {
     bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf $@
 }
 
+function install_test_packages() {
+    exclaim "Installing test packages."
+    sudo pip install openstack.nose_plugin proboscis pexpect
+}
+
 function mod_test_conf() {
     cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $TROVE_CONF_DIR/test.conf
@@ -547,28 +463,39 @@ function mod_test_conf() {
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
 }
 
+
+function add_test_flavors() {
+    add_flavor 'tinier' 6 506 10 1 0
+    add_flavor 'm1.rd-tiny' 7 512 2 1 0
+    add_flavor 'm1.rd-smaller' 8 768 2 1 0
+    add_flavor 'eph.rd-tiny' 9 512 2 1 1
+    add_flavor 'eph.rd-smaller' 10 768 2 1 2
+}
+
 function cmd_test_init() {
     exclaim 'Initializing Configuration for Running Tests...'
+
+    echo "Installing test python packages (proboscis & nosetests)"
+    install_test_packages
 
     echo "Modifying test.conf with appropriate values"
     mod_test_conf
 
     exclaim "Creating Keystone Test users..."
     configure_keystone_for_test_users
+
+    exclaim "Configuring IPTables for PostRouting $NETWORK_SUBNET through $NETWORK_INTERFACE..."
+    sudo iptables -t nat -A POSTROUTING -s $NETWORK_SUBNET -o $NETWORK_INTERFACE -j MASQUERADE
 }
 
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove'
 
-    echo "Stopping Trove Services"
-    cmd_stop
-
-    exclaim "Reinitilizing via devstack local.sh"
-    cd $PATH_DEVSTACK_SRC
-    ./local.sh
-
-    exclaim 'ReInitialize Test Config'
-    cmd_test_init
+    exclaim "Reinitilizing via devstack"
+    pushd $PATH_DEVSTACK_SRC
+    ./unstack.sh
+    ./stack.sh
+    popd
 }
 
 
@@ -682,7 +609,7 @@ function cmd_int_tests_simple() {
 }
 
 function cmd_int_tests_white_box() {
-    export PYTHONPATH=$PYTHONPATH:$TROVE_SOURCE
+    export PYTHONPATH=$PYTHONPATH:$PATH_TROVE
     export PYTHONPATH=$PYTHONPATH:$PATH_NOVA
     cmd_int_tests --test-config white_box=True \
         --config-file=$TROVE_CONF_DIR/trove.conf \
@@ -713,6 +640,7 @@ function cmd_example_tests() {
     popd
     cmd_stop
 }
+
 
 ###############################################################################
 # Misc. tools
@@ -814,7 +742,6 @@ function cmd_run_ci() {
     cmd_stop
     set -e
     cmd_install
-    cmd_build
     cmd_test_init
     # The arg will be the image type
     cmd_build_image $1
@@ -848,15 +775,11 @@ function cmd_clear() {
 }
 
 function cmd_kick_start() {
-    cmd_build
     cmd_test_init
     cmd_build_image $1
 }
 
 function cmd_post_devstack() {
-    install_trove_packages
-    install_diskimagebuilder
-    cmd_build
     cmd_test_init
     cmd_build_image $1
 }
@@ -865,22 +788,28 @@ function cmd_reset_task() {
     mysql_trove "UPDATE instances SET task_id=1 WHERE id='$1'"
 }
 
-function cmd_update_projects() {
-  for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
-     if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
-          echo "Creating a new clone of $project..."
-          git_clone https://git.openstack.org/openstack/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
-      else
-          echo "$project was already cloned or exists pulling changes"
-          cd $PATH_DEVSTACK_OUTPUT/$project
-          git pull
-      fi
+function cmd_clone_projects() {
+    UPDATE_PROJECTS=$1
+    for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
+        if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
+            echo "Creating a new clone of $project..."
+            git_clone $OPENSTACK_GITSOURCE/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
+        else
+            if [ -z $UPDATE_PROJECTS ]; then
+                echo "$project was already cloned. Pulling changes to update."
+                cd $PATH_DEVSTACK_OUTPUT/$project
+                git pull
+            else
+                echo "$project was already cloned or exists in a shared folder. Ignoring..."
+            fi
+        fi
   done
 }
 
 function cmd_repl() {
     INT_TEST_OPTIONS=-i cmd_int_tests_white_box --repl --group=_does_not_exist_ $@
 }
+
 
 ###############################################################################
 # Process the user provided command and run the appropriate command
@@ -959,7 +888,6 @@ function run_command() {
 
     case "$1" in
         "install" ) cmd_install;;
-        "build" ) cmd_build;;
         "test-init" ) cmd_test_init;;
         "build-image" ) shift; cmd_build_image $@;;
         "initialize" ) cmd_initialize;;
@@ -991,7 +919,7 @@ function run_command() {
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
         "start-fake" ) shift; cmd_start_fake $@;;
-        "update-projects" ) cmd_update_projects;;
+        "update-projects" ) cmd_clone_projects force_update;;
         "reset-task" ) shift; cmd_reset_task $@;;
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
