@@ -1,0 +1,26 @@
+# Trove-integration
+# Set some arguments for devstack.
+# These passwords originally come from redstack.rc.
+MYSQL_PASSWORD=$MYSQL_PASSWORD
+RABBIT_PASSWORD=$RABBIT_PASSWORD
+SERVICE_TOKEN=$SERVICE_TOKEN
+ADMIN_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$SERVICE_PASSWORD
+FLAT_INTERFACE=br100
+TROVE_LOGDIR=$TROVE_LOGDIR
+TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
+# Enable Trove, Swift, and Heat
+ENABLED_SERVICES+=,trove,tr-api,tr-tmgr
+ENABLED_SERVICES+=,swift
+ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
+SWIFT_HASH=$SWIFT_HASH
+# Set Cinder Volume from Redstack so that later Redstack can help manage
+# reconnecting Volume Group to Backing File
+DEST=$DEST
+DATA_DIR=$DATA_DIR
+VOLUME_GROUP=${VOLUME_GROUP}
+VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
+# The lock_path is by default /opt/stack/nova; if this path is a shared
+# folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
+# to force lock_path to /tmp.
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks logdir=$TROVE_LOGDIR logfile_mode=660 rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)

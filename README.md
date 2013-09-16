@@ -83,10 +83,6 @@ Allows the services to continue running in the background
 
 *Optional commands if you did not run kick-start*
 
-#### Build the packages
-
-    $ ./redstack build
-
 #### Initialize the test configuration and set up test users
 
     $ ./redstack test-init
@@ -99,7 +95,7 @@ Allows the services to continue running in the background
 
 #### You may need to add this iptables rule, be sure to save it!
 
-    $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE 
+    $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE
 
 #### Running the trove client (It's so easy!)
 *This sets of the authorization endpoint and gets a token for you*
@@ -166,4 +162,3 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
-
