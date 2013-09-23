@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Michael Basnight <mbasnight@gmail.com>
+Code-Review+1: Vipul Sabhaya <vipuls@gmail.com>
+Approved+1: SlickNik <SlickNik@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 23 Sep 2013 09:20:54 +0000
+Reviewed-on: https://review.openstack.org/46833
+Project: openstack/trove-integration
+Branch: refs/heads/master
