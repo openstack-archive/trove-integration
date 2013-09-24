@@ -72,9 +72,10 @@ from trove.tests.util import create_nova_client
 from trove.tests.util import process
 from trove.tests.util import string_in_list
 from trove.tests.util import PollTimeOut
-from trove.tests.util import poll_until
 from trove.tests.util import LocalSqlClient
 from trove.tests.util import check
+
+from trove.common.utils import poll_until
 
 
 WHITE_BOX = test_config.white_box
