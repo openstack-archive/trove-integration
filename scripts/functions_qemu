@@ -47,7 +47,7 @@ function cmd_build_image() {
     fi
     SERVICE_TYPE=$1
 
-    VALID_SERVICES='mysql percona'
+    VALID_SERVICES='mysql percona redis'
     if [ `expr  "$VALID_SERVICES" : ".*$SERVICE"` -eq 0 ] ; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
