@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -ex
+
+export DEBIAN_FRONTEND=noninteractive
+add-apt-repository ppa:rwky/redis -y
+apt-get update
+apt-get install -y redis-server
