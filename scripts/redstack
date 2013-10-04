@@ -325,6 +325,7 @@ function run_devstack() {
         eval echo "\"$(cat $REDSTACK_SCRIPTS/vagrant.rc)\"" >> localrc
     fi
 
+    export MYSQL_HOST=localhost
     ./stack.sh
     popd
 }
@@ -493,6 +494,7 @@ function cmd_test_init() {
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove...'
     pushd $PATH_DEVSTACK_SRC
+    export MYSQL_HOST=localhost
     ./unstack.sh
     ./stack.sh
     popd
