@@ -13,7 +13,7 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import Check
 from proboscis.asserts import fail
 
-from troveclient import exceptions
+from troveclient.compat import exceptions
 from tests import util
 from tests.util import create_dbaas_client
 from tests.util import test_config

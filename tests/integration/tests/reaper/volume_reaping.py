@@ -17,7 +17,7 @@ from datetime import timedelta
 
 from nose.tools import assert_raises
 
-from troveclient.exceptions import NotFound
+from troveclient.compat.exceptions import NotFound
 
 from proboscis import after_class
 from proboscis import before_class

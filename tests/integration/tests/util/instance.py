@@ -21,7 +21,7 @@ from proboscis.asserts import assert_true
 from proboscis.asserts import assert_is_not_none
 from proboscis.asserts import fail
 
-from troveclient.exceptions import NotFound as NotFound404
+from troveclient.compat.exceptions import NotFound as NotFound404
 from tests.util import report
 from tests.util import test_config
 from trove.tests.util.users import Requirements

@@ -45,7 +45,7 @@ except ImportError:
 
 from sqlalchemy import create_engine
 
-from troveclient import exceptions
+from troveclient.compat import exceptions
 
 from proboscis import test
 from proboscis.asserts import assert_false
@@ -55,8 +55,8 @@ from proboscis.asserts import Check
 from proboscis.asserts import fail
 from proboscis.asserts import ASSERTION_ERROR
 from proboscis import SkipTest
-from troveclient import Dbaas
-from troveclient.client import TroveHTTPClient
+from troveclient.compat import Dbaas
+from troveclient.compat.client import TroveHTTPClient
 from tests.util import test_config
 from trove.tests.util.client import TestClient as TestClient
 from tests.util.topics import hosts_up

@@ -8,8 +8,8 @@ from urlparse import urlparse
 import xml.dom.minidom
 
 from proboscis.asserts import *
-from troveclient.client import TroveHTTPClient
-from troveclient.xml import TroveXmlClient
+from troveclient.compat.client import TroveHTTPClient
+from troveclient.compat.xml import TroveXmlClient
 
 
 print_req = True

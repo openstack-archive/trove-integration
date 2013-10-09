@@ -13,8 +13,8 @@ from proboscis import TestProgram
 from proboscis.asserts import *
 from proboscis.asserts import Check
 
-from troveclient import Dbaas
-from troveclient import TroveHTTPClient
+from troveclient.compat import Dbaas
+from troveclient.compat import TroveHTTPClient
 
 
 from client import ConfigFile

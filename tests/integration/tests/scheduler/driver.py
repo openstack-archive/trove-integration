@@ -21,7 +21,7 @@ from nose.tools import assert_almost_equal
 from nose.tools import assert_equal
 from nose.tools import assert_not_almost_equal
 from nose.tools import assert_true
-from troveclient import exceptions
+from troveclient.compat import exceptions
 from proboscis import test
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out

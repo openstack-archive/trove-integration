@@ -2,7 +2,7 @@ from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_raises
 
-from troveclient import exceptions
+from troveclient.compat import exceptions
 from tests.util import test_config
 from tests.util import create_client
 from tests.util import poll_until

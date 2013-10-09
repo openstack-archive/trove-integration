@@ -1,4 +1,4 @@
-from troveclient.instances import InstanceStatus
+from troveclient.v1.instances import InstanceStatus
 from proboscis.asserts import assert_equal
 from proboscis import test
 from tests.util.generation import InstanceGenerator

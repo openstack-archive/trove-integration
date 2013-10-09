@@ -4,7 +4,7 @@ import unittest
 from proboscis import test
 from proboscis.decorators import time_out
 
-from troveclient import Dbaas
+from troveclient.compat import Dbaas
 
 from trove.tests.api.instances import instance_info
 from trove.tests.api.instances import GROUP_START as INSTANCE_START
