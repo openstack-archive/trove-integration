@@ -10,7 +10,7 @@ FLAT_INTERFACE=br100
 TROVE_LOGDIR=$TROVE_LOGDIR
 TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 # Enable Trove, Swift, and Heat
-ENABLED_SERVICES+=,trove,tr-api,tr-tmgr
+ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
 ENABLED_SERVICES+=,swift
 ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
 SWIFT_HASH=$SWIFT_HASH
