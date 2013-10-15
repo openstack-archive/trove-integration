@@ -447,7 +447,7 @@ function rd_manage() {
 }
 
 function install_test_packages() {
-    sudo pip install openstack.nose_plugin proboscis pexpect
+    sudo pip install openstack.nose_plugin proboscis pexpect mockito
 }
 
 function mod_test_conf() {
@@ -709,6 +709,13 @@ function cmd_rd_client() {
         --os-tenant-name=trove  $@
 }
 
+function cmd_rd_client_2() {
+    # This serves as an example of how to call the Trove client script.
+    trove --os-auth-url=http://localhost:35357/v2.0 \
+          --os-tenant-name=trove --os-username=radmin --os-password=radmin \
+          --service-name='database' $@
+}
+
 function cmd_rd_mgmt_client() {
     # This serves as an example of how to call the Trove managment client script.
     trove-cli --username=radmin --apikey=radmin --tenant=trove \
@@ -883,6 +890,7 @@ function print_usage() {
           rd-client       - Runs Trove client with admin user.
           rd-mgmt-client  - Runs Trove management client with admin user.
                             * Shows a valid token.
+          rd-client2      - Runs NEW Trove client with admin user.
           wipe-logs       - Resets all log files.
           nova-delete     - Deletes a nova instance.
           rd-sql          - Opens the Trove MySQL database.
@@ -920,6 +928,7 @@ function run_command() {
         "glance-client" ) shift; cmd_glance_client $@;;
         "nova-client" ) shift; cmd_nova_client $@;;
         "rd-client" ) shift; cmd_rd_client $@;;
+        "rd-client2" ) shift; cmd_rd_client_2 $@;;
         "rd-mgmt-client" ) shift; cmd_rd_mgmt_client $@;;
         "swift-client" ) shift; cmd_swift_client $@;;
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
