@@ -1,0 +1,18 @@
+#!/bin/bash
+export DEBIAN_FRONTEND=noninteractive
+echo "deb http://debian.datastax.com/community stable main" >> /etc/apt/sources.list.d/cassandra.sources.list
+curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -
+apt-get update
+apt-get install -qy openjdk-7-jdk expect libmysqlclient-dev python-dev
+apt-get install -qy python-dev libxml2-dev ntp mc
+apt-get install -qy libxslt1-dev python-pexpect python-mysqldb
+apt-get install -qy python-migrate build-essential
+wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+python ez_setup.py
+wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+python get-pip.py
+apt-get install cassandra=1.2.10
+service cassandra stop
+killall java
+sed -i -e "s,rpc_address:,rpc_address: 0.0.0.0," /etc/cassandra/cassandra.yaml
+service cassandra start
