@@ -341,6 +341,13 @@ if __name__ == '__main__':
         proboscis.register(groups=["host.ovz"],
                            depends_on_groups=host_ovz_groups)
 
+        mongodb_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            GROUP_START_SIMPLE, ]
+        proboscis.register(groups=["cassandra"],
+                           depends_on_groups=mongodb_groups)
     atexit.register(_clean_up)
 
     # Set up pretty colors.
