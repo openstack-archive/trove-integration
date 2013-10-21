@@ -302,6 +302,13 @@ def run_main(test_importer):
     # Now that all configurations are loaded its time to import everything
     test_importer()
 
+        cassandra_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            GROUP_START_SIMPLE, ]
+        proboscis.register(groups=["cassandra"],
+                           depends_on_groups=cassandra_groups)
     atexit.register(_clean_up)
 
     c = config.Config(stream=sys.stdout,
