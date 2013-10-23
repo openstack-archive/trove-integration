@@ -217,6 +217,16 @@ def import_tests():
                            depends_on_groups=heavy_black_box_groups)
 
 
+        mongodb_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            GROUP_START_SIMPLE,
+        ]
+        proboscis.register(groups=["mongodb"],
+                           depends_on_groups=mongodb_groups)
+
+
 def run_main(test_importer):
 
     add_support_for_localization()
