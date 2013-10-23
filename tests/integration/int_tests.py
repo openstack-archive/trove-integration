@@ -47,6 +47,12 @@ import os
 import time
 import unittest
 import sys
+import proboscis
+
+from nose import config
+from nose import core
+
+from tests.colorizer import NovaTestRunner
 
 
 if os.environ.get("PYDEV_DEBUG", "False") == 'True':
@@ -75,27 +81,19 @@ MAIN_RUNNER = None
 
 
 def initialize_rdl_config(config_file):
-    import optparse
-    from trove.common import config
-    from trove import version
-
-    def create_options(parser):
-        parser.add_option('-p', '--port', dest="port", metavar="PORT",
-                          type=int, default=9898,
-                          help="Port the Trove API host listens on. "
-                         "Default: %default")
-        config.add_common_options(parser)
-        config.add_log_options(parser)
-
-    def usage():
-        usage = ""
-    oparser = optparse.OptionParser(version="%%prog %s"
-        % version.version_string(),
-        usage=usage())
-    create_options(oparser)
-    (options, args) = config.parse_options(oparser, cli_args=[config_file])
-    conf = config.Config.load_paste_config('trove', options, args)
-    config.setup_logging(options, conf)
+    from trove.common import cfg
+    from trove.openstack.common import log
+    from trove.db import get_db_api
+    conf = cfg.CONF
+    cfg.parse_args(['int_tests'], default_config_files=[config_file])
+    log.setup(None)
+    try:
+        get_db_api().configure_db(conf)
+        conf_file = conf.find_file(conf.api_paste_config)
+    except RuntimeError as error:
+        import traceback
+        print traceback.format_exc()
+        sys.exit("ERROR: %s" % error)
 
 
 def initialize_nova_flags(config_file):
@@ -105,7 +103,7 @@ def initialize_nova_flags(config_file):
     from nova import utils
 
     flags.parse_args(['int_tests'], default_config_files=[config_file])
-    logging.setup()
+    logging.setup(None)
     utils.monkey_patch()
 
 
@@ -124,7 +122,105 @@ def _clean_up():
         service.stop()
 
 
-if __name__ == '__main__':
+def import_tests():
+
+    # TODO(tim.simpson): Import these again once white box test functionality
+    #                    is restored.
+    # from tests.dns import check_domain
+    # from tests.dns import concurrency
+    # from tests.dns import conversion
+
+    # The DNS stuff is problematic. Not loading the other tests allow us to
+    # run its functional tests only.
+    ADD_DOMAINS = os.environ.get("ADD_DOMAINS", "False") == 'True'
+    if not ADD_DOMAINS:
+        from tests import initialize
+        from tests.api import delete_all
+        from trove.tests.api import flavors
+        from trove.tests.api import versions
+        from trove.tests.api import instances
+        from trove.tests.api import instances_actions
+        from trove.tests.api import instances_mysql_down
+        from tests.api import instances_pagination
+        from trove.tests.api import instances_delete
+        from tests.api import instances_quotas
+        from tests.api import instances_states
+        from trove.tests.api import databases
+        from trove.tests.api import root
+        from trove.tests.api import users
+        from trove.tests.api import user_access
+        from trove.tests.api import backups
+        from trove.tests.api.mgmt import accounts
+        from trove.tests.api.mgmt import admin_required
+        from trove.tests.api.mgmt import hosts
+        from trove.tests.api.mgmt import instances as mgmt_instances
+        from trove.tests.api.mgmt import storage
+        from tests.dns import dns
+        from tests.volumes import driver
+        from tests.smoke import instance
+        from trove import tests as trove_tests
+
+        black_box_groups = [
+            flavors.GROUP,
+            users.GROUP,
+            user_access.GROUP,
+            databases.GROUP,
+            root.GROUP,
+            "services.initialize",
+            instances.GROUP_START,
+            trove_tests.PRE_INSTANCES,
+            "dbaas_quotas",
+            "dbaas.api.security_groups",
+            backups.GROUP,
+            "dbaas.api.instances.actions.resize.instance",
+            # TODO(SlickNik): The restart tests fail intermittently so pulling
+            # them out of the blackbox group temporarily. Refer to Trove bug:
+            # https://bugs.launchpad.net/trove/+bug/1204233
+            # "dbaas.api.instances.actions.restart",
+            instances_actions.GROUP_STOP_MYSQL,
+            instances.GROUP_STOP,
+            versions.GROUP,
+            "dbaas.guest.start.test",
+            ]
+        proboscis.register(groups=["blackbox"],
+                           depends_on_groups=black_box_groups)
+
+        simple_black_box_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE,
+            "dbaas.api.mgmt.admin",
+            trove_tests.PRE_INSTANCES,
+        ]
+        proboscis.register(groups=["simple_blackbox"],
+                           depends_on_groups=simple_black_box_groups)
+
+        black_box_mgmt_groups = [
+            accounts.GROUP,
+            hosts.GROUP,
+            storage.GROUP,
+            instances_actions.GROUP_REBOOT,
+            admin_required.GROUP,
+            mgmt_instances.GROUP,
+            ]
+        proboscis.register(groups=["blackbox_mgmt"],
+                           depends_on_groups=black_box_mgmt_groups)
+        heavy_black_box_groups = [
+            "dbaas.api.instances.pagination",
+            "dbaas.api.instances.delete",
+            "dbaas.api.instances.status",
+            "dbaas.api.instances.down",
+            "dbaas.api.mgmt.hosts.update",
+            "fake.dbaas.api.mgmt.instances",
+            "fake.dbaas.api.mgmt.accounts.broken",
+            "fake.dbaas.api.mgmt.allaccounts"
+        ]
+        proboscis.register(groups=["heavy_blackbox"],
+                           depends_on_groups=heavy_black_box_groups)
+
+
+def run_main(test_importer):
 
     add_support_for_localization()
 
@@ -157,7 +253,7 @@ if __name__ == '__main__':
             conf_line = sys.argv[index + 1]
             extra_test_conf_lines.append(conf_line)
         elif arg[:11] == "--flagfile=":
-            pass  # Don't append this...
+            pass
         elif arg[:14] == "--config-file=":
             rdl_config_file = arg[14:]
         elif arg[:13] == "--nova-flags=":
@@ -180,23 +276,16 @@ if __name__ == '__main__':
     file_path = os.path.expanduser(os.environ["TEST_CONF"])
     if not os.path.exists(file_path):
         raise RuntimeError("Could not find TEST_CONF at " + file_path + ".")
-    # Load config file and then any lines we read from the arguments.
+        # Load config file and then any lines we read from the arguments.
     CONFIG.load_from_file(file_path)
     for line in extra_test_conf_lines:
         CONFIG.load_from_line(line)
 
-    # Reset values imported into tests/__init__.
-    # TODO(tim.simpson): Stop importing them from there.
-    from tests import initialize_globals
-    initialize_globals()
-
-    from tests import WHITE_BOX
-    if WHITE_BOX:  # If white-box testing, set up the flags.
+    if CONFIG.white_box:  # If white-box testing, set up the flags.
         # Handle loading up RDL's config file madness.
         initialize_rdl_config(rdl_config_file)
         if nova_flag_file:
             initialize_nova_flags(nova_flag_file)
-
 
     # Set up the report, and print out how we're running the tests.
     from tests.util import report
@@ -205,7 +294,7 @@ if __name__ == '__main__':
     report.log("Invoked via command: " + str(sys.argv))
     report.log("Groups = " + str(groups))
     report.log("Test conf file = %s" % os.environ["TEST_CONF"])
-    if WHITE_BOX:
+    if CONFIG.white_box:
         report.log("")
         report.log("Test config file = %s" % rdl_config_file)
     report.log("")
@@ -213,275 +302,20 @@ if __name__ == '__main__':
     for path in sys.path:
         report.log("\t%s" % path)
 
-    # Now that all configurations are loaded its time to import everything.
-
-    import proboscis
-    # TODO(tim.simpson): Import these again once white box test functionality
-    #                    is restored.
-    # from tests.dns import check_domain
-    # from tests.dns import concurrency
-    # from tests.dns import conversion
-
-    # The DNS stuff is problematic. Not loading the other tests allow us to
-    # run its functional tests only.
-    ADD_DOMAINS = os.environ.get("ADD_DOMAINS", "False") == 'True'
-    if not ADD_DOMAINS:
-        from tests import initialize
-        from tests.api import delete_all
-        from trove.tests.api import flavors
-        from trove.tests.api import versions
-        from trove.tests.api import instances
-        from trove.tests.api.instances import GROUP_START_SIMPLE
-        from tests.api import instances_direct
-        from trove.tests.api import instances_actions
-        from trove.tests.api import instances_mysql_down
-        from tests.api import instances_pagination
-        from trove.tests.api import instances_delete
-        from tests.api import instances_quotas
-        from tests.api import instances_states
-        from trove.tests.api import databases
-        from trove.tests.api import root
-        from trove.tests.api import users
-        from trove.tests.api import user_access
-        from trove.tests.api import backups
-        from trove.tests.api.mgmt import accounts
-        from trove.tests.api.mgmt import admin_required
-        from tests.api.mgmt import hosts
-        from tests.api.mgmt import update_hosts
-        from trove.tests.api.mgmt import instances
-        from trove.tests.api.mgmt import storage
-        from tests.dns import dns
-        from tests.guest import amqp_restarts
-        from tests.reaper import volume_reaping
-        from tests.scheduler import driver
-        from tests.scheduler import SCHEDULER_DRIVER_GROUP
-        from tests.volumes import driver
-        from tests.volumes import VOLUMES_DRIVER
-        from tests.compute import guest_initialize_failure
-        from tests.openvz import compute_reboot_vz as compute_reboot
-        from tests import util
-        from tests.smoke import instance
-        from tests.recreates import create_11
-        from tests.recreates import login
-        if WHITE_BOX:
-            from tests.volumes import volumes_create
-
-        black_box_groups = [
-            flavors.GROUP,
-            users.GROUP,
-            user_access.GROUP,
-            databases.GROUP,
-            root.GROUP,
-            "services.initialize",
-            "dbaas.guest.initialize",  # instances.GROUP_START,
-            "dbaas.preinstance",
-            "dbaas_quotas",
-            "dbaas.api.security_groups",
-            backups.GROUP,
-            "dbaas.api.instances.actions.resize.instance",
-            # TODO(SlickNik): The restart tests fail intermittently so pulling
-            # them out of the blackbox group temporarily. Refer to Trove bug:
-            # https://bugs.launchpad.net/trove/+bug/1204233
-            # "dbaas.api.instances.actions.restart",
-            "dbaas.api.instances.actions.stop",
-            "dbaas.guest.shutdown",
-            versions.GROUP,
-            "dbaas.guest.start.test",
-        ]
-        proboscis.register(groups=["blackbox"],
-                           depends_on_groups=black_box_groups)
-
-        simple_black_box_groups = [
-            "services.initialize",
-            flavors.GROUP,
-            versions.GROUP,
-            GROUP_START_SIMPLE,
-            "dbaas.api.mgmt.admin",
-            "dbaas.preinstance"
-        ]
-        proboscis.register(groups=["simple_blackbox"],
-                           depends_on_groups=simple_black_box_groups)
-
-        black_box_mgmt_groups = [
-            accounts.GROUP,
-            hosts.GROUP,
-            storage.GROUP,
-            "dbaas.api.instances.actions.reboot",
-            "dbaas.api.mgmt.admin",
-            "dbaas.api.mgmt.instances",
-        ]
-        proboscis.register(groups=["blackbox_mgmt"],
-                           depends_on_groups=black_box_mgmt_groups)
-        heavy_black_box_groups = [
-            "dbaas.api.instances.pagination",
-            "dbaas.api.instances.delete",
-            "dbaas.api.instances.status",
-            "dbaas.api.instances.down",
-            "dbaas.api.mgmt.hosts.update",
-            "fake.dbaas.api.mgmt.instances",
-            "fake.dbaas.api.mgmt.accounts.broken",
-            "fake.dbaas.api.mgmt.allaccounts"
-        ]
-        proboscis.register(groups=["heavy_blackbox"],
-                           depends_on_groups=heavy_black_box_groups)
-
-        # This is for the old white-box tests...
-        host_ovz_groups = [
-            "dbaas.guest",
-            compute_reboot.GROUP,
-            "dbaas.guest.dns",
-            SCHEDULER_DRIVER_GROUP,
-            VOLUMES_DRIVER,
-            guest_initialize_failure.GROUP,
-            volume_reaping.GROUP
-        ]
-        if WHITE_BOX and util.should_run_rsdns_tests():
-            host_ovz_groups += ["rsdns.conversion", "rsdns.domains",
-                                "rsdns.eventlet"]
-        proboscis.register(groups=["host.ovz"],
-                           depends_on_groups=host_ovz_groups)
+    # Now that all configurations are loaded its time to import everything
+    test_importer()
 
     atexit.register(_clean_up)
-
-    # Set up pretty colors.
-
-    from nose import config
-    from nose import core
-    from tests.colorizer import NovaTestResult
-    from tests.colorizer import NovaTestRunner
-    from proboscis.case import TestResult as ProboscisTestResult
-    from proboscis import SkipTest
-
-    class IntegrationTestResult(NovaTestResult, ProboscisTestResult):
-        """
-        Makes the pretty colors from NovaTestResult compatble with Proboscis
-        SkipTest, and intercepts known bugs defined in the test config.
-        """
-
-        def _intercept_known_bugs(self, test, err):
-            name = str(test)
-            excuse = CONFIG.known_bugs.get(name, None)
-            if excuse:
-                tracker_id, error_string = excuse
-                if error_string in str(err[1]):
-                    skip = SkipTest("KNOWN BUG: %s\n%s"
-                                    % (tracker_id, str(err[1])))
-                    self.onError(test)
-                    super(IntegrationTestResult, self).addSkip(test, skip)
-                else:
-                    result = (RuntimeError, RuntimeError(
-                         'Test "%s" contains known bug %s.\n'
-                         'Expected the following error string:\n%s\n'
-                         'What was seen was the following:\n%s\n'
-                         'If the bug is no longer happening, please change '
-                         'the test config.'
-                         % (name, tracker_id, error_string, str(err))), None)
-                    self.onError(test)
-                    super(IntegrationTestResult, self).addError(test, result)
-                return True
-            return False
-
-        def addFailure(self, test, err):
-            if self._intercept_known_bugs(test, err):
-                return
-            self.onError(test)
-            super(IntegrationTestResult, self).addFailure(test, err)
-
-        def addError(self, test, err):
-            if self._intercept_known_bugs(test, err):
-                return
-            self.onError(test)
-            super(IntegrationTestResult, self).addError(test, err)
-
-        def addSuccess(self, test):
-            if self._intercept_known_bugs(test, None):
-                return
-            super(IntegrationTestResult, self).addSuccess(test)
-
-        @staticmethod
-        def get_doc(cls_or_func):
-            """Grabs the doc abbreviated doc string."""
-            try:
-                return cls_or_func.__doc__.split("\n")[0].strip()
-            except (AttributeError, IndexError):
-                return None
-
-        def startTest(self, test):
-            unittest.TestResult.startTest(self, test)
-            self.start_time = time.time()
-            test_name = None
-            try:
-                entry = test.test.__proboscis_case__.entry
-                if entry.method:
-                    current_class = entry.method.im_class
-                    test_name = self.get_doc(entry.home) or entry.home.__name__
-                else:
-                    current_class = entry.home
-            except AttributeError:
-                current_class = test.test.__class__
-
-            if self.showAll:
-                if current_class.__name__ != self._last_case:
-                    self.stream.writeln(current_class.__name__)
-                    self._last_case = current_class.__name__
-                    try:
-                        doc = self.get_doc(current_class)
-                    except (AttributeError, IndexError):
-                        doc = None
-                    if doc:
-                        self.stream.writeln(' ' + doc)
-
-                if not test_name:
-                    if hasattr(test.test, 'shortDescription'):
-                        test_name = test.test.shortDescription()
-                    if not test_name:
-                        test_name = test.test._testMethodName
-                self.stream.write('    %s' %
-                    '    %s' % str(test_name).ljust(60))
-                self.stream.flush()
-
-    class IntegrationTestRunner(NovaTestRunner):
-
-        def init(self):
-            self.__result = None
-            self.__finished = False
-            self.__start_time = None
-
-        def _makeResult(self):
-            self.__result = IntegrationTestResult(
-                self.stream, self.descriptions, self.verbosity, self.config,
-                show_elapsed=self.show_elapsed)
-            self.__start_time = time.time()
-            return self.__result
-
-        def on_exit(self):
-            if self.__result is None:
-                print("Exiting before tests even started.")
-            else:
-                if not self.__finished:
-                    msg = "Tests aborted, trying to print available results..."
-                    print(msg)
-                    stop_time = time.time()
-                    self.__result.printErrors()
-                    self.__result.printSummary(self.__start_time, stop_time)
-                    self.config.plugins.finalize(self.__result)
-                    if self.show_elapsed:
-                        self._writeSlowTests(self.__result)
-
-        def run(self, test):
-            result = super(IntegrationTestRunner, self).run(test)
-            self.__finished = True
-            return result
 
     c = config.Config(stream=sys.stdout,
                       env=os.environ,
                       verbosity=3,
                       plugins=core.DefaultPluginManager())
-    runner = IntegrationTestRunner(stream=c.stream,
-                                   verbosity=c.verbosity,
-                                   config=c,
-                                   show_elapsed=show_elapsed)
-    runner.init()
+    runner = NovaTestRunner(stream=c.stream,
+                            verbosity=c.verbosity,
+                            config=c,
+                            show_elapsed=show_elapsed,
+                            known_bugs=CONFIG.known_bugs)
     MAIN_RUNNER = runner
 
     if repl:
@@ -490,6 +324,10 @@ if __name__ == '__main__':
         sys.exit = lambda x: None
 
     proboscis.TestProgram(argv=nose_args, groups=groups,
-                          testRunner=runner).run_and_exit()
+                          testRunner=MAIN_RUNNER).run_and_exit()
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
+
+
+if __name__ == "__main__":
+    run_main(import_tests)

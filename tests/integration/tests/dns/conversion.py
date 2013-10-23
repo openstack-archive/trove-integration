@@ -20,10 +20,10 @@ import unittest
 from proboscis import test
 from proboscis.decorators import expect_exception
 
-from tests import wb_test
-from tests import WHITE_BOX
+from trove.tests.config import CONFIG
 
-if WHITE_BOX:
+
+if CONFIG.white_box:
     from nova import flags
     from rsdns.client.records import Record
     from trove.dns.rsdns.driver import EntryToRecordConverter
@@ -36,7 +36,8 @@ if WHITE_BOX:
     TEST_NAME = "hiwassup.dbaas.rackspace.org"
 
 
-@wb_test(groups=["unit", "rsdns.conversion"])
+@test(groups=["unit", "rsdns.conversion"],
+      enabled=CONFIG.white_box)
 class ConvertingNovaEntryNamesToRecordNames(unittest.TestCase):
 
     def setUp(self):
@@ -57,7 +58,8 @@ class ConvertingNovaEntryNamesToRecordNames(unittest.TestCase):
         self.assertEqual("blah.org..blah.org", long_name)
 
 
-@wb_test(groups=["unit", "rsdns.conversion"])
+@test(groups=["unit", "rsdns.conversion"],
+      enabled=CONFIG.white_box)
 class ConvertingRecordsToEntries(unittest.TestCase):
 
     def setUp(self):
@@ -77,7 +79,8 @@ class ConvertingRecordsToEntries(unittest.TestCase):
         self.assertEqual("SOA", entry.type)
 
 
-@wb_test(groups=["rsdns.conversion"])
+@test(groups=["rsdns.conversion"],
+      enabled=CONFIG.white_box)
 class WhenCreatingAnEntryForAnInstance(unittest.TestCase):
     # This isn't a unit test because RsDnsInstanceEntryFactory connects to the
     # service.

@@ -1,16 +1,12 @@
 """Creates a report for the test.
 """
 
-import atexit
 import os
 import shutil
-import sys
-import time
 from os import path
-from tests.util import test_config
+from trove.tests.config import CONFIG
 
-
-USE_LOCAL_OVZ = test_config.values['use_local_ovz']
+USE_LOCAL_OVZ = CONFIG.use_local_ovz
 
 
 class Reporter(object):
@@ -27,7 +23,7 @@ class Reporter(object):
     def _find_all_instance_ids(self):
         instances = []
         if USE_LOCAL_OVZ:
-            for dir in os.listdir("/vz/private"):
+            for dir in os.listdir("/var/lib/vz/private"):
                 instances.append(dir)
         return instances
 
@@ -47,7 +43,7 @@ class Reporter(object):
         def save_file(path, short_name):
             if USE_LOCAL_OVZ:
                 try:
-                    shutil.copyfile("/vz/private/%s/%s" % (id, path),
+                    shutil.copyfile("/var/lib/vz/private/%s/%s" % (id, path),
                                     "%s-%s.log" % (root, short_name))
                 except (shutil.Error, IOError) as err:
                     self.log("ERROR logging %s for instance id %s! : %s"
@@ -69,7 +65,7 @@ class Reporter(object):
         self._save_syslog()
 
 
-REPORTER = Reporter(test_config.values["report_directory"])
+REPORTER = Reporter(CONFIG.report_directory)
 
 
 def log(msg):

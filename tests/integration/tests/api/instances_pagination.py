@@ -1,22 +1,16 @@
-from proboscis.decorators import time_out
+
 from proboscis import after_class
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
-from proboscis.asserts import assert_false
-from proboscis.asserts import assert_is
 from proboscis.asserts import assert_is_not
 from proboscis.asserts import assert_is_none
-from proboscis.asserts import assert_not_equal
-from proboscis.asserts import assert_raises
 from proboscis.asserts import assert_true
-from proboscis.asserts import Check
-from proboscis.asserts import fail
+
 
 from troveclient.compat import exceptions
-from tests import util
-from tests.util import create_dbaas_client
-from tests.util import test_config
+from trove.tests.config import CONFIG
+from trove.tests.util import create_dbaas_client
 from trove.tests.util.users import Requirements
 
 
@@ -25,7 +19,7 @@ class TestBase(object):
     def set_up(self):
         """Create a ton of instances."""
         reqs = Requirements(is_admin=False)
-        self.user = test_config.users.find_user(reqs)
+        self.user = CONFIG.users.find_user(reqs)
         self.dbaas = create_dbaas_client(self.user)
 
     def delete_instances(self):

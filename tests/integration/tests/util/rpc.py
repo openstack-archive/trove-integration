@@ -23,11 +23,11 @@ The functionality is turned on or off by the test config "rabbit_runs_locally".
 
 import re
 
-from tests.util import test_config
-from tests.util.services import start_proc
+from trove.tests.config import CONFIG
+from services import start_proc
 
 
-if test_config.values.get('rabbit_runs_locally', False) == True:
+if CONFIG.values.get('rabbit_runs_locally', False) == True:
 
     DIRECT_ACCESS = True
 
@@ -69,7 +69,7 @@ if test_config.values.get('rabbit_runs_locally', False) == True:
                         if "no_exists" in line:
                             return False
                 return True
-            except ProcessExecutionError:
+            except Exception:
                 return False
 
         def reset(self):
@@ -89,7 +89,7 @@ if test_config.values.get('rabbit_runs_locally', False) == True:
             out = self.run(0, "rabbitmqctl", "start_app")
             print(out)
             out, err = self.run(0, "rabbitmqctl", "change_password", "guest",
-                                test_config.values['rabbit_password'])
+                                CONFIG.values['rabbit_password'])
             print(out)
             print(err)
 
