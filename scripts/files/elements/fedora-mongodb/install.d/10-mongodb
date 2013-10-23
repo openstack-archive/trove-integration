@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+# Mysql client is needed by guestagent to store its state into Trove database even in MongoDB-only deployment
+yum -y install mysql mongodb
