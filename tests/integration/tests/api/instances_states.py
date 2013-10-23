@@ -20,15 +20,11 @@ from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_equal
 
-import tests
-from tests.util import test_config
-from tests.util import create_dbaas_client
+from trove.tests.config import CONFIG
+from trove.tests.util import create_dbaas_client
 from trove.tests.util.users import Requirements
-from tests.util import poll_until
-from tests import FAKE_MODE
+from trove.common.utils import poll_until
 
-
-FAKE_MODE = test_config.values['fake_mode']
 
 @test(groups=[GROUP])
 class InstanceStatusTests(object):
@@ -36,7 +32,7 @@ class InstanceStatusTests(object):
     @before_class
     def set_up(self):
         reqs = Requirements(is_admin=False)
-        self.user = test_config.users.find_user(reqs)
+        self.user = CONFIG.users.find_user(reqs)
         self.dbaas = create_dbaas_client(self.user)
 
     @test

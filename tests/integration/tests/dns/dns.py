@@ -1,17 +1,17 @@
-import time
+
 import unittest
 
 from proboscis import test
-from proboscis.decorators import time_out
-
-from troveclient.compat import Dbaas
 
 from trove.tests.api.instances import instance_info
 from trove.tests.api.instances import GROUP_START as INSTANCE_START
 from trove.tests.api.instances import GROUP_TEST
 from trove.tests.api.instances import GROUP_STOP as INSTANCE_STOP
-from tests import WHITE_BOX
+from trove.tests.config import CONFIG
+from trove.common.utils import import_object
+from trove.common.utils import poll_until
 
+WHITE_BOX = CONFIG.white_box
 
 if WHITE_BOX:
     # TODO(tim.simpson): Restore this once white box functionality can be
@@ -37,7 +37,7 @@ class Setup(unittest.TestCase):
 
     def test_create_rs_dns_driver(self):
         global dns_driver
-        dns_driver = utils.import_object(FLAGS.dns_driver)
+        dns_driver = import_object(FLAGS.dns_driver)
 
 
 def expected_dns_entry():

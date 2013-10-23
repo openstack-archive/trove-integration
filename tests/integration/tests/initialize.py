@@ -26,7 +26,7 @@ from proboscis.decorators import time_out
 from tests.util.services import Service
 from tests.util.services import start_proc
 from tests.util.services import WebService
-from tests import CONFIG
+from trove.tests.config import CONFIG
 
 
 FAKE = CONFIG.fake_mode
