@@ -535,6 +535,7 @@ function init_fake_mode() {
 function cmd_start() {
     screen_it tr-api "cd $PATH_TROVE; bin/trove-api --config-file=$TROVE_CONF_DIR/trove.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
     screen_it tr-tmgr "cd $PATH_TROVE; bin/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
+    screen_it tr-cond "cd $PATH_TROVE; bin/trove-conductor --config-file=$TROVE_CONF_DIR/trove-conductor.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
 }
 
 function cmd_start_fake() {
@@ -562,6 +563,7 @@ function cmd_run_fake() {
 function cmd_stop() {
     screen -S stack -p tr-api -X stuff $'\003 exit \015'
     screen -S stack -p tr-tmgr -X stuff $'\003 exit \015'
+    screen -S stack -p tr-cond -X stuff $'\003 exit \015'
     screen -S stack -p tr-fake -X stuff $'\003 exit \015'
 }
 
