@@ -27,9 +27,11 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_not_equal
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
-from tests import WHITE_BOX
-from tests import wb_test
-from tests.util import should_run_rsdns_tests
+
+from trove.tests.config import CONFIG
+
+WHITE_BOX = CONFIG.white_box
+RUN_DNS = CONFIG.values.get("trove_dns_support", False)
 
 if WHITE_BOX:
     from nova import utils
@@ -47,7 +49,8 @@ if WHITE_BOX:
     DNS_DOMAIN_ID = None
 
 
-@wb_test(groups=["rsdns.domains", "rsdns.show_entries"])
+@test(groups=["rsdns.domains", "rsdns.show_entries"],
+      enabled=WHITE_BOX and RUN_DNS)
 class ClientTests(object):
 
     @before_class
@@ -66,8 +69,8 @@ class ClientTests(object):
         print(domains)
 
 
-@wb_test(groups=["rsdns.domains"], depends_on=[ClientTests],
-         enabled=WHITE_BOX and should_run_rsdns_tests())
+@test(groups=["rsdns.domains"], depends_on=[ClientTests],
+      enabled=WHITE_BOX and RUN_DNS)
 class RsDnsDriverTests(object):
     """Tests the RS DNS Driver."""
 

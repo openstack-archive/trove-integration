@@ -57,6 +57,7 @@ To run a single test module:
 
 import gettext
 import heapq
+import logging
 import os
 import unittest
 import sys
@@ -67,7 +68,8 @@ gettext.install('nova', unicode=1)
 from nose import config
 from nose import core
 from nose import result
-
+from proboscis import case
+from proboscis import SkipTest
 
 class _AnsiColorizer(object):
     """
@@ -184,17 +186,18 @@ class _NullColorizer(object):
 
 def get_elapsed_time_color(elapsed_time):
     if elapsed_time > 1.0:
-        return 'cyan'
-    elif elapsed_time > 0.25:
         return 'yellow'
+    elif elapsed_time > 0.25:
+        return 'cyan'
     else:
         return 'green'
 
 
-class NovaTestResult(result.TextTestResult):
+class NovaTestResult(case.TestResult):
     def __init__(self, *args, **kw):
         self.show_elapsed = kw.pop('show_elapsed')
-        result.TextTestResult.__init__(self, *args, **kw)
+        self.known_bugs = kw.pop('known_bugs', {})
+        super(NovaTestResult, self).__init__(*args, **kw)
         self.num_slow_tests = 5
         self.slow_tests = []  # this is a fixed-sized heap
         self._last_case = None
@@ -213,6 +216,29 @@ class NovaTestResult(result.TextTestResult):
         # _handleElapsedTime will fail, causing the wrong error message to
         # be outputted.
         self.start_time = time.time()
+
+    def _intercept_known_bugs(self, test, err):
+        name = str(test)
+        excuse = self.known_bugs.get(name, None)
+        if excuse:
+            tracker_id, error_string = excuse
+            if error_string in str(err[1]):
+                skip = SkipTest("KNOWN BUG: %s\n%s"
+                                % (tracker_id, str(err[1])))
+                self.onError(test)
+                super(NovaTestResult, self).addSkip(test, skip)
+            else:
+                result = (RuntimeError, RuntimeError(
+                     'Test "%s" contains known bug %s.\n'
+                     'Expected the following error string:\n%s\n'
+                     'What was seen was the following:\n%s\n'
+                     'If the bug is no longer happening, please change '
+                     'the test config.'
+                     % (name, tracker_id, error_string, str(err))), None)
+                self.onError(test)
+                super(NovaTestResult, self).addError(test, result)
+            return True
+        return False
 
     def getDescription(self, test):
         return str(test)
@@ -242,12 +268,17 @@ class NovaTestResult(result.TextTestResult):
 
     # NOTE(vish): copied from unittest with edit to add color
     def addSuccess(self, test):
+        if self._intercept_known_bugs(test, None):
+            return
         unittest.TestResult.addSuccess(self, test)
         self._handleElapsedTime(test)
         self._writeResult(test, 'OK', 'green', '.', True)
 
     # NOTE(vish): copied from unittest with edit to add color
     def addFailure(self, test, err):
+        if self._intercept_known_bugs(test, err):
+            return
+        self.onError(test)
         unittest.TestResult.addFailure(self, test, err)
         self._handleElapsedTime(test)
         self._writeResult(test, 'FAIL', 'red', 'F', False)
@@ -258,6 +289,9 @@ class NovaTestResult(result.TextTestResult):
         errorClasses. If the exception is a registered class, the
         error will be added to the list for that class, not errors.
         """
+        if self._intercept_known_bugs(test, err):
+            return
+        self.onError(test)
         self._handleElapsedTime(test)
         stream = getattr(self, 'stream', None)
         ec, ev, tb = err
@@ -287,32 +321,67 @@ class NovaTestResult(result.TextTestResult):
         if stream is not None:
             self._writeResult(test, 'ERROR', 'red', 'E', False)
 
+    @staticmethod
+    def get_doc(cls_or_func):
+        """Grabs the doc abbreviated doc string."""
+        try:
+            return cls_or_func.__doc__.split("\n")[0].strip()
+        except (AttributeError, IndexError):
+            return None
+
     def startTest(self, test):
         unittest.TestResult.startTest(self, test)
         self.start_time = time.time()
-        current_case = test.test.__class__.__name__
+        test_name = None
+        try:
+            entry = test.test.__proboscis_case__.entry
+            if entry.method:
+                current_class = entry.method.im_class
+                test_name = self.get_doc(entry.home) or entry.home.__name__
+            else:
+                current_class = entry.home
+        except AttributeError:
+            current_class = test.test.__class__
 
         if self.showAll:
-            if current_case != self._last_case:
-                self.stream.writeln(current_case)
-                self._last_case = current_case
+            if current_class.__name__ != self._last_case:
+                self.stream.writeln(current_class.__name__)
+                self._last_case = current_class.__name__
+                try:
+                    doc = self.get_doc(current_class)
+                except (AttributeError, IndexError):
+                    doc = None
+                if doc:
+                    self.stream.writeln(' ' + doc)
 
-            self.stream.write(
-                '    %s' % str(test.test._testMethodName).ljust(60))
+            if not test_name:
+                if hasattr(test.test, 'shortDescription'):
+                    test_name = test.test.shortDescription()
+                if not test_name:
+                    test_name = test.test._testMethodName
+            self.stream.write('\t%s' % str(test_name).ljust(60))
             self.stream.flush()
 
 
 class NovaTestRunner(core.TextTestRunner):
     def __init__(self, *args, **kwargs):
         self.show_elapsed = kwargs.pop('show_elapsed')
-        core.TextTestRunner.__init__(self, *args, **kwargs)
+        self.known_bugs = kwargs.pop('known_bugs', {})
+        self.__result = None
+        self.__finished = False
+        self.__start_time = None
+        super(NovaTestRunner, self).__init__(*args, **kwargs)
 
     def _makeResult(self):
-        return NovaTestResult(self.stream,
-                              self.descriptions,
-                              self.verbosity,
-                              self.config,
-                              show_elapsed=self.show_elapsed)
+        self.__result = NovaTestResult(
+            self.stream,
+            self.descriptions,
+            self.verbosity,
+            self.config,
+            show_elapsed=self.show_elapsed,
+            known_bugs=self.known_bugs)
+        self.__start_time = time.time()
+        return self.__result
 
     def _writeSlowTests(self, result_):
         # Pare out 'fast' tests
@@ -326,10 +395,25 @@ class NovaTestRunner(core.TextTestRunner):
                 time_str = "%.2f" % elapsed_time
                 self.stream.writeln("    %s %s" % (time_str.ljust(10), test))
 
+    def on_exit(self):
+        if self.__result is None:
+            print("Exiting before tests even started.")
+        else:
+            if not self.__finished:
+                msg = "Tests aborted, trying to print available results..."
+                print(msg)
+                stop_time = time.time()
+                self.__result.printErrors()
+                self.__result.printSummary(self.__start_time, stop_time)
+                self.config.plugins.finalize(self.__result)
+                if self.show_elapsed:
+                    self._writeSlowTests(self.__result)
+
     def run(self, test):
-        result_ = core.TextTestRunner.run(self, test)
+        result_ = super(NovaTestRunner, self).run(test)
         if self.show_elapsed:
             self._writeSlowTests(result_)
+        self.__finished = True
         return result_
 
 

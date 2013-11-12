@@ -15,18 +15,17 @@
 
 from proboscis import test
 
-from tests.util import test_config
-from tests.util import create_dbaas_client
+from trove.tests.config import CONFIG
+from trove.tests.util import create_dbaas_client
 from trove.tests.util.users import Requirements
 
+GROUP = "dbaas.api.instances.delete"
 
-GROUP = "dbaas.api.instances.actions"
 
-
-@test(groups=["dbaas.api.instances.delete"])
+@test(groups=[GROUP])
 def delete_all():
     """Delete every single one."""
-    user = test_config.users.find_user(Requirements(is_admin=False))
+    user = CONFIG.users.find_user(Requirements(is_admin=False))
     dbaas = create_dbaas_client(user)
     instances = dbaas.instances.list()
     for instance in instances:

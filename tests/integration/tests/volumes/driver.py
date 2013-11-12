@@ -28,12 +28,15 @@ from proboscis.asserts import assert_raises
 from proboscis.decorators import expect_exception
 from proboscis.decorators import time_out
 
-from tests import WHITE_BOX
+from trove.tests.config import CONFIG
+from trove.common.utils import poll_until
+from trove.tests.util import process
+from trove.common.utils import import_class
 from tests import initialize
-from tests import util
-from tests.volumes import VOLUMES_DRIVER
-from tests import WHITE_BOX
 
+
+WHITE_BOX = CONFIG.white_box
+VOLUMES_DRIVER = "trove.volumes.driver"
 
 if WHITE_BOX:
     # TODO(tim.simpson): Restore this once white box functionality can be
@@ -346,7 +349,7 @@ class FormatVolume(VolumeTest):
 
         """
 
-        volume_driver_cls = utils.import_class(FLAGS.volume_driver)
+        volume_driver_cls = import_class(FLAGS.volume_driver)
 
         class BadFormatter(volume_driver_cls):
 
@@ -367,7 +370,7 @@ class FormatVolume(VolumeTest):
                "{ rescnt=$2 } } { if($1 == \"Block count\") "
                "{ blkcnt=$2 } } END { print (rescnt/blkcnt)*100 }'")
         cmd = cmd % self.story.device_path
-        out, err = util.process(cmd)
+        out, err = process(cmd)
         self.assertEqual(float(5), round(float(out)), msg=out)
 
 
@@ -385,7 +388,7 @@ class MountVolume(VolumeTest):
     def test_mount_options(self):
         cmd = "mount -l | awk '/%s.*noatime/ { print $1 }'"
         cmd %= LOCAL_MOUNT_PATH.replace('/', '')
-        out, err = util.process(cmd)
+        out, err = process(cmd)
         self.assertEqual(os.path.realpath(self.story.device_path), out.strip(),
                          msg=out)
 
@@ -414,8 +417,8 @@ class ResizeVolume(VolumeTest):
                    test_driver.TESTS_VOLUME_SIZE_MULTIPLIER * 1024 * 1024
         else:
             size = self.story.resize_volume_size * 1024 * 1024
-        out, err = utils.execute('sudo', 'blockdev', '--getsize64',
-                                 os.path.realpath(self.story.device_path))
+        out, err = process('sudo blockdev --getsize64 %s' %
+                           os.path.realpath(self.story.device_path))
         if int(out) < (size * 0.8):
             self.fail("Size %s is not more or less %s" % (out, size))
 
