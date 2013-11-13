@@ -13,6 +13,8 @@ TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
 ENABLED_SERVICES+=,swift
 ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
+ENABLED_SERVICES+=,-n-novnc,-n-xvnc
+NOVNC_FROM_PACKAGE=false
 SWIFT_HASH=$SWIFT_HASH
 # Set Cinder Volume from Redstack so that later Redstack can help manage
 # reconnecting Volume Group to Backing File
