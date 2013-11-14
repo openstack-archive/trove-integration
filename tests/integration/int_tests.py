@@ -103,7 +103,7 @@ def initialize_nova_flags(config_file):
     from nova import utils
 
     flags.parse_args(['int_tests'], default_config_files=[config_file])
-    logging.setup(None)
+    logging.setup()
     utils.monkey_patch()
 
 
