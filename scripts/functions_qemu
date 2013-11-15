@@ -53,8 +53,6 @@ function cmd_build_image() {
         exit 1
     fi
 
-    iniset $TROVE_CONF_DIR/trove.conf DEFAULT service_type $SERVICE_TYPE
-
     GUEST_LOGDIR=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
     GUEST_LOGFILE=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
 

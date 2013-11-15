@@ -365,14 +365,17 @@ function get_glance_id () {
     echo `$@ | grep ' id ' | get_field 2`
 }
 
-function cmd_set_image() {
-    GLANCE_IMAGEID=$1
-    SERVICE_TYPE=$2
-    #TODO(hub-cap): Upload this sucker to our database.
-    # This should be a trove-manage function
-    exclaim "Registering Glance image $GLANCE_IMAGEID with Trove..."
-
-    rd_manage image_update $SERVICE_TYPE $GLANCE_IMAGEID
+function cmd_set_datastore() {
+    IMAGEID=$1
+    rd_manage datastore_update Test_Mysql mysql ""
+    rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
+    rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
+    rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
+    rd_manage datastore_update Test_Datastore_1 manager1 ""
+    cmd_stop
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
+    sleep 1.5
+    cmd_start
 }
 
 function upload_image_to_glance() {
@@ -383,6 +386,8 @@ function upload_image_to_glance() {
     DISK_FORMAT=$3
     TROVE_TENANT=$4
     IMAGE_LOC=$5
+    # Unused since support of multiple datastores added.
+    # Still need for another datastores in future
     SERVICE_TYPE=$6
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
@@ -397,7 +402,7 @@ function upload_image_to_glance() {
         exit 1
     fi
 
-    cmd_set_image $GLANCE_IMAGEID $SERVICE_TYPE
+    cmd_set_datastore $GLANCE_IMAGEID
 }
 
 
@@ -437,7 +442,7 @@ function cmd_stop_deps() {
 
 function rd_manage() {
     pushd $PATH_TROVE
-    bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf $@
+    bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf "$@"
     popd
 }
 
@@ -529,7 +534,17 @@ function init_fake_mode() {
     set +e
     bin/trove-manage --config-file=$CONF_FILE db_sync
     sqlite3 trove_test.sqlite \
-        "INSERT INTO service_images VALUES('1','mysql','fake');"
+        "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa'"
+        ", 'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb');"
+        "INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee'"
+        ", 'Test_Datastore_1', 'manager1', '');"
+        "INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-"
+        "000b000000bb', 'a00000a0-00a0-0a00-00a0-000a000000aa', "
+        "'mysql_test_version', 'c00000c0-00c0-0c00-00c0-000c000000cc', "
+        "'test packages', 1);"
+        "INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-"
+        "000d000000dd', 'a00000a0-00a0-0a00-00a0-000a000000aa', "
+        "'mysql_inactive_version', '', '', 0);"
 }
 
 function cmd_start() {
@@ -916,7 +931,6 @@ function run_command() {
         "vagrant-ssh" ) shift; cmd_vagrant_ssh $@;;
         "debug" ) shift; echo "Enabling debugging."; \
                   set -o xtrace; run_command $@;;
-        "set-image" ) shift; cmd_set_image $@;;
         "clear" ) shift; cmd_clear $@;;
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
