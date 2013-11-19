@@ -689,9 +689,9 @@ function cmd_glance_client() {
 
 function cmd_rd_client() {
     # This serves as an example of how to call the Trove client script.
-    trove-cli --username=radmin --apikey=radmin --tenant=trove \
-        --auth_url=http://localhost:35357/v2.0/tokens auth login
-    trove-cli $@
+    trove --os-auth-url=http://localhost:35357/v2.0/ \
+        --os-username=radmin --os-password=radmin \
+        --os-tenant-name=trove  $@
 }
 
 function cmd_rd_mgmt_client() {
