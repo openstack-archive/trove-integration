@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+set -o xtrace
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get -y install postgresql-9.1

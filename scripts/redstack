@@ -373,6 +373,8 @@ function cmd_set_datastore() {
     local packages=""
     if [ "$SERVICE_TYPE" == "mysql" ]; then
         packages="mysql-server-5.5"
+    elif [ "$SERVICE_TYPE" == "postgresql" ]; then
+        packages="postgresql-9.1"
     else
         echo "Unrecognized datastore type. ($SERVICE_TYPE)"
         exit 1
