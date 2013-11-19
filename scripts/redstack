@@ -367,13 +367,27 @@ function get_glance_id () {
 
 function cmd_set_datastore() {
     IMAGEID=$1
-    rd_manage datastore_update Test_Mysql mysql ""
-    rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
-    rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
-    rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
+    SERVICE_TYPE=$2
+    # rd_manage datastore_update <datastore_name> <datastore_manager> <default_version>
+    rd_manage datastore_update "Test_$SERVICE_TYPE" "$SERVICE_TYPE" ""
+    PACKAGES=${PACKAGES:-""}
+    if [ "$SERVICE_TYPE" == "mysql" ]; then
+        PACKAGES=${PACKAGES:-"mysql-server-5.5"}
+    elif [ "$SERVICE_TYPE" == "percona" ]; then
+        PACKAGES=${PACKAGE_NAME:-"percona-server-server-5.5"}
+    elif [ "$SERVICE_TYPE" == "redis" ]; then
+        PACKAGES=${PACKAGE_NAME:-"redis-server"}
+    else
+        echo "Unrecognized datastore type. ($SERVICE_TYPE)"
+        exit 1
+    fi
+    #rd_manage datastore_version_update <datastore_name> <version_name> <image_id> <packages> <active>
+    rd_manage datastore_version_update "Test_$SERVICE_TYPE" "$SERVICE_TYPE"_test_version $IMAGEID "$PACKAGES" 1
+    rd_manage datastore_version_update "Test_$SERVICE_TYPE" "$SERVICE_TYPE"_inactive_version $IMAGEID "" 0
+    rd_manage datastore_update "Test_$SERVICE_TYPE" "$SERVICE_TYPE" "$SERVICE_TYPE"_test_version
     rd_manage datastore_update Test_Datastore_1 manager1 ""
     cmd_stop
-    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "Test_$SERVICE_TYPE"
     sleep 1.5
     cmd_start
 }
@@ -402,7 +416,7 @@ function upload_image_to_glance() {
         exit 1
     fi
 
-    cmd_set_datastore $GLANCE_IMAGEID
+    cmd_set_datastore $GLANCE_IMAGEID $SERVICE_TYPE
 }
 
 
