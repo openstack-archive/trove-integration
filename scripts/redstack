@@ -284,6 +284,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "redis" ]; then
         PACKAGES=${PACKAGES:-"redis-server"}
         VERSION="-2.8"
+    elif [ "$DATASTORE_TYPE" == "postgresql" ]; then
+        PACKAGES=${PACKAGES:-"postgresql-9.1"}
+        VERSION="-9.1"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
