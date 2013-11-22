@@ -53,6 +53,17 @@ function cmd_build_image() {
         exit 1
     fi
 
+    if [ "$SERVICE_TYPE" == "mysql" ]; then
+        PACKAGE_NAME=${PACKAGE_NAME:-mysql-server-5.5}
+    elif [ "$SERVICE_TYPE" == "percona" ]; then
+        PACKAGE_NAME=${PACKAGE_NAME:-percona-server-server-5.5}
+    elif [ "$SERVICE_TYPE" == "redis" ]; then
+        PACKAGE_NAME=${PACKAGE_NAME:-redis-server}
+    else
+        exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
+        exit 1
+    fi
+
     GUEST_LOGDIR=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
     GUEST_LOGFILE=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
 
