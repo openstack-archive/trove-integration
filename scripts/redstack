@@ -128,7 +128,7 @@ function add_flavor() {
 }
 
 function get_attribute_id() {
-    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-list | grep " $2" | get_field $3
+    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1-list | grep " $2" | get_field $3
 }
 
 function keystone_add_user() {
@@ -140,7 +140,7 @@ function keystone_add_user() {
     # Create the user "trove"
     USER_UUID=`get_attribute_id user $USER_NAME 1`
     if [ -z "$USER_UUID" ]; then
-        USER_UUID=$(keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-create \
+        USER_UUID=$(keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN user-create \
             --name=$USER_NAME \
             --pass=$USER_PASS \
             --email=$USER_EMAIL \
@@ -154,14 +154,14 @@ function keystone_add_user_role() {
     TENANT_UUID=$1
     USER_UUID=$2
     ROLE_UUID=$3
-    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN user-role-add \
+    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN user-role-add \
         --tenant_id $TENANT_UUID \
         --user_id $USER_UUID \
         --role_id $ROLE_UUID
 }
 
 function keystone_create() {
-    keystone --endpoint $TROVE_AUTH_ENDPOINT --token $SERVICE_TOKEN $1-create \
+    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1-create \
              --name $2 \
              | grep " id " | get_field 2
 }
