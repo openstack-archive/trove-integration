@@ -37,6 +37,12 @@
   </properties>
 
   <build>
+    <sourceDirectory>src</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>../xsd</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>com.rackspace.cloud.api</groupId>
