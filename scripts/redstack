@@ -534,17 +534,16 @@ function init_fake_mode() {
     set +e
     bin/trove-manage --config-file=$CONF_FILE db_sync
     sqlite3 trove_test.sqlite \
-        "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa'"
-        ", 'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb');"
-        "INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee'"
-        ", 'Test_Datastore_1', 'manager1', '');"
-        "INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-"
-        "000b000000bb', 'a00000a0-00a0-0a00-00a0-000a000000aa', "
-        "'mysql_test_version', 'c00000c0-00c0-0c00-00c0-000c000000cc', "
-        "'test packages', 1);"
-        "INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-"
-        "000d000000dd', 'a00000a0-00a0-0a00-00a0-000a000000aa', "
-        "'mysql_inactive_version', '', '', 0);"
+        "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa', \
+            'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
+         INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee', \
+            'Test_Datastore_1', 'manager1', ''); \
+         INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-000b000000bb', \
+            'a00000a0-00a0-0a00-00a0-000a000000aa', 'mysql_test_version', \
+            'c00000c0-00c0-0c00-00c0-000c000000cc', 'test packages', 1); \
+         INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-000d000000dd', \
+            'a00000a0-00a0-0a00-00a0-000a000000aa', 'mysql_inactive_version', \
+            '', '', 0);"
 }
 
 function cmd_start() {
@@ -556,7 +555,7 @@ function cmd_start() {
 function cmd_start_fake() {
     init_fake_mode
     CONF_FILE=/tmp/trove.conf.test
-    screen_it tr-fake "cd $PATH_TROVE; bin/trove-api --config-file=$CONF_FILE $@"
+    screen_it tr-fake "cd $PATH_TROVE; bin/trove-fake-mode --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
@@ -567,8 +566,7 @@ function cmd_run() {
 function cmd_run_fake() {
     init_fake_mode
     CONF_FILE=/tmp/trove.conf.test
-    bin/trove-api --config-file=$CONF_FILE $@ \
-        repo_path=trove_test.sqlite
+    bin/trove-fake-mode --config-file=$CONF_FILE $@
 }
 
 ###############################################################################
