@@ -31,7 +31,7 @@
                 <resource id="instances" path="instances">
                     <method href="#createInstance" />
                     <method href="#getInstance" />
-                    
+
                     <resource id="instanceId" path="{instanceId}">
                         <param name="instanceId" style="template"
                             type="xsd:string" >
@@ -71,7 +71,7 @@
                 </resource>
                 <resource id="flavors" path="flavors">
                     <method href="#getFlavors" />
-                    
+
                     <resource id="flavorId" path="{flavorId}">
                         <param name="flavorId" style="template" type="xsd:string" >
                             <doc>The flavor ID for the specified flavor.</doc></param>
@@ -176,8 +176,8 @@
             <listitem>
                 <para>The default binding for the MySQL instance is port 3306.</para>
             </listitem>
-            <listitem>         
-                <para>Database instances are directly accessible only on the internal ServiceNet network and using a Cloud resource within the same regional datacenter. For example, a database instance in DFW can only be accessed by a Cloud Server in DFW. For details and information about using a public Cloud Load Balancer to allow access to your database instance, refer to 
+            <listitem>
+                <para>Database instances are directly accessible only on the internal ServiceNet network and using a Cloud resource within the same regional datacenter. For example, a database instance in DFW can only be accessed by a Cloud Server in DFW. For details and information about using a public Cloud Load Balancer to allow access to your database instance, refer to
                 <xref linkend="Accessibility"/> for details.</para>
             </listitem>
         </itemizedlist></note>
@@ -196,7 +196,7 @@
                 <tr>
                     <td colspan="1" rowspan="3">Instance</td>
                     <td colspan="1">flavorRef</td>
-                    <td colspan="3"><para>Reference (href) to a flavor as specified in the response from the List Flavors API call. 
+                    <td colspan="3"><para>Reference (href) to a flavor as specified in the response from the List Flavors API call.
                         This is the actual URI as specified by the href field in the link. For example, in the following List Flavors response, the link to flavor id 1 is specified as
                         "https://ord.databases.api.rackspacecloud.com/v1.0/1234/flavors/1".</para>
                          <note><para>Rather than the flavor URI, you can also pass the flavor id (integer) as the value for flavorRef. For example, the flavor id for the flavor URI shown above is "1".</para></note>
@@ -335,7 +335,7 @@
             <representation mediaType="application/xml">
                 <doc>
                     <para xmlns="http://docbook.org/ns/docbook">The following examples show the List All Database Instances Detail requests:</para>
-                    
+
                     <xsdxt:code href="../apidocs/src/resources/samples/db-instances-index-request.xml"/>
                 </doc>
             </representation>
@@ -349,7 +349,7 @@
             <representation mediaType="application/xml" >
                 <doc>
                    <para xmlns="http://docbook.org/ns/docbook">The following examples show the List All Database Instances responses:</para>
-                   
+
                     <xsdxt:code href="../apidocs/src/resources/samples/db-instances-index-response.xml"/>
                 </doc>
             </representation>
@@ -371,7 +371,7 @@
             <para>This operation lists the volume size in gigabytes (GB) and the approximate GB used.</para>
             <note><para>After instance creation, the <code>used</code> size of your volume will be
                 greater than 0. This is expected and due to the automatic creation of
-                non-empty transaction logs for mysql optimization. The <code>used</code> attribute is <emphasis>not</emphasis> returned 
+                non-empty transaction logs for mysql optimization. The <code>used</code> attribute is <emphasis>not</emphasis> returned
                 in the response when the status for the instance is BUILD, REBOOT, or RESIZE.</para></note>
             <para>Refer to <xref linkend="database_instance_status"/> for a list of possible database instance statuses that may be returned.</para>
             <para>The list operations return a DNS-resolvable hostname associated with the database instance instead of an IP address. Since the hostname always resolves to the correct IP address of the database instance, this relieves the user from the task of maintaining the mapping. Note that although the IP address may likely change on resizing, migrating, and so forth, the hostname always resolves to the correct database instance.</para>
@@ -387,7 +387,7 @@
                     <doc>
                         <xsdxt:code href="../apidocs/src/resources/samples/db-instance-status-detail-request.xml"/>
                     </doc>
-                </representation>          
+                </representation>
         </request>
         <response status="200">
             <representation mediaType="application/xml"
@@ -565,7 +565,7 @@
             <para>See the MySQL documentation for information about supported character sets and collations at <link
                 xlink:href="http://dev.mysql.com/doc/refman/5.1/en/charset-mysql.html"
                 >http://dev.mysql.com/doc/refman/5.1/en/charset-mysql.html</link>.</para>
-            
+
 
             <note><para>The following database names are reserved and cannot be used for creating databases: lost+found, information_schema, and mysql.</para></note>
             <para>Refer to the following tables for information about characters that are valid/invalid for creating database names.</para>
@@ -670,7 +670,7 @@
                 <doc>
                     <xsdxt:code href="../apidocs/src/resources/samples/db-create-databases-response.json"/>
                 </doc>
-            </representation> 
+            </representation>
         </response>
     &commonFaults;
     &getFaults;
@@ -759,10 +759,10 @@
             <para>If the corresponding request cannot be fulfilled due to insufficient or invalid data, an HTTP 400 "Bad Request" error response is returned with information regarding the nature of the failure. Failures in the validation process are non-recoverable and require the caller to correct the cause of the failure and POST the request again.</para>
 
             <para>The following table lists the required attributes for Create User. Refer to the request examples for the required xml/json format:</para>
-            
+
             <table rules="all" width="500">
                 <caption>Required Attributes for Create User</caption>
-                
+
                 <thead>
                     <tr>
                         <td colspan="1">Applies To</td>
@@ -792,7 +792,7 @@
                     </tr>
                 </tbody>
             </table>
-            
+
             <note><title>Notes</title><itemizedlist>
                 <listitem>
                     <para>A user is granted all privileges on the specified databases.</para>
@@ -978,10 +978,10 @@
         <wadl:doc xml:lang="EN" title="Delete User"  xmlns="http://docbook.org/ns/docbook">
             <para role="shortdesc">Deletes the user identified by {name} for the specified database instance.</para>
             <para>This operation deletes the specified user for the specified database instance.</para>
-            <warning><para>There is a bug in a python library that Rackspace is using that may cause incorrect user deletions to occur 
-                if a period (.) is used in the user name. In this case, the user name is truncated to remove the portion of the 
-                name from the period to the end, leaving only the portion from the beginning up to the period. For example, for a 
-                user named "my.userA", the bug would truncate the user name to "my", and if the user "my" exists, that user will 
+            <warning><para>There is a bug in a python library that Rackspace is using that may cause incorrect user deletions to occur
+                if a period (.) is used in the user name. In this case, the user name is truncated to remove the portion of the
+                name from the period to the end, leaving only the portion from the beginning up to the period. For example, for a
+                user named "my.userA", the bug would truncate the user name to "my", and if the user "my" exists, that user will
                 be incorrectly deleted. To avoid the problem, do not use periods in user names.</para></warning>
         </wadl:doc>
         <request>
@@ -1132,7 +1132,7 @@
     &getFaults;
     </method>
 
-    
+
 
     <method name="GET" id="getFlavorById">
         <wadl:doc xml:lang="EN" title="List Flavor By ID" xmlns="http://docbook.org/ns/docbook">
