@@ -9,3 +9,7 @@ scripts/test-def.conf
 *.coverage
 tests/integration/Reddwarf_Integration_Tests.egg-info/*
 apidocs/target
+scripts/.cache/
+scripts/.cinderclient/
+scripts/.mysql_history
+scripts/.troveclient/
