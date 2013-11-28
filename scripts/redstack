@@ -331,12 +331,26 @@ function run_devstack() {
 }
 
 
+function prepare_guest_config() {
+    sudo cp $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/
+    sudo mv $TROVE_CONF_DIR/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
+    sudo chmod 755 $TROVE_CONF_DIR/trove-guestagent.conf
+}
+
+
+function post_install_hooks() {
+    prepare_guest_config
+    exclaim "Post-install hooks were completed"
+}
+
+
 function cmd_install() {
     install_prep_packages
     install_devstack_code
     install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
+    post_install_hooks
     exclaim "FINISHED INSTALL"
 }
 
