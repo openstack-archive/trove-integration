@@ -1,0 +1,8 @@
+# to use this source this file and use trove cli as normal.
+
+# test admin user auth creds
+OS_AUTH_URL=http://localhost:35357/v2.0
+OS_TENANT_NAME=trove
+OS_USERNAME=radmin
+OS_PASSWORD=radmin
+TROVE_SERVICE_NAME='database'
