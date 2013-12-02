@@ -7,3 +7,4 @@ Vagrantfile
 host-syslog.log
 options.rc
 .novaclient
+.pip

@@ -1,0 +1,9 @@
+# to use this source this file and use trove cli as normal.
+# ex: $ source test.rc
+
+# test admin user auth creds
+export OS_AUTH_URL=http://localhost:35357/v2.0
+export OS_TENANT_NAME=trove
+export OS_USERNAME=radmin
+export OS_PASSWORD=radmin
+export TROVE_SERVICE_NAME='database'
