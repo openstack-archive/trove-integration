@@ -7,3 +7,9 @@ Vagrantfile
 host-syslog.log
 options.rc
 .novaclient
+.apitoken
+.*client
+.pip
+.cache
+.mysql_history
+fix-iptables.sh
