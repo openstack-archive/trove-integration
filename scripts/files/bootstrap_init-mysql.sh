@@ -16,7 +16,8 @@ sudo mv $TEMPFILE /etc/sudoers.d/60_trove_guest
 sudo chown GUEST_USERNAME /home/GUEST_USERNAME
 
 # Copies all the trove code to the guest image
-sudo -u GUEST_USERNAME rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' HOST_USERNAME@NETWORK_GATEWAY:PATH_TROVE/ /home/GUEST_USERNAME/trove
+sudo -u GUEST_USERNAME rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' HOST_USERNAME@NETWORK_GATEWAY:PATH_TROVE_AGENT/ /home/GUEST_USERNAME/trove-guestagent
+source /home/GUEST_USERNAME/trove-guestagent/.venv/bin/active
 
 # Do an apt-get update since its SUPER slow first time
 if [ -f /etc/debian_version ] ; then

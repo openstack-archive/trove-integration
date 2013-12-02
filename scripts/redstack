@@ -330,6 +330,12 @@ function run_devstack() {
     popd
 }
 
+function post_install() {
+    mkdir -p $PATH_TROVE_AGENT
+    cd $PATH_TROVE_AGENT
+    git clone https://github.com/denismakogon/trove-guestagent
+    sudo trove-guestagent/tools/install_venv.py
+}
 
 function cmd_install() {
     install_prep_packages
@@ -337,6 +343,7 @@ function cmd_install() {
     install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
+    post_install
     exclaim "FINISHED INSTALL"
 }
 

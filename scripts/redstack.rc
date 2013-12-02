@@ -12,6 +12,7 @@ PATH_KEYSTONE=$DEST/keystone
 PATH_GLANCE=$DEST/glance
 PATH_SWIFT=$DEST/swift
 PATH_TROVE=$DEST/trove
+PATH_TROVE_AGENT=$DEST/trove-guestagent
 PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
 PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
