@@ -367,10 +367,17 @@ function get_glance_id () {
 
 function cmd_set_datastore() {
     IMAGEID=$1
+
     rd_manage datastore_update Test_Mysql mysql ""
     rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
     rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
     rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
+
+    rd_manage datastore_update Test_Mongodb mongodb ""
+    rd_manage datastore_version_update Test_Mongodb "mongodb" $IMAGEID "mongodb" 1
+    rd_manage datastore_version_update Test_Mongodb "mongodb_inactive_version" $IMAGEID "" 0
+    rd_manage datastore_update Test_Mongodb mongodb "mongodb"
+
     rd_manage datastore_update Test_Datastore_1 manager1 ""
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
