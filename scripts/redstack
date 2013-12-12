@@ -367,11 +367,21 @@ function get_glance_id () {
 
 function cmd_set_datastore() {
     IMAGEID=$1
+
+    echo -e "\nSetting mysql datastore and versions\n"
     rd_manage datastore_update Test_Mysql mysql ""
     rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
     rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
     rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
+
+    echo -e "\nSetting cassandra datastore and versions\n"
+    rd_manage datastore_update Test_Cassandra cassandra ""
+    rd_manage datastore_version_update Test_Cassandra "cassandra=1.2" $IMAGEID "cassandra=1.2" 1
+    rd_manage datastore_version_update Test_Cassandra "cassandra=1.1.9" $IMAGEID "" 0
+    rd_manage datastore_update Test_Cassandra cassandra "cassandra=1.2"
+
     rd_manage datastore_update Test_Datastore_1 manager1 ""
+
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
     sleep 1.5
