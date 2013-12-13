@@ -71,7 +71,7 @@ function cmd_build_image() {
     readonly VM_PATH_NAME=${VM_PATH}/${IMAGENAME}
     mkdir -p $VM_PATH
 
-    # If the path doesnt exist, build it, otherwise just upload it
+    # If the path does not exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ]
     then
         build_vm $USERHOME $USERNAME $VM_PATH_NAME $DISTRO $SERVICE_TYPE

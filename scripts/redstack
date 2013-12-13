@@ -4,7 +4,7 @@
 ###############################################################################
 #                                                                             #
 # This script provides all the functionality to run all the steps from        #
-# setting up the enviornment, resetting the nova database to running the      #
+# setting up the environment, resetting the nova database to running the      #
 # test.                                                                       #
 #                                                                             #
 ###############################################################################
@@ -387,7 +387,7 @@ function upload_image_to_glance() {
     TROVE_TENANT=$4
     IMAGE_LOC=$5
     # Unused since support of multiple datastores added.
-    # Still need for another datastores in future
+    # Still need for other datastores in future
     SERVICE_TYPE=$6
 
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
@@ -709,7 +709,7 @@ function cmd_rd_client() {
 }
 
 function cmd_rd_mgmt_client() {
-    # This serves as an example of how to call the Trove managment client script.
+    # This serves as an example of how to call the Trove management client script.
     trove-cli --username=radmin --apikey=radmin --tenant=trove \
         --auth_url=http://localhost:35357/v2.0/tokens auth login
     trove-mgmt-cli $@
