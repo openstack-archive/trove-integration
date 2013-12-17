@@ -140,7 +140,7 @@ Use screen to ensure all modules have started without error
 ***
 
 ### VMware Fusion 5 speed improvement
-We found out that if you are running ubuntu with KVM or Qemu it can be extemely slow. We found some ways of making this better with in VMware settings.
+We found out that if you are running ubuntu with KVM or Qemu it can be extremely slow. We found some ways of making this better with in VMware settings.
 On a clean install of ubuntu 12.04 enable these options in VMware. (likey the same in other virutalizing platforms)
 
 1. Shutdown the Ubuntu VM.

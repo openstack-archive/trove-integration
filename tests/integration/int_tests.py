@@ -25,7 +25,7 @@ configuration has the same problem (it was based on flags back when the tests
 resided outside of the Nova code).
 
 The command line is picked apart so that Nose won't see commands it isn't
-compatable with, such as "--flagfile" or "--group".
+compatible with, such as "--flagfile" or "--group".
 
 This script imports all other tests to make them known to Proboscis before
 passing control to proboscis.TestProgram which itself calls nose, which then

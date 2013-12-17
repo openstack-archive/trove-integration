@@ -162,9 +162,9 @@ class SetUp(VolumeTest):
         print("device_info : %r" % device_info)
         info = {'spaceTotal': device_info['raw_total'],
                 'spaceAvail': device_info['raw_avail']}
-        self._assert_avilable_space(info)
+        self._assert_available_space(info)
 
-    def _assert_avilable_space(self, device_info, fail=False):
+    def _assert_available_space(self, device_info, fail=False):
         """
         Give the SAN device_info(fake or not) and get the asserts for free
         """
