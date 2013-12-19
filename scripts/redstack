@@ -367,11 +367,11 @@ function get_glance_id () {
 
 function cmd_set_datastore() {
     IMAGEID=$1
-    rd_manage datastore_update Test_Mysql mysql ""
-    rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
-    rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
-    rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
-    rd_manage datastore_update Test_Datastore_1 manager1 ""
+    rd_manage datastore_update Test_Mysql ""
+    rd_manage datastore_version_update Test_Mysql "mysql_test_version" mysql $IMAGEID "mysql-server-5.5" 1
+    rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" manager1 $IMAGEID "" 0
+    rd_manage datastore_update Test_Mysql "mysql_test_version"
+    rd_manage datastore_update Test_Datastore_1 ""
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
     sleep 1.5
@@ -536,15 +536,15 @@ function init_fake_mode() {
     bin/trove-manage --config-file=$CONF_FILE db_sync
     sqlite3 trove_test.sqlite \
         "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa', \
-            'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
+            'Test_Mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
          INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee', \
-            'Test_Datastore_1', 'manager1', ''); \
+            'Test_Datastore_1', ''); \
          INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-000b000000bb', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', 'mysql_test_version', \
-            'c00000c0-00c0-0c00-00c0-000c000000cc', 'test packages', 1); \
+            'c00000c0-00c0-0c00-00c0-000c000000cc', 'test packages', 1, 'mysql'); \
          INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-000d000000dd', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', 'mysql_inactive_version', \
-            '', '', 0);"
+            '', '', 0, 'manager1');"
 }
 
 function cmd_start() {
