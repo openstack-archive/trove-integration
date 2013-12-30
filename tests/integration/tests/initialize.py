@@ -166,7 +166,7 @@ def start_nova_api():
       enabled=START_SERVICES)
 def start_trove_api():
     """Starts the Trove Service."""
-    Daemon(service_path_root="trove_code_root",
-           service_path="%s/bin/trove-api",
+    Daemon(service_path_root="usr_bin_dir",
+           service_path="%s/trove-api",
            extra_cmds=['--config-file='],
            conf_file_name="trove_conf").run()
