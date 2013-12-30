@@ -57,6 +57,13 @@ TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 . $REDSTACK_SCRIPTS/functions
 . $REDSTACK_SCRIPTS/functions_qemu
 
+# Support entry points installation of console scripts
+if [[ -d $PATH_TROVE/bin ]]; then
+    TROVE_BIN_DIR=$PATH_TROVE/bin
+else
+    TROVE_BIN_DIR=$(get_python_exec_prefix)
+fi
+
 # Allow sourcing config values from env.rc for overrides
 if [ -f /tmp/integration/env.rc ]; then
     source /tmp/integration/env.rc
@@ -442,7 +449,7 @@ function cmd_stop_deps() {
 
 function rd_manage() {
     pushd $PATH_TROVE
-    bin/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf "$@"
+    $TROVE_BIN_DIR/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf "$@"
     popd
 }
 
@@ -533,7 +540,7 @@ function init_fake_mode() {
     set -e
     rm -f trove_test.sqlite
     set +e
-    bin/trove-manage --config-file=$CONF_FILE db_sync
+    $TROVE_BIN_DIR/trove-manage --config-file=$CONF_FILE db_sync
     sqlite3 trove_test.sqlite \
         "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa', \
             'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
@@ -548,26 +555,26 @@ function init_fake_mode() {
 }
 
 function cmd_start() {
-    screen_it tr-api "cd $PATH_TROVE; bin/trove-api --config-file=$TROVE_CONF_DIR/trove.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
-    screen_it tr-tmgr "cd $PATH_TROVE; bin/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
-    screen_it tr-cond "cd $PATH_TROVE; bin/trove-conductor --config-file=$TROVE_CONF_DIR/trove-conductor.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
+    screen_it tr-api "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-api --config-file=$TROVE_CONF_DIR/trove.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
+    screen_it tr-tmgr "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
+    screen_it tr-cond "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-conductor --config-file=$TROVE_CONF_DIR/trove-conductor.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
 }
 
 function cmd_start_fake() {
     init_fake_mode
     CONF_FILE=/tmp/trove.conf.test
-    screen_it tr-fake "cd $PATH_TROVE; bin/trove-fake-mode --config-file=$CONF_FILE $@"
+    screen_it tr-fake "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-fake-mode --config-file=$CONF_FILE $@"
 }
 
 function cmd_run() {
-    cd $PATH_TROVE; bin/trove-api \
+    cd $PATH_TROVE; $TROVE_BIN_DIR/trove-api \
         --config-file=$TROVE_CONF_DIR/trove.conf $@
 }
 
 function cmd_run_fake() {
     init_fake_mode
     CONF_FILE=/tmp/trove.conf.test
-    bin/trove-fake-mode --config-file=$CONF_FILE $@
+    $TROVE_BIN_DIR/trove-fake-mode --config-file=$CONF_FILE $@
 }
 
 ###############################################################################
