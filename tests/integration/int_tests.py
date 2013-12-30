@@ -320,7 +320,7 @@ def run_main(test_importer):
         # we want to start a REPL.
         sys.exit = lambda x: None
 
-    proboscis.TestProgram(argv=nose_args, groups=groups,
+    proboscis.TestProgram(argv=nose_args, groups=groups, config=c,
                           testRunner=MAIN_RUNNER).run_and_exit()
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
