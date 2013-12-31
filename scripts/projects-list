@@ -1,15 +1,2 @@
-keystone
-nova
-glance
-horizon
-swift
-trove
-neutron
-heat
 diskimage-builder
 tripleo-image-elements
-python-keystoneclient
-python-novaclient
-python-troveclient
-python-neutronclient
-python-heatclient
