@@ -35,6 +35,10 @@ if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
     . $PATH_DEVSTACK_SRC/localrc
 fi
 
+if [-f $PATH_DEVSTACK_SRC/functions ]; then
+    source $PATH_DEVSTACK_SRC/functions
+fi
+
 # Public facing bits
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT=${SERVICE_TENANT:-service}
@@ -251,13 +255,14 @@ function install_devstack_code() {
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
 
-    exclaim "Installing devstack projects..."
+    exclaim "Creating devstack projects directory..."
     # Ensures present user can get to the devstack dirs
     sudo mkdir -p $PATH_DEVSTACK_OUTPUT
     if [ ! -w $PATH_DEVSTACK_OUTPUT ]; then
         sudo chown `whoami` $PATH_DEVSTACK_OUTPUT
     fi
-    # Clones all of the code to where devstack expects it to be
+    # Clones Image-building projects to projects directory
+    source $PATH_DEVSTACK_SRC/functions
     pushd $PATH_DEVSTACK_OUTPUT
     cmd_clone_projects
     popd
