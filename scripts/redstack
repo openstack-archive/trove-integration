@@ -35,6 +35,10 @@ if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
     . $PATH_DEVSTACK_SRC/localrc
 fi
 
+if [-f $PATH_DEVSTACK_SRC/functions ]; then
+    source $PATH_DEVSTACK_SRC/functions
+fi
+
 # Public facing bits
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT=${SERVICE_TENANT:-service}
@@ -251,43 +255,12 @@ function install_devstack_code() {
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
 
-    exclaim "Installing devstack projects..."
+    exclaim "Creating devstack projects directory..."
     # Ensures present user can get to the devstack dirs
     sudo mkdir -p $PATH_DEVSTACK_OUTPUT
     if [ ! -w $PATH_DEVSTACK_OUTPUT ]; then
         sudo chown `whoami` $PATH_DEVSTACK_OUTPUT
     fi
-    # Clones all of the code to where devstack expects it to be
-    pushd $PATH_DEVSTACK_OUTPUT
-    cmd_clone_projects
-    popd
-}
-
-function install_reviews_on_top_of_devstack() {
-    exclaim "Putting gerrit review code on top of the existing devstack code"
-    run_review_for nova $PATH_NOVA $REVIEW_NOVA
-    run_review_for python-novaclient $PATH_PYTHON_NOVACLIENT $REVIEW_PYTHON_NOVACLIENT
-    run_review_for keystone $PATH_KEYSTONE $REVIEW_KEYSTONE
-    run_review_for python-keystoneclient $PATH_KEYSTONECLIENT $REVIEW_PYTHON_KEYSTONECLIENT
-    run_review_for glance $PATH_GLANCE $REVIEW_GLANCE
-    run_review_for swift $PATH_SWIFT $REVIEW_SWIFT
-    run_review_for python-swiftclient $PATH_PYTHON_SWIFTCLIENT $REVIEW_PYTHON_SWIFTCLIENT
-    run_review_for trove $PATH_TROVE $REVIEW_TROVE
-    run_review_for python-troveclient $PATH_PYTHON_TROVECLIENT $REVIEW_PYTHON_TROVECLIENT
-}
-
-function run_review_for() {
-    # Splits based on colon in the REVIEW_ARG and pulls from
-    GIT_NAME=$1
-    PATH_ARG=$2
-    REVIEW_ARG=$3
-    for review in `echo $REVIEW_ARG| tr ":" "\n"`
-    do
-        # This should be the ref spec for what we pull
-        pushd $PATH_ARG
-        git pull https://review.openstack.org/p/openstack/$GIT_NAME refs/changes/$review
-        popd
-    done
 }
 
 function fixup_broken_devstack() {
@@ -334,9 +307,10 @@ function run_devstack() {
 function cmd_install() {
     install_prep_packages
     install_devstack_code
-    install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
+    source $PATH_DEVSTACK_SRC/functions
+    cmd_clone_projects
     exclaim "FINISHED INSTALL"
 }
 
@@ -822,21 +796,14 @@ function cmd_reset_task() {
 }
 
 function cmd_clone_projects() {
-    UPDATE_PROJECTS=$1
     for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
         if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
             echo "Creating a new clone of $project..."
             git_clone $OPENSTACK_GITSOURCE/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
         else
-            if [ -z $UPDATE_PROJECTS ]; then
-                echo "$project was already cloned or exists in a shared folder. Ignoring..."
-            else
-                echo "$project was already cloned. Pulling changes to update."
-                cd $PATH_DEVSTACK_OUTPUT/$project
-                git pull
-            fi
+            echo "$project was already cloned or exists in a shared folder. Ignoring..."
         fi
-  done
+    done
 }
 
 function cmd_repl() {
@@ -950,7 +917,6 @@ function run_command() {
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
         "start-fake" ) shift; cmd_start_fake $@;;
-        "update-projects" ) cmd_clone_projects force_update;;
         "reset-task" ) shift; cmd_reset_task $@;;
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
