@@ -80,7 +80,7 @@ function cmd_build_image() {
     fi
 
     QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
+    TROVE_TOKEN=`get_attribute_id tenant $SERVICE_TENANT 1`
 
     # Now upload it
     upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
