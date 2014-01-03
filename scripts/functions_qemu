@@ -30,10 +30,9 @@ function build_vm() {
     export NETWORK_GATEWAY
     export REDSTACK_SCRIPTS
     export SERVICE_TYPE
-    export ESCAPED_PATH_TROVE
+    export PATH_TROVE
     export SSH_DIR
     export GUEST_LOGDIR
-    export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
@@ -61,8 +60,6 @@ function cmd_build_image() {
         exclaim "error: log_dir and log_file are required in: " $PATH_TROVE/etc/trove/trove-guestagent.conf.sample
         exit 1
     fi
-
-    ESCAPED_GUEST_LOGDIR=`echo $GUEST_LOGDIR | sed 's/\//\\\\\//g'`
 
     USERNAME=`whoami`
     # To change the distro, edit the redstack.rc file
