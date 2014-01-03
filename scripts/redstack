@@ -46,10 +46,7 @@ KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
 KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
 TROVE_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
 
-# PATH_TROVE more than likely has file separators, which sed does not like
-# This will escape them
-ESCAPED_PATH_TROVE=`echo $PATH_TROVE | sed 's/\//\\\\\//g'`
-ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
+TROVE_REPORT_DIR=${TROVE_REPORT_DIR:-$REDSTACK_SCRIPTS/../report/}
 TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 
@@ -129,103 +126,6 @@ function add_flavor() {
 
 function get_attribute_id() {
     keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1-list | grep " $2" | get_field $3
-}
-
-function keystone_add_user() {
-    # Adds a user. Prints the UUID to standard out.
-    USER_NAME=$1
-    USER_PASS=$2
-    USER_EMAIL=$3
-    USER_TENANT=$4
-    # Create the user "trove"
-    USER_UUID=`get_attribute_id user $USER_NAME 1`
-    if [ -z "$USER_UUID" ]; then
-        USER_UUID=$(keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN user-create \
-            --name=$USER_NAME \
-            --pass=$USER_PASS \
-            --email=$USER_EMAIL \
-            --tenant_id $USER_TENANT \
-            | grep " id " | get_field 2)
-        echo $USER_UUID
-    fi
-}
-
-function keystone_add_user_role() {
-    TENANT_UUID=$1
-    USER_UUID=$2
-    ROLE_UUID=$3
-    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN user-role-add \
-        --tenant_id $TENANT_UUID \
-        --user_id $USER_UUID \
-        --role_id $ROLE_UUID
-}
-
-function keystone_create() {
-    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1-create \
-             --name $2 \
-             | grep " id " | get_field 2
-}
-
-function configure_keystone_for_test_users() {
-    # Create trove tenants for the tests if they don't exist.
-    # The demo tenant should already exist
-    DEMO_TENANT=`get_attribute_id tenant demo 1`
-    TROVE_TENANT=`get_attribute_id tenant trove 1`
-    if [ -z "$TROVE_TENANT" ]; then
-        TROVE_TENANT=$(keystone_create tenant trove)
-    fi
-    DAFFY_TENANT=`get_attribute_id tenant daffy 1`
-    if [ -z "$DAFFY_TENANT" ]; then
-        DAFFY_TENANT=$(keystone_create tenant daffy)
-    fi
-
-    # Create trove roles for the tests if they don't exist.
-    # Member and admin roles should already exist
-    ADMIN_ROLE=`get_attribute_id role admin 1`
-    MEMBER_ROLE=`get_attribute_id role Member 1`
-    TROVE_ROLE=`get_attribute_id role trove 1`
-    if [ -z "$TROVE_ROLE" ]; then
-        TROVE_ROLE=$(keystone_create role trove)
-    fi
-    DAFFY_ROLE=`get_attribute_id role daffy 1`
-    if [ -z "$DAFFY_ROLE" ]; then
-        DAFFY_ROLE=$(keystone_create role daffy)
-    fi
-
-    # Create trove users for the tests if they don't exist.
-    RADMIN_USER=$(keystone_add_user radmin radmin radmin@example.com $TROVE_TENANT)
-    if [ -n "$RADMIN_USER" ]; then
-        keystone_add_user_role $TROVE_TENANT $RADMIN_USER $TROVE_ROLE
-        keystone_add_user_role $TROVE_TENANT $RADMIN_USER $ADMIN_ROLE
-    fi
-
-    BOSS_USER=$(keystone_add_user Boss admin boss@example.com $TROVE_TENANT)
-    if [ -n "$BOSS_USER" ]; then
-        keystone_add_user_role $TROVE_TENANT $BOSS_USER $TROVE_ROLE
-        keystone_add_user_role $TROVE_TENANT $BOSS_USER $ADMIN_ROLE
-    fi
-
-    CHUNK_USER=$(keystone_add_user chunk chunk chunk@example.com $TROVE_TENANT)
-    if [ -n "$CHUNK_USER" ]; then
-        keystone_add_user_role $TROVE_TENANT $CHUNK_USER $TROVE_ROLE
-        keystone_add_user_role $TROVE_TENANT $CHUNK_USER $MEMBER_ROLE
-    fi
-
-    DAFFY_USER=$(keystone_add_user daffy daffy daffy@example.com $TROVE_TENANT)
-    if [ -n "$DAFFY_USER" ]; then
-        keystone_add_user_role $DAFFY_TENANT $DAFFY_USER $DAFFY_ROLE
-    fi
-
-    EXAMPLES_USER=$(keystone_add_user examples examples examples@example.com $TROVE_TENANT)
-    if [ -n "$EXAMPLES_USER" ]; then
-        keystone_add_user_role $TROVE_TENANT $EXAMPLES_USER $TROVE_ROLE
-    fi
-
-    # Add the tenant id's into test.conf
-    sed -i "s/%trove_tenant_id%/$TROVE_TENANT/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%daffy_tenant_id%/$DAFFY_TENANT/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%demo_tenant_id%/$DEMO_TENANT/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%demo_key%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 }
 
 
@@ -452,7 +352,6 @@ function install_test_packages() {
 
 function mod_test_conf() {
     cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
-    sed -i "s/\/integration\/report/$ESCAPED_REDSTACK_SCRIPTS\/\.\.\/report/" $TROVE_CONF_DIR/test.conf
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
     if [ -e $EXTRA_CONF ]; then
         cat $EXTRA_CONF >> $TROVE_CONF_DIR/test.conf
@@ -460,12 +359,19 @@ function mod_test_conf() {
     cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $TROVE_CONF_DIR/test.conf
 
     #Add the paths to the test conf
+    sed -i "s,%report_directory%,$TROVE_REPORT_DIR,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%nova_path%,$PATH_NOVA,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%glance_path%,$PATH_GLANCE,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%trove_path%,$PATH_TROVE,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%service_host%,$SERVICE_HOST,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
+
+    # Add the tenant id's into test.conf
+    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 }
 
 
@@ -485,9 +391,6 @@ function cmd_test_init() {
 
     exclaim "Modifying test.conf with appropriate values."
     mod_test_conf
-
-    exclaim "Creating Keystone Test users."
-    configure_keystone_for_test_users
 
     exclaim "Creating Test Flavors."
     add_test_flavors
