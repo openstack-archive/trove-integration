@@ -53,6 +53,11 @@ ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
 TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 
+# Creates TROVE_LOGDIR if it does not exists
+if [ -d $TROVE_LOGDIR ]; then
+    mkdir -p $TROVE_LOGDIR
+fi
+
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
 . $REDSTACK_SCRIPTS/functions_qemu
