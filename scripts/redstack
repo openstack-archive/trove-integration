@@ -13,7 +13,7 @@ REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
 USERHOME=$HOME
-# Load options not checked into VCS.
+/bin/bash: -: command not found
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
 fi
@@ -61,6 +61,9 @@ TROVE_LOGDIR=${TROVE_LOGDIR:-$REDSTACK_SCRIPTS/../report/logs}
 if [ -f /tmp/integration/env.rc ]; then
     source /tmp/integration/env.rc
 fi
+
+# Creates TROVE_LOGDIR if it does not exists
+mkdir -p $TROVE_LOGDIR
 
 
 ###############################################################################
