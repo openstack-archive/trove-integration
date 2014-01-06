@@ -13,7 +13,7 @@ REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
 USERHOME=$HOME
-# Load options not checked into VCS.
+/bin/bash: -: command not found
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
 fi
@@ -332,6 +332,7 @@ function run_devstack() {
 
 
 function cmd_install() {
+    mkdir -p $TROVE_LOGDIR # Creates TROVE_LOGDIR if it does not exist
     install_prep_packages
     install_devstack_code
     install_reviews_on_top_of_devstack
