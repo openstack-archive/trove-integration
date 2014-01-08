@@ -367,13 +367,30 @@ function get_glance_id () {
 
 function cmd_set_datastore() {
     IMAGEID=$1
-    rd_manage datastore_update Test_Mysql mysql ""
-    rd_manage datastore_version_update Test_Mysql "mysql_test_version" $IMAGEID "mysql-server-5.5" 1
-    rd_manage datastore_version_update Test_Mysql "mysql_inactive_version" $IMAGEID "" 0
-    rd_manage datastore_update Test_Mysql mysql "mysql_test_version"
+    DATASTORE_TYPE=$2
+    # rd_manage datastore_update <datastore_name> <datastore_manager> <default_version>
+    rd_manage datastore_update "$DATASTORE_TYPE" "$DATASTORE_TYPE" ""
+    PACKAGES=${PACKAGES:-""}
+    if [ "$DATASTORE_TYPE" == "mysql" ]; then
+        PACKAGES=${PACKAGES:-"mysql-server-5.5"}
+        VERSION="-5.5"
+    elif [ "$DATASTORE_TYPE" == "percona" ]; then
+        PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
+        VERSION="-5.5"
+    elif [ "$DATASTORE_TYPE" == "redis" ]; then
+        PACKAGES=${PACKAGES:-"redis-server"}
+        VERSION="-2.8"
+    else
+        echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
+        exit 1
+    fi
+    #rd_manage datastore_version_update <datastore_name> <version_name> <image_id> <packages> <active>
+    rd_manage datastore_version_update "$DATASTORE_TYPE" "$DATASTORE_TYPE$VERSION" $IMAGEID "$PACKAGES" 1
+    rd_manage datastore_version_update "$DATASTORE_TYPE" "$DATASTORE_TYPE"_inactive_version $IMAGEID "" 0
+    rd_manage datastore_update "$DATASTORE_TYPE" "$DATASTORE_TYPE" "$DATASTORE_TYPE$VERSION"
     rd_manage datastore_update Test_Datastore_1 manager1 ""
     cmd_stop
-    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore Test_Mysql
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
     sleep 1.5
     cmd_start
 }
@@ -387,9 +404,8 @@ function upload_image_to_glance() {
     TROVE_TENANT=$4
     IMAGE_LOC=$5
     # Unused since support of multiple datastores added.
-    # Still need for other datastores in future
-    SERVICE_TYPE=$6
-
+    # Still need for another datastores in future
+    DATASTORE_TYPE=$6
     GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
         --name="$IMAGE_NAME" --is-public=True \
         --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
@@ -402,7 +418,7 @@ function upload_image_to_glance() {
         exit 1
     fi
 
-    cmd_set_datastore $GLANCE_IMAGEID
+    cmd_set_datastore $GLANCE_IMAGEID $DATASTORE_TYPE
 }
 
 
@@ -536,7 +552,7 @@ function init_fake_mode() {
     bin/trove-manage --config-file=$CONF_FILE db_sync
     sqlite3 trove_test.sqlite \
         "INSERT INTO datastores VALUES ('a00000a0-00a0-0a00-00a0-000a000000aa', \
-            'Test_Mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
+            'mysql', 'mysql', 'b00000b0-00b0-0b00-00b0-000b000000bb'); \
          INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee', \
             'Test_Datastore_1', 'manager1', ''); \
          INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-000b000000bb', \
