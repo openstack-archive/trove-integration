@@ -1,0 +1,14 @@
+Verified+2: Jenkins
+Code-Review+2: Michael Basnight <mbasnight@gmail.com>
+Code-Review+1: Craig Vyvial <cp16net@gmail.com>
+Approved+1: SlickNik <SlickNik@gmail.com>
+Code-Review+2: SlickNik <SlickNik@gmail.com>
+Verified-1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review-1: Sushil Kumar <sushil.kumar2@globallogic.com>
+Code-Review+1: Auston McReynolds <amcreynolds@ebaysf.com>
+Code-Review+1: Denis M. <dmakogon@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 08 Jan 2014 21:54:48 +0000
+Reviewed-on: https://review.openstack.org/57780
+Project: openstack/trove-integration
+Branch: refs/heads/master
