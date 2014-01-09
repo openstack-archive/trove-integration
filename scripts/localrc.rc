@@ -26,3 +26,4 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
+UNDO_REQUIREMENTS=False
