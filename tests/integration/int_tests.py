@@ -217,6 +217,16 @@ def import_tests():
                            depends_on_groups=heavy_black_box_groups)
 
 
+        mongodb_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE,
+        ]
+        proboscis.register(groups=["mongodb"],
+                           depends_on_groups=mongodb_groups)
+
+
 def run_main(test_importer):
 
     add_support_for_localization()
@@ -328,3 +338,7 @@ def run_main(test_importer):
 
 if __name__ == "__main__":
     run_main(import_tests)
+<<<<<<< HEAD
+=======
+
+>>>>>>> Add support for minimal MongoDB testing
