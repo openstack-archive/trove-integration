@@ -609,6 +609,10 @@ function cmd_int_tests() {
     fi
     cd $REDSTACK_SCRIPTS
     export TEST_CONF=$TROVE_CONF_DIR/test.conf
+    heat_url=`keystone --os-auth-url=$TROVE_AUTH_ENDPOINT --os-username=radmin --os-password=radmin\
+              --os-tenant-name=trove endpoint-get --service orchestration |\
+              grep 'http' | cut -d'|' -f3 | cut -d/ -f1-4`
+    export HEAT_URL=$heat_url
     if [ $# -lt 1 ]; then
         args="--group=blackbox"
     else
