@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -ex
+set -o xtrace
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get install curl
+echo "deb http://debian.datastax.com/community stable main" >> /etc/apt/sources.list.d/cassandra.sources.list
+curl -L http://debian.datastax.com/debian/repo_key | apt-key add -
+apt-get update
+apt-get install -qy openjdk-7-jdk expect python-dev
+apt-get install -qy libxml2-dev ntp mc
+apt-get install -qy libxslt1-dev python-pexpect
+apt-get install -qy python-migrate build-essential
+
+apt-get install cassandra -qy
+rm -rf /var/lib/cassandra/data/system/*
