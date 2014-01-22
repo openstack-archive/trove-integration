@@ -216,6 +216,14 @@ def import_tests():
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)
 
+        cassandra_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE, ]
+        proboscis.register(groups=["cassandra"],
+                           depends_on_groups=cassandra_groups)
+
 
 def run_main(test_importer):
 
