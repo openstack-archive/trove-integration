@@ -291,6 +291,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "redis" ]; then
         PACKAGES=${PACKAGES:-"redis-server"}
         VERSION="-2.8"
+    elif [ "$DATASTORE_TYPE" == "cassandra" ]; then
+        PACKAGES=${PACKAGES:-"cassandra"}
+        VERSION="-1.2.10"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
