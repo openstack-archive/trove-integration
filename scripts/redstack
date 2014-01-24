@@ -623,11 +623,6 @@ function cmd_glance_client() {
     glance $@
 }
 
-function cmd_rd_client() {
-    source $PATH_DEVSTACK_SRC/openrc
-    trove $@
-}
-
 function cmd_rd_mgmt_client() {
     # This serves as an example of how to call the Trove management client script.
     trove-cli --username=radmin --apikey=radmin --tenant=trove \
@@ -799,7 +794,6 @@ function print_usage() {
           glance-client   - Runs glance client with admin user.
           nova-client     - Runs Nova client with admin user.
           swift-client    - Runs Swift client with admin user.
-          rd-client       - Runs Trove client with admin user.
           rd-mgmt-client  - Runs Trove management client with admin user.
                             * Shows a valid token.
           wipe-logs       - Resets all log files.
@@ -838,7 +832,6 @@ function run_command() {
         "stop" ) cmd_stop;;
         "glance-client" ) shift; cmd_glance_client $@;;
         "nova-client" ) shift; cmd_nova_client $@;;
-        "rd-client" ) shift; cmd_rd_client $@;;
         "rd-mgmt-client" ) shift; cmd_rd_mgmt_client $@;;
         "swift-client" ) shift; cmd_swift_client $@;;
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
