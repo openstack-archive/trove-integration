@@ -624,7 +624,7 @@ function cmd_glance_client() {
 }
 
 function cmd_rd_client() {
-    source $PATH_DEVSTACK_SRC/openrc
+    source $PATH_DEVSTACK_SRC/openrc demo
     trove $@
 }
 
