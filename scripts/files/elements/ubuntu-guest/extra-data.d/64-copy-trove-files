@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+set -o xtrace
+
+# CONTEXT: HOST before chroot as SCRIPT USER
+# PURPOSE: Copy the trove files to the guest
+
+source $_LIB/die
+[ -n "$TMP_MOUNT_PATH" ] || die "Temp mount path not set"
+[ -n "$PATH_TROVE" ] || die "PATH_TROVE not set"
+[ -n "${GUEST_USERNAME}" ] || die "GUEST_USERNAME needs to be set to the user for the guest image"
+
+# Copies all the trove code to the guest image
+GUEST_TROVE_DIR=${TMP_MOUNT_PATH}/home/${GUEST_USERNAME}/trove
+rsync -a --exclude='.*' ${PATH_TROVE}/ ${GUEST_TROVE_DIR}
+
