@@ -53,7 +53,7 @@ function retrieve_token {
     PASSWORD=$2
     TENANT_NAME=$3
     curl -d "{\"auth\":{\"passwordCredentials\":{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"},\"tenantName\":\"$TENANT_NAME\"}}" \
-       -H "Content-type: application/json" http://localhost:35357/v2.0/tokens | python -c 'import json, sys; print json.loads("\n".join(sys.stdin))["access"]["token"]["tenant"]["id"]'
+       -H "Content-type: application/json" http://$KEYSTONE_AUTH_HOST:35357/v2.0/tokens | python -c 'import json, sys; print json.loads("\n".join(sys.stdin))["access"]["token"]["tenant"]["id"]'
 }
 
 # Determinate is the given option present in the INI file
