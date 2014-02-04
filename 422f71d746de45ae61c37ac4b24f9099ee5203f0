@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: SlickNik <SlickNik@gmail.com>
+Code-Review+2: SlickNik <SlickNik@gmail.com>
+Code-Review+1: Dan Nguyen <dan.nguyens.mail@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 04 Feb 2014 19:52:30 +0000
+Reviewed-on: https://review.openstack.org/71039
+Project: openstack/trove-integration
+Branch: refs/heads/master
