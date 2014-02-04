@@ -38,7 +38,7 @@ fi
 # Public facing bits
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT=${SERVICE_TENANT:-service}
-NETWORK_GATEWAY=${NETWORK_GATEWAY:-10.0.0.1}
+NETWORK_GATEWAY=${NETWORK_GATEWAY:-$SERVICE_HOST}
 NETWORK_INTERFACE=${NETWORK_INTERFACE:-eth0}
 NETWORK_SUBNET=${NETWORK_SUBNET:-10.0.0.0/24}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
@@ -228,7 +228,7 @@ function run_devstack() {
         eval echo "\"$(cat $REDSTACK_SCRIPTS/vagrant.rc)\"" >> localrc
     fi
 
-    export MYSQL_HOST=localhost
+    export MYSQL_HOST=$SERVICE_HOST
     ./stack.sh
     popd
 }
@@ -310,7 +310,8 @@ function upload_image_to_glance() {
     # Unused since support of multiple datastores added.
     # Still need for another datastores in future
     DATASTORE_TYPE=$6
-    GLANCE_IMAGEID=`get_glance_id cmd_glance_client image-create \
+    source $PATH_DEVSTACK_SRC/openrc admin admin
+    GLANCE_IMAGEID=`get_glance_id glance image-create \
         --name="$IMAGE_NAME" --is-public=True \
         --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
         --owner=$TROVE_TENANT < $IMAGE_LOC`
@@ -423,7 +424,7 @@ function cmd_test_init() {
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove...'
     pushd $PATH_DEVSTACK_SRC
-    export MYSQL_HOST=localhost
+    export MYSQL_HOST=$SERVICE_HOST
     ./unstack.sh
     ./stack.sh
     popd
@@ -566,8 +567,8 @@ function cmd_example_tests() {
     echo "
 {
     \"directory\": \"$REDSTACK_TESTS/../apidocs/src/resources/samples/\",
-    \"auth_url\":\"http://localhost:35357/v2.0/tokens\",
-    \"api_url\":\"http://localhost:8779\",
+    \"auth_url\":\"http://$KEYSTONE_AUTH_HOST:35357/v2.0/tokens\",
+    \"api_url\":\"http://$SERVICE_HOST:8779\",
     \"replace_host\":\"https://ord.databases.api.rackspacecloud.com\",
     \"replace_dns_hostname\": \"e09ad9a3f73309469cf1f43d11e79549caf9acf2.rackspaceclouddb.com\",
     \"username\":\"examples\",
@@ -595,52 +596,6 @@ function mysql_nova() {
 function mysql_trove() {
     echo mysql trove --execute "$@"
     mysql -u root -p$MYSQL_PASSWORD trove --execute "$@"
-}
-
-function cmd_nova_client() {
-    # This serves as an example of how to call the Nova client script.
-    TESTVOLUME=`echo "$@" | awk '/volume/{print $1}'`
-    if [ -z "$TESTVOLUME" -o "$TESTVOLUME" = "volume-attach" -o "$TESTVOLUME" = "volume-detach" ]; then
-        nova --os-auth-url=http://localhost:35357/v2.0 \
-            --os-tenant-name=trove --os-username=radmin --os-password=radmin \
-            --os-region-name=RegionOne \
-            --service-type=compute --service-name='nova' $@
-    else
-        nova --os_auth_url=http://localhost:35357/v2.0 \
-            --os-tenant-name=trove --os-username=radmin --os-password=radmin \
-            --os-region-name=RegionOne \
-            --service-type=volume --service-name='cinder' $@
-    fi
-}
-
-function cmd_swift_client() {
-    source $PATH_DEVSTACK_SRC/openrc admin admin
-    swift $@
-}
-
-function cmd_glance_client() {
-    source $PATH_DEVSTACK_SRC/openrc admin admin
-    glance $@
-}
-
-function cmd_rd_client() {
-    source $PATH_DEVSTACK_SRC/openrc
-    trove $@
-}
-
-function cmd_rd_mgmt_client() {
-    # This serves as an example of how to call the Trove management client script.
-    trove-cli --username=radmin --apikey=radmin --tenant=trove \
-        --auth_url=http://localhost:35357/v2.0/tokens auth login
-    trove-mgmt-cli $@
-}
-
-function cmd_delete_nova_instance() {
-    # Nova will not let you delete an instance whose state is error, but we
-    # won't let that stop us.
-    echo "Deleting instance $1..."
-    mysql_nova "UPDATE instances SET vm_state='active' WHERE vm_state='error' AND uuid='$1';"
-    cmd_nova_client delete $1
 }
 
 function cmd_wipe_logs() {
@@ -796,12 +751,6 @@ function print_usage() {
 
         --tools--
           debug           - Debug this script (shows all commands).
-          glance-client   - Runs glance client with admin user.
-          nova-client     - Runs Nova client with admin user.
-          swift-client    - Runs Swift client with admin user.
-          rd-client       - Runs Trove client with admin user.
-          rd-mgmt-client  - Runs Trove management client with admin user.
-                            * Shows a valid token.
           wipe-logs       - Resets all log files.
           nova-delete     - Deletes a nova instance.
           rd-sql          - Opens the Trove MySQL database.
@@ -836,11 +785,6 @@ function run_command() {
         "int-tests-wb" ) shift; cmd_int_tests_white_box $@;;
         "simple-tests") shift; cmd_int_tests_simple $@;;
         "stop" ) cmd_stop;;
-        "glance-client" ) shift; cmd_glance_client $@;;
-        "nova-client" ) shift; cmd_nova_client $@;;
-        "rd-client" ) shift; cmd_rd_client $@;;
-        "rd-mgmt-client" ) shift; cmd_rd_mgmt_client $@;;
-        "swift-client" ) shift; cmd_swift_client $@;;
         "nova-delete" ) shift; cmd_delete_nova_instance $@;;
         "wipe-logs" ) cmd_wipe_logs;;
         "rd-sql" ) shift; cmd_rd_sql $@;;
