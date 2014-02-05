@@ -226,6 +226,15 @@ def import_tests():
         proboscis.register(groups=["cassandra"],
                            depends_on_groups=cassandra_groups)
 
+        couchbase_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE,
+        ]
+        proboscis.register(groups=["couchbase"],
+                           depends_on_groups=couchbase_groups)
+
 
 def run_main(test_importer):
 
