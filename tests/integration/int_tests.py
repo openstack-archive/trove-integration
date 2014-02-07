@@ -151,6 +151,7 @@ def import_tests():
         from trove.tests.api import user_access
         from trove.tests.api import backups
         from trove.tests.api import configurations
+        from trove.tests.api import dblogs
         from trove.tests.api.mgmt import accounts
         from trove.tests.api.mgmt import admin_required
         from trove.tests.api.mgmt import hosts
@@ -172,6 +173,7 @@ def import_tests():
             "dbaas.api.security_groups",
             backups.GROUP,
             configurations.GROUP,
+            dblogs.GROUP,
             "dbaas.api.instances.actions.resize.instance",
             # TODO(SlickNik): The restart tests fail intermittently so pulling
             # them out of the blackbox group temporarily. Refer to Trove bug:
