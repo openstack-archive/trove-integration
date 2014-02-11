@@ -27,5 +27,7 @@ if [ -f /etc/debian_version ] ; then
     ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
     apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 fi
-# Starts the trove guestagent (using the upstart script)
-service trove-guest start
+# Starts the trove guestagent, if /etc/guest_info exists (using the upstart script)
+if [ -f /etc/guest_info ] ; then
+    service trove-guest start
+fi
