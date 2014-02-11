@@ -27,5 +27,9 @@ if [ -f /etc/debian_version ] ; then
     ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
     apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 fi
-# Starts the trove guestagent (using the upstart script)
-service trove-guest start
+# Starts the trove guestagent using the upstart script.
+# If /etc/guest_info does not exist, this a HEAT deployment, so
+# UserData/cfn-init will handle starting the service.
+if [ -f /etc/guest_info ] ; then
+    service trove-guest start
+fi
