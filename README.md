@@ -128,7 +128,7 @@ Allows the services to continue running in the background
 ***
 
 ### Recover after reboot
-If the VM was restarted, then the process for bringing up Openstack and Trove is quite simple
+If the VM was restarted, then the process for bringing up OpenStack and Trove is quite simple
 
     $./redstack start-deps
     $./redstack start
