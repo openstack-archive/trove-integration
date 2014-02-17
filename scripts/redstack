@@ -397,6 +397,7 @@ function mod_test_conf() {
     sed -i "s,%trove_path%,$PATH_TROVE,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%service_host%,$SERVICE_HOST,g" $TROVE_CONF_DIR/test.conf
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%trove_conf_dir%,$TROVE_CONF_DIR,g" $TROVE_CONF_DIR/test.conf
 
     # Add the tenant id's into test.conf
     sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TROVE_CONF_DIR/test.conf
