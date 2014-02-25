@@ -227,6 +227,16 @@ def import_tests():
                            depends_on_groups=cassandra_groups)
 
 
+        mongodb_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE,
+        ]
+        proboscis.register(groups=["mongodb"],
+                           depends_on_groups=mongodb_groups)
+
+
 def run_main(test_importer):
 
     add_support_for_localization()
