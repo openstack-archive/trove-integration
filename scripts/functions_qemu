@@ -13,6 +13,7 @@ function build_vm() {
     VM=$3
     DISTRO=$4
     SERVICE_TYPE=$5
+    DATASTORE_VERSION=${DATASTORE_VERSION:-""}
 
     readonly SSH_DIR=${HOMEDIR}/.ssh
     manage_ssh_keys
@@ -35,7 +36,7 @@ function build_vm() {
     export GUEST_LOGDIR
     export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}${DATASTORE_VERSION}
 }
 
 function cmd_build_image() {
@@ -46,10 +47,11 @@ function cmd_build_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
+    DATASTORE_VERSION=${DATASTORE_VERSION:-""}
 
 
-    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb'
-    if [ `expr  "$VALID_SERVICES" : ".*$SERVICE"` -eq 0 ] ; then
+    VALID_SERVICES="mysql$DATASTORE_VERSION percona$DATASTORE_VERSION redis$DATASTORE_VERSION cassandra$DATASTORE_VERSION couchbase$DATASTORE_VERSION mongodb$DATASTORE_VERSION"
+    if [ `expr  "$VALID_SERVICES" : ".*$SERVICE_TYPE$DATASTORE_VERSION"` -eq 0 ] ; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
     fi
@@ -67,7 +69,7 @@ function cmd_build_image() {
 
     USERNAME=`whoami`
     # To change the distro, edit the redstack.rc file
-    readonly IMAGENAME=${DISTRO}_${SERVICE_TYPE}
+    readonly IMAGENAME=${DISTRO}_${SERVICE_TYPE}${DATASTORE_VERSION}
     readonly VM_PATH=$USERHOME/images/${IMAGENAME}
     readonly VM_PATH_NAME=${VM_PATH}/${IMAGENAME}
     mkdir -p $VM_PATH
