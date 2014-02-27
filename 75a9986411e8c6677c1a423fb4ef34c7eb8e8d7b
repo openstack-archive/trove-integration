@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: SlickNik <SlickNik@gmail.com>
+Code-Review+2: SlickNik <SlickNik@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review+2: Auston McReynolds <amcreynolds@ebaysf.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 27 Feb 2014 09:13:43 +0000
+Reviewed-on: https://review.openstack.org/72577
+Project: openstack/trove-integration
+Branch: refs/heads/master
