@@ -40,5 +40,8 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
 
+# Enable neutron instead of nova-network
+ENABLE_NEUTRON=false
+
 DISTRO=ubuntu
 #DISTRO=fedora
