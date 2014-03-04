@@ -18,6 +18,9 @@ sudo chown GUEST_USERNAME /home/GUEST_USERNAME
 # Copies all the trove code to the guest image
 sudo -u GUEST_USERNAME rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' HOST_USERNAME@NETWORK_GATEWAY:PATH_TROVE/ /home/GUEST_USERNAME/trove
 
+# Copies over the guestagent.conf file from the devstack host
+sudo -u GUEST_USERNAME rsync -e 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no' -avz --exclude='.*' HOST_USERNAME@NETWORK_GATEWAY:/etc/trove/trove-guestagent.conf /etc/trove
+
 # Do an apt-get update since its SUPER slow first time
 if [ -f /etc/debian_version ] ; then
     apt-get update
