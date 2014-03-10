@@ -92,7 +92,7 @@ def initialize_rdl_config(config_file):
         conf_file = conf.find_file(conf.api_paste_config)
     except RuntimeError as error:
         import traceback
-        print traceback.format_exc()
+        print(traceback.format_exc())
         sys.exit("ERROR: %s" % error)
 
 
@@ -153,6 +153,7 @@ def import_tests():
         from trove.tests.api import configurations
         from trove.tests.api.mgmt import accounts
         from trove.tests.api.mgmt import admin_required
+        from trove.tests.api.mgmt import configurations as mgmt_configurations
         from trove.tests.api.mgmt import hosts
         from trove.tests.api.mgmt import instances as mgmt_instances
         from trove.tests.api.mgmt import storage
@@ -172,6 +173,7 @@ def import_tests():
             "dbaas.api.security_groups",
             backups.GROUP,
             configurations.GROUP,
+            mgmt_configurations.GROUP,
             "dbaas.api.instances.actions.resize.instance",
             # TODO(SlickNik): The restart tests fail intermittently so pulling
             # them out of the blackbox group temporarily. Refer to Trove bug:
@@ -234,7 +236,6 @@ def import_tests():
         ]
         proboscis.register(groups=["couchbase"],
                            depends_on_groups=couchbase_groups)
-
 
         mongodb_groups = [
             "services.initialize",
@@ -357,4 +358,3 @@ def run_main(test_importer):
 
 if __name__ == "__main__":
     run_main(import_tests)
-
