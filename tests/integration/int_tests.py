@@ -153,6 +153,7 @@ def import_tests():
         from trove.tests.api import configurations
         from trove.tests.api.mgmt import accounts
         from trove.tests.api.mgmt import admin_required
+        from trove.tests.api.mgmt import configurations
         from trove.tests.api.mgmt import hosts
         from trove.tests.api.mgmt import instances as mgmt_instances
         from trove.tests.api.mgmt import storage
