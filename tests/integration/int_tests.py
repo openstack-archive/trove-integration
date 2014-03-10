@@ -92,7 +92,7 @@ def initialize_rdl_config(config_file):
         conf_file = conf.find_file(conf.api_paste_config)
     except RuntimeError as error:
         import traceback
-        print traceback.format_exc()
+        print(traceback.format_exc())
         sys.exit("ERROR: %s" % error)
 
 
