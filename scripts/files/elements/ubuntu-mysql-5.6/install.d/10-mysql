@@ -1,0 +1,77 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+
+tmpdir=`mktemp -d`
+cd $tmpdir
+
+# get Debian package from mysql.com
+wget http://cdn.mysql.com/Downloads/MySQL-5.6/mysql-5.6.15-debian6.0-x86_64.deb
+export DEBIAN_FRONTEND=noninteractive
+apt-get -y install libaio1
+dpkg -i mysql-5.6.15-debian6.0-x86_64.deb
+# create user
+groupadd mysql
+useradd -r -g mysql mysql
+# create data dir
+mkdir /var/lib/mysql
+chown -R mysql:mysql /var/lib/mysql
+# create log dir
+mkdir /var/log/mysql
+chown -R mysql:mysql /var/log/mysql
+# init db
+/opt/mysql/server-5.6/scripts/mysql_install_db --user=mysql --datadir=/var/lib/mysql
+# add bin to path
+sed -i -r 's@PATH="(.*)"@PATH="\1:/opt/mysql/server-5.6/bin"@' /etc/environment
+# create /etc/init.d script
+cp /opt/mysql/server-5.6/support-files/mysql.server /etc/init.d/mysql-server
+sed -i 's/datadir=$/datadir=\/var\/lib\/mysql/' /etc/init.d/mysql-server
+sudo chmod 755 /etc/init.d/mysql-server
+#sudo update-rc.d mysql-server defaults
+# create conf dir
+mkdir -p /etc/mysql/conf.d
+# copy sample conf
+cp /opt/mysql/server-5.6/support-files/my-default.cnf /etc/mysql/my.cnf
+# copy logrotate conf
+cp /opt/mysql/server-5.6/support-files/mysql-log-rotate /etc/logrotate.d/mysql-server
+sed -i -r 's@/opt/mysql/server-5.6/data/mysqld.log \{@/var/log/mysql/error.log \{@' /etc/logrotate.d/mysql-server
+
+# install python-mysqldb; this will install libmysqlclient18 too;
+# libmysqlclient18's files will be removed below; we don't uninstall
+# libmysqlclient18 since apt will complain about missing dependencies
+apt-get -y install percona-xtrabackup python-mysqldb
+
+# symlink some files to where guestagent will look for them
+for f in /opt/mysql/server-5.6/bin/*; do sudo ln -s $f /usr/bin; done
+# remove libs from libmysqlclient18
+rm -rf /usr/lib/*mysql*
+for f in /opt/mysql/server-5.6/lib/*; do sudo ln -s $f /usr/lib; done
+set +e
+# ignore existing file errors
+for f in /opt/mysql/server-5.6/share/*; do sudo ln -s $f /usr/share; done
+set -e
+ln -s /opt/mysql/server-5.6/bin/mysqld /usr/sbin
+
+# pid file path comes from config.template; need to create parent dir at the last minute, so add to startup script
+sed -i -r 's/case "\$mode" in/if [ ! -d `dirname $mysqld_pid_file_path` ]; then mkdir -p `dirname $mysqld_pid_file_path`; chown mysql `dirname $mysqld_pid_file_path`; fi\ncase "$mode" in/' /etc/init.d/mysql-server
+
+# fix init.d script so that it uses pid_file from config.template
+sed -i -r 's/\s*--pid-file=\*(.*)/--pid[-_]file=\*\1/' /etc/init.d/mysql-server
+
+# fix init.d script so that it starts mysql as part of a new process group;
+# keeps sudo stop trove-guest from stopping mysql
+sed -i -r 's@\s+\$bindir/mysqld_safe (.*) >/dev/null 2>&1 &@      start-stop-daemon --start --background --quiet --exec $bindir/mysqld_safe -- \1@' /etc/init.d/mysql-server
+
+# mysqld_safe checks a lot of places for datadir but /var/lib/mysql is not one of those places; this is invoked directly on restore from backup
+sed -i -r 's@DATADIR=/opt/mysql/server-5.6/data@DATADIR=/var/lib/mysql@' /opt/mysql/server-5.6/bin/mysqld_safe
+
+# change --log-error flag to match same path as MySQL 5.5 on Ubuntu
+sed -i -r 's@\s*err_log=\$DATADIR/`hostname`.err@  err_log=/var/log/mysql/error.log@' /opt/mysql/server-5.6/bin/mysqld_safe
+
+cd -
+rm -rf $tmpdir
