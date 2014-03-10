@@ -320,6 +320,12 @@ function cmd_set_datastore() {
     rd_manage datastore_version_update "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID "" 0
     rd_manage datastore_update "$DATASTORE_TYPE" "$VERSION"
     rd_manage datastore_update Test_Datastore_1 ""
+
+    # add the configuration parameters to the database for the kick-start datastore
+    source $PATH_DEVSTACK_SRC/openrc admin admin
+    DATASTORE_VERSION_ID=`trove datastore-version-list "$DATASTORE_TYPE" | grep -F "$VERSION" | get_field 1`
+    rd_manage db_load_datastore_config_parameters "$DATASTORE_VERSION_ID" "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json
+
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
     sleep 1.5
@@ -549,7 +555,28 @@ function init_fake_mode() {
             'c00000c0-00c0-0c00-00c0-000c000000cc', 'mysql-server-5.5', 1, 'mysql'); \
          INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-000d000000dd', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', 'inactive_version', \
-            '', '', 0, 'manager1');"
+            '', '', 0, 'manager1'); \
+        INSERT INTO datastore_configuration_parameters VALUES \
+            ('00000000-0000-0000-0000-000000000001', \
+            'key_buffer_size', 'b00000b0-00b0-0b00-00b0-000b000000bb', \
+            0, 4294967296, 0, 'integer', 0, NULL); \
+        INSERT INTO datastore_configuration_parameters VALUES \
+            ('00000000-0000-0000-0000-000000000002', \
+            'connect_timeout', 'b00000b0-00b0-0b00-00b0-000b000000bb', \
+            0, 65535, 1, 'integer', 0, NULL); \
+        INSERT INTO datastore_configuration_parameters VALUES \
+            ('00000000-0000-0000-0000-000000000003', \
+            'join_buffer_size', 'b00000b0-00b0-0b00-00b0-000b000000bb', \
+            0, 4294967296, 0, 'integer', 0, NULL); \
+        INSERT INTO datastore_configuration_parameters VALUES \
+            ('00000000-0000-0000-0000-000000000004', \
+            'local_infile', 'b00000b0-00b0-0b00-00b0-000b000000bb', \
+            0, 1, 0, 'integer', 0, NULL); \
+        INSERT INTO datastore_configuration_parameters VALUES \
+            ('00000000-0000-0000-0000-000000000005', \
+            'collation_server', 'b00000b0-00b0-0b00-00b0-000b000000bb', \
+            0, NULL, NULL, 'string', 0, NULL); \
+        "
 }
 
 function cmd_start() {
