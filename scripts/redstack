@@ -786,7 +786,6 @@ function print_usage() {
     Commands :
         --setup environment--
           install         - Install all the required dependencies and bring up tr-api and tr-tmgr
-          build           - Build the packages (including the agent)
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image and adds it to glance
           initialize      - Reinitialize the trove database, users, services, and test config
