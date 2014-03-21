@@ -786,7 +786,6 @@ function print_usage() {
     Commands :
         --setup environment--
           install         - Install all the required dependencies and bring up tr-api and tr-tmgr
-          build           - Build the packages (including the agent)
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image and adds it to glance
           initialize      - Reinitialize the trove database, users, services, and test config
@@ -794,7 +793,7 @@ function print_usage() {
 
         --helper for environment--
           kick-start      - kick start the setup of trove.
-                            (redstack build/test-init/build-image in one step)
+                            (redstack test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding pacakges from scratch
 
         --trove dependency services--
