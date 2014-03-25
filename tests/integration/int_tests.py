@@ -150,6 +150,7 @@ def import_tests():
         from trove.tests.api import users
         from trove.tests.api import user_access
         from trove.tests.api import backups
+        from trove.tests.api import recovery
         from trove.tests.api import configurations
         from trove.tests.api.mgmt import accounts
         from trove.tests.api.mgmt import admin_required
@@ -171,6 +172,7 @@ def import_tests():
             "dbaas_quotas",
             "dbaas.api.security_groups",
             backups.GROUP,
+            recovery.GROUP,
             configurations.GROUP,
             "dbaas.api.instances.actions.resize.instance",
             # TODO(SlickNik): The restart tests fail intermittently so pulling
