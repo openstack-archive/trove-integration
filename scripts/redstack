@@ -432,9 +432,6 @@ function cmd_test_init() {
 
     exclaim "Creating Test Flavors."
     add_test_flavors
-
-    exclaim "Configuring IPTables for PostRouting $NETWORK_SUBNET through $NETWORK_INTERFACE."
-    sudo iptables -t nat -A POSTROUTING -s $NETWORK_SUBNET -o $NETWORK_INTERFACE -j MASQUERADE
 }
 
 function cmd_initialize() {
