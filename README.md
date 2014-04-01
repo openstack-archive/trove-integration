@@ -55,6 +55,11 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     $ ./redstack install
 
+#### Install all the dependencies and then install trove via redstack in devstack environment.
+*Run this to install trove in devstack environment.*
+
+    $ PATH_DEVSTACK_SRC='~/devstack' ./redstack install
+
 ***
 
 #### Connecting to the screen session
