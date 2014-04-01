@@ -93,12 +93,6 @@ Allows the services to continue running in the background
 
 ***
 
-#### You may need to add this iptables rule, be sure to save it!
-
-    $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE
-
-***
-
 ### Reset your environment
 
 #### Stop all the services running in the screens and refresh the environment:
