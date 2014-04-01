@@ -6,6 +6,22 @@
 set -ex
 
 export DEBIAN_FRONTEND=noninteractive
-add-apt-repository ppa:rwky/redis -y
+
+echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list.d/trusty.sources.list
+
+# The following preferences say:
+# never install trusty packages...
+# ...except for redis-server and redis-tools (501 is higher than default priority)
+cat << EOF >> /etc/apt/preferences.d/redis-trusty
+Package: *
+Pin: release n=trusty
+Pin-Priority: -10
+
+Package: redis-server redis-tools
+Pin: release n=trusty
+Pin-Priority: 501
+EOF
+
 apt-get update
+
 apt-get install -y redis-server
