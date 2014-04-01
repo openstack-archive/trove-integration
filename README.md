@@ -93,9 +93,18 @@ Allows the services to continue running in the background
 
 ***
 
-#### You may need to add this iptables rule, be sure to save it!
+#### Using Openstack Clients
+*In order to connect you need to specify your tenant and user*
 
-    $ sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -o eth0 -j MASQUERADE
+    $ ~/devstack/openrc demo demo
+
+##### Running the trove client (It's so easy!)
+
+    $ trove <action> <params> 
+
+##### Running the nova client (It's so easy!)
+
+    $ nova <action> <params>
 
 ***
 
