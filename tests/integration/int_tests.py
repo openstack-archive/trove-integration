@@ -121,6 +121,7 @@ def _clean_up():
         sys.stderr.write("...\n\r")
         service.stop()
 
+global NEUTRON_SUPPORT
 
 def import_tests():
 
@@ -181,6 +182,7 @@ def import_tests():
             instances.GROUP_STOP,
             versions.GROUP,
             "dbaas.guest.start.test",
+            "dbaas.neutron" if NEUTRON_SUPPORT else "",
             ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
@@ -328,6 +330,9 @@ def run_main(test_importer):
     for path in sys.path:
         report.log("\t%s" % path)
 
+    global NEUTRON_SUPPORT
+    NEUTRON_SUPPORT = CONFIG.trove_neutron_support
+    
     # Now that all configurations are loaded its time to import everything
     test_importer()
 
