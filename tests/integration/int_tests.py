@@ -54,6 +54,10 @@ from nose import core
 
 from tests.colorizer import NovaTestRunner
 
+# Many of the test decorators depend on configuration values, so before
+# start importing modules we have to load the test config followed by the
+# flag files.
+from trove.tests.config import CONFIG
 
 if os.environ.get("PYDEV_DEBUG", "False") == 'True':
     from pydev import pydevd
@@ -182,6 +186,10 @@ def import_tests():
             versions.GROUP,
             "dbaas.guest.start.test",
             ]
+
+        if CONFIG.trove_neutron_support:
+            black_box_groups.append("dbaas.neutron",)
+
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
 
@@ -290,10 +298,6 @@ def run_main(test_importer):
             nose_args.append(arg)
         index += 1
 
-    # Many of the test decorators depend on configuration values, so before
-    # start importing modules we have to load the test config followed by the
-    # flag files.
-    from trove.tests.config import CONFIG
 
     # Find config file.
     if not "TEST_CONF" in os.environ:
@@ -302,7 +306,7 @@ def run_main(test_importer):
     file_path = os.path.expanduser(os.environ["TEST_CONF"])
     if not os.path.exists(file_path):
         raise RuntimeError("Could not find TEST_CONF at " + file_path + ".")
-        # Load config file and then any lines we read from the arguments.
+    # Load config file and then any lines we read from the arguments.
     CONFIG.load_from_file(file_path)
     for line in extra_test_conf_lines:
         CONFIG.load_from_line(line)
@@ -327,6 +331,7 @@ def run_main(test_importer):
     report.log("sys.path:")
     for path in sys.path:
         report.log("\t%s" % path)
+
 
     # Now that all configurations are loaded its time to import everything
     test_importer()
