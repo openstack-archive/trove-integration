@@ -437,6 +437,7 @@ function mod_confs() {
     # Create a conf for the guestagent based on the sample
     cp $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
     sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $TROVE_CONF_DIR/trove-guestagent.conf
+
 }
 
 
