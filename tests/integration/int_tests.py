@@ -181,6 +181,7 @@ def import_tests():
             instances.GROUP_STOP,
             versions.GROUP,
             "dbaas.guest.start.test",
+            "dbaas.neutron",
             ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
@@ -302,7 +303,7 @@ def run_main(test_importer):
     file_path = os.path.expanduser(os.environ["TEST_CONF"])
     if not os.path.exists(file_path):
         raise RuntimeError("Could not find TEST_CONF at " + file_path + ".")
-        # Load config file and then any lines we read from the arguments.
+    # Load config file and then any lines we read from the arguments.
     CONFIG.load_from_file(file_path)
     for line in extra_test_conf_lines:
         CONFIG.load_from_line(line)
