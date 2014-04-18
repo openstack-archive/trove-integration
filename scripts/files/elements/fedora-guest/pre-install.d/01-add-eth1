@@ -1,0 +1,13 @@
+#!/bin/bash
+# Adds support for bringing up a second eth1 interface on boot.
+# This is needed for neutron support since the guest is connected to
+# both the trove management network, and the tenant's private network.
+
+set -e
+set -o xtrace
+
+dd of=/etc/sysconfig/network-scripts/ifcfg-eth1 << _EOF_
+DEVICE=eth1
+BOOTPROTO=dhcp
+ONBOOT=yes
+_EOF_
