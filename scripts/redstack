@@ -299,7 +299,7 @@ function cmd_set_datastore() {
         VERSION="2.0.5"
     elif [ "$DATASTORE_TYPE" == "couchbase" ]; then
         PACKAGES=${PACKAGES:-"couchbase-server"}
-        VERSION="2.2.0"
+        VERSION="2.5.1"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1

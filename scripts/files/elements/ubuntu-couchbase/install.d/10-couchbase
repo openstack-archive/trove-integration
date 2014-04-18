@@ -4,5 +4,5 @@ set -o xtrace
 export DEBIAN_FRONTEND=noninteractive
 apt-get install curl
 apt-get install libssl0.9.8
-curl -O http://packages.couchbase.com/releases/2.2.0/couchbase-server-community_2.2.0_x86_64.deb
-INSTALL_DONT_START_SERVER=1 dpkg -i couchbase-server-community_2.2.0_x86_64.deb
+curl -O http://packages.couchbase.com/releases/2.5.1/couchbase-server-enterprise_2.5.1_x86_64.deb
+INSTALL_DONT_START_SERVER=1 dpkg -i couchbase-server-enterprise_2.5.1_x86_64.deb
