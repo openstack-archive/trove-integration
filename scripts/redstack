@@ -390,7 +390,7 @@ function install_test_packages() {
     sudo pip install openstack.nose_plugin proboscis pexpect mockito
 }
 
-function mod_test_conf() {
+function mod_confs() {
     cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
@@ -413,6 +413,9 @@ function mod_test_conf() {
     sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
+
+    # Create a conf for the guestagent based on the sample
+    cp $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
 }
 
 
@@ -430,8 +433,8 @@ function cmd_test_init() {
     exclaim "Installing python test packages."
     install_test_packages
 
-    exclaim "Modifying test.conf with appropriate values."
-    mod_test_conf
+    exclaim "Modifying test.conf and guest.conf with appropriate values."
+    mod_confs
 
     exclaim "Creating Test Flavors."
     add_test_flavors
