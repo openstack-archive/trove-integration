@@ -31,6 +31,9 @@ from trove.tests.config import CONFIG
 
 FAKE = CONFIG.fake_mode
 START_SERVICES = (not FAKE) and CONFIG.values.get('start_services', False)
+START_NOVA_NETWORK = (START_SERVICES and
+                      not CONFIG.values.get('neutron_enabled',
+                                            False))
 KEYSTONE_ALL = CONFIG.values.get('keystone_use_combined', True)
 USE_NOVA_VOLUME = CONFIG.values.get('use_nova_volume', False)
 
@@ -111,7 +114,7 @@ def start_glance_api():
 
 
 @test(groups=["services.initialize"], depends_on_classes=[start_glance_api],
-      enabled=START_SERVICES)
+      enabled=START_NOVA_NETWORK)
 def start_nova_network():
     """Starts the Nova Network Service."""
     Daemon(service_path_root="usr_bin_dir",
@@ -128,8 +131,9 @@ def start_scheduler():
            extra_cmds=['--config-file='],
            conf_file_name="nova_conf").run()
 
+
 @test(groups=["services.initialize"],
-      depends_on_classes=[start_glance_api, start_nova_network],
+      depends_on_classes=[start_glance_api],
       enabled=START_SERVICES)
 def start_compute():
     """Starts the Nova Compute Service."""
