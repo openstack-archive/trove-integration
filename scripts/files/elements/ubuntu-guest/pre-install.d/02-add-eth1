@@ -1,0 +1,15 @@
+#!/bin/bash
+# Adds support for bringing up a second eth1 interface on boot.
+# This is needed for neutron support since the guest is connected to
+# both the trove management network, and the tenant's private network.
+
+set -e
+set -o xtrace
+
+dd of=/etc/network/interfaces.d/eth1.cfg << _EOF_
+auto eth1
+iface eth1 inet manual
+    up ip address add 0/0 dev $IFACE
+    up ip link set $IFACE up
+    down ip link set $IFACE down
+_EOF_

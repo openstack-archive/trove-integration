@@ -5,6 +5,9 @@
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 [ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
 
+# Enable neutron instead of nova-network
+[ -z $ENABLE_NEUTRON ] && ENABLE_NEUTRON=false
+
 # Paths for various OpenStack components
 PATH_DEVSTACK_OUTPUT=$DEST
 PATH_NOVA=$DEST/nova
