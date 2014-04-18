@@ -32,6 +32,7 @@ function get_default_host_ip() {
 . $REDSTACK_SCRIPTS/reviews.rc
 # allow overrides from devstack if already set
 if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
+    . $PATH_DEVSTACK_SRC/functions-common
     . $PATH_DEVSTACK_SRC/localrc
 fi
 
@@ -425,6 +426,20 @@ function add_test_flavors() {
     add_flavor 'eph.rd-smaller' 10 768 2 1 2
 }
 
+function fix_network_connectivity(){
+    exclaim "Configuring IPTables for PostRouting through $NETWORK_INTERFACE."
+    sudo iptables -t nat -A POSTROUTING -o $NETWORK_INTERFACE -j MASQUERADE
+
+    if [[ $ENABLE_NEUTRON = true ]]; then
+        source $PATH_DEVSTACK_SRC/openrc admin admin
+        exclaim "Setting the correct DNS server for the Neutron Private Network"
+        dns_server=$(grep nameserver /etc/resolv.conf | awk {'print $2'})
+        neutron_private_network=$(neutron subnet-list | grep private | awk {'print $2'})
+        neutron subnet-update  $neutron_private_network --dns_nameservers list=true $dns_server
+        source $PATH_DEVSTACK_SRC/openrc demo demo
+    fi
+}
+
 function cmd_test_init() {
     exclaim 'Initializing Configuration for Running Tests...'
 
@@ -437,8 +452,8 @@ function cmd_test_init() {
     exclaim "Creating Test Flavors."
     add_test_flavors
 
-    exclaim "Configuring IPTables for PostRouting through $NETWORK_INTERFACE."
-    sudo iptables -t nat -A POSTROUTING -o $NETWORK_INTERFACE -j MASQUERADE
+    exclaim "Fixing network for guestagent connectivity"
+    fix_network_connectivity
 }
 
 function cmd_initialize() {

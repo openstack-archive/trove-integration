@@ -112,7 +112,7 @@ def start_glance_api():
 
 @test(groups=["services.initialize"], depends_on_classes=[start_glance_api],
       enabled=START_SERVICES)
-def start_nova_network():
+def start_network():
     """Starts the Nova Network Service."""
     Daemon(service_path_root="usr_bin_dir",
            service_path="%s/nova-network",
