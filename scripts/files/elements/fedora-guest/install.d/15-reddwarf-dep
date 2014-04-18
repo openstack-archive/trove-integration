@@ -13,4 +13,4 @@ yum install -y python-devel libxml2-devel libxslt-devel python-setuptools python
 # install oslo.config from source than pypi (which is older)
 pip-python install http://tarballs.openstack.org/oslo.config/oslo.config-1.2.0a3.tar.gz#egg=oslo.config-1.2.0a3
 
-pip-python install extras python-novaclient python-swiftclient python-cinderclient amqp babel python-heatclient
+pip-python install extras python-novaclient python-swiftclient python-cinderclient python-neutronclient amqp babel python-heatclient

@@ -15,6 +15,10 @@ ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
 ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
 ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
 ENABLED_SERVICES+=,-n-novnc,-n-xvnc
+if [[ $ENABLE_NEUTRON = true ]]; then
+    ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
+    disable_service n-net
+fi
 NOVNC_FROM_PACKAGE=false
 SWIFT_HASH=$SWIFT_HASH
 # Set Cinder Volume from Redstack so that later Redstack can help manage
@@ -26,5 +30,5 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
-EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False host=`hostname`.`hostname --domain`)
+EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False)
 UNDO_REQUIREMENTS=False
