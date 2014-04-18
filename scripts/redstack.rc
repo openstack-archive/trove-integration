@@ -42,3 +42,6 @@ SWIFT_HASH=12go358snjw24501
 
 DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora
+
+# Enable neutron instead of nova-network
+[ -z $ENABLE_NEUTRON ] && ENABLE_NEUTRON=false
