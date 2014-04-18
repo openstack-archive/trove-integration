@@ -183,6 +183,7 @@ def import_tests():
             instances.GROUP_STOP,
             versions.GROUP,
             "dbaas.guest.start.test",
+            "dbaas.neutron",
             ]
         proboscis.register(groups=["blackbox"],
                            depends_on_groups=black_box_groups)
@@ -359,4 +360,3 @@ def run_main(test_importer):
 
 if __name__ == "__main__":
     run_main(import_tests)
-
