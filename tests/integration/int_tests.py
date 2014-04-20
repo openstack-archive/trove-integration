@@ -226,6 +226,18 @@ def import_tests():
         proboscis.register(groups=["cassandra"],
                            depends_on_groups=cassandra_groups)
 
+
+        # https://rdjenkins.dyndns.org/job/Trove-Gate/3312/console
+        # Current gate crushes with OutOfMemory/MemoryError exceptions
+        # while filling mysql instance with data that required
+        # for preparing huge backup that needed for testing scenario
+        # of failed restoring due to small storage (volume/flavor)
+        huge_backups_groups = [black_box_groups]
+        huge_backups_groups.append(backups.HUGE_BACKUP_GROUP)
+
+        proboscis.register(groups=["huge_backup"],
+                           depends_on_groups=huge_backups_groups)
+
         couchbase_groups = [
             "services.initialize",
             flavors.GROUP,
