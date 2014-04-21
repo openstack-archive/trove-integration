@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Auston McReynolds <amcreynolds@ebaysf.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 21 Apr 2014 23:49:24 +0000
+Reviewed-on: https://review.openstack.org/71128
+Project: openstack/trove-integration
+Branch: refs/heads/master
