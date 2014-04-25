@@ -415,10 +415,10 @@ function mod_test_conf() {
 
 function add_test_flavors() {
     add_flavor 'tinier' 6 506 10 1 0
-    add_flavor 'm1.rd-tiny' 7 512 2 1 0
-    add_flavor 'm1.rd-smaller' 8 768 2 1 0
-    add_flavor 'eph.rd-tiny' 9 512 2 1 1
-    add_flavor 'eph.rd-smaller' 10 768 2 1 2
+    add_flavor 'm1.rd-tiny' 7 512 3 1 0
+    add_flavor 'm1.rd-smaller' 8 768 3 1 0
+    add_flavor 'eph.rd-tiny' 9 512 3 1 1
+    add_flavor 'eph.rd-smaller' 10 768 3 1 2
 }
 
 function cmd_test_init() {
