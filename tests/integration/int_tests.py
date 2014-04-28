@@ -245,6 +245,15 @@ def import_tests():
         proboscis.register(groups=["mongodb"],
                            depends_on_groups=mongodb_groups)
 
+        vertica_groups = [
+            "services.initialize",
+            flavors.GROUP,
+            versions.GROUP,
+            instances.GROUP_START_SIMPLE,
+        ]
+        proboscis.register(groups=["vertica"],
+                           depends_on_groups=vertica_groups)
+
 
 def run_main(test_importer):
 
