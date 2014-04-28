@@ -169,7 +169,8 @@ function install_devstack_code() {
     fi
     # Clones all of the code to where devstack expects it to be
     pushd $PATH_DEVSTACK_OUTPUT
-    cmd_clone_projects
+    cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/projects-list \
+        $REDSTACK_SCRIPTS/image-projects-list
     popd
 }
 
@@ -432,7 +433,32 @@ function cmd_test_init() {
 
     exclaim "Creating Test Flavors."
     add_test_flavors
+
+    exclaim "Installing the Trove SSH key to the test environment."
+    mkdir -p $USERHOME/.ssh
+    install -b --mode 0400 $REDSTACK_SCRIPTS/files/keys/id_rsa $USERHOME/.ssh
+    cat $REDSTACK_SCRIPTS/files/keys/authorized_keys >> $USERHOME/.ssh/authorized_keys
 }
+
+function cmd_build_image() {
+    exclaim "Ensuring we have all packages needed to build image."
+    sudo apt-get -y install qemu
+    cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
+
+    exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
+    build_guest_image $1
+}
+
+function cmd_build_and_upload_image() {
+    exclaim "First build the image"
+    cmd_build_image $1
+
+    exclaim "Now upload it to Glance"
+    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
+    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
+    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+}
+
 
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove...'
@@ -649,7 +675,7 @@ function cmd_run_ci() {
     cmd_install
     cmd_test_init
     # The arg will be the image type
-    cmd_build_image $1
+    cmd_build_and_upload_image $1
 
     # Test in fake mode.
     exclaim "Testing in fake mode."
@@ -681,12 +707,12 @@ function cmd_clear() {
 
 function cmd_kick_start() {
     cmd_test_init
-    cmd_build_image $1
+    cmd_build_and_upload_image $1
 }
 
 function cmd_post_devstack() {
     cmd_test_init
-    cmd_build_image $1
+    cmd_build_and_upload_image $1
 }
 
 function cmd_reset_task() {
@@ -695,12 +721,13 @@ function cmd_reset_task() {
 
 function cmd_clone_projects() {
     UPDATE_PROJECTS=$1
-    for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
+    PROJECT_LIST_FILES=${@:2}
+    for project in $(cat $PROJECT_LIST_FILES); do
         if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
             echo "Creating a new clone of $project..."
             git_clone $OPENSTACK_GITSOURCE/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
         else
-            if [ -z $UPDATE_PROJECTS ]; then
+            if [ $UPDATE_PROJECTS != "force_update" ]; then
                 echo "$project was already cloned or exists in a shared folder. Ignoring..."
             else
                 echo "$project was already cloned. Pulling changes to update."
@@ -808,7 +835,9 @@ function run_command() {
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
         "start-fake" ) shift; cmd_start_fake $@;;
-        "update-projects" ) cmd_clone_projects force_update;;
+        "update-projects" ) cmd_clone_projects force_update \
+                            $REDSTACK_SCRIPTS/projects-list \
+                            $REDSTACK_SCRIPTS/image-projects-list;;
         "reset-task" ) shift; cmd_reset_task $@;;
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
