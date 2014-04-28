@@ -1,0 +1,10 @@
+#!/bin/sh
+# CONTEXT: GUEST during CONSTRUCTION as ROOT - first-boot.d
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+export DEBIAN_FRONTEND=noninteractive
+
+sleep 5
+sudo su -c "/opt/vertica/bin/admintools -t create_db -s 127.0.0.1 -d vertica -c /var/lib/vertica -D /var/lib/vertica " dbadmin
