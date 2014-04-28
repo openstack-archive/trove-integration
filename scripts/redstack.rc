@@ -1,7 +1,7 @@
 # Paths inside the VM.
 [ -z $SERVICE_HOST ] && SERVICE_HOST=`get_default_host_ip`
 [ -z $DEST ] && DEST=/opt/stack
-[ -z $NETWORK_GATEWAY ] && NETWORK_GATEWAY=$SERVICE_HOST
+[ -z $BRIDGE_IP ] && BRIDGE_IP=10.0.0.1
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 [ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
 
@@ -39,6 +39,10 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
+
+# SSH key dir. This dir contains the SSH keys that
+# are baked into the reference Trove Guest
+SSH_DIR=${SSH_DIR:-$REDSTACK_SCRIPTS/files/keys}
 
 DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora
