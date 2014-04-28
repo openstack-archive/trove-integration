@@ -7,15 +7,13 @@ function build_vm() {
     exclaim "Actually building the image, this can take up to 15 minutes"
 
     # set variables here and ensure they are not changed during the duration of this script
-    readonly HOMEDIR=$1
-    readonly HOST_USERNAME=$2
-    GUEST_USERNAME=${GUEST_USERNAME:-$2}
-    VM=$3
-    DISTRO=$4
-    SERVICE_TYPE=$5
+    readonly HOST_USERNAME=$1
+    GUEST_USERNAME=${GUEST_USERNAME:-$1}
+    VM=$2
+    DISTRO=$3
+    SERVICE_TYPE=$4
 
-    readonly SSH_DIR=${HOMEDIR}/.ssh
-    manage_ssh_keys
+    readonly SSH_DIR=$TROVE_SSH_DIR
 
     if [ $DISTRO == 'ubuntu' ]; then
         export RELEASE=precise
@@ -38,7 +36,7 @@ function build_vm() {
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
 
-function cmd_build_image() {
+function build_guest_image() {
     exclaim "Building an image for use with development and integration tests."
     if [ -z "$1" ]
     then
@@ -75,58 +73,13 @@ function cmd_build_image() {
     # If the path does not exist, build it, otherwise just upload it
     if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ]
     then
-        build_vm $USERHOME $USERNAME $VM_PATH_NAME $DISTRO $SERVICE_TYPE
+        build_vm $USERNAME $VM_PATH_NAME $DISTRO $SERVICE_TYPE
     else
         exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
-
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
-
-    # Now upload it
-    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
 }
 
 function clean_instances() {
     LIST=`virsh -q list|awk '{print $1}'`
     for i in $LIST; do sudo virsh destroy $i; done
-}
-
-function manage_ssh_keys() {
-    if [ -e ${SSH_DIR} ]; then
-        echo "${SSH_DIR} already exists"
-    else
-        echo "Creating ${SSH_DIR} for ${HOST_USERNAME}"
-        sudo -Hiu ${HOST_USERNAME} mkdir -p ${SSH_DIR}
-    fi
-
-    if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
-        sudo apt-get -y install expect
-        generate_empty_passphrase_ssh_key ${HOST_USERNAME}
-    fi
-
-    add_host_key_to_authorizedkeys
-}
-
-generate_empty_passphrase_ssh_key () {
-    echo "generating a empty passphrase DEV ONLY rsa key"
-    expect -c "
-spawn sudo -Hiu ${HOST_USERNAME} /usr/bin/ssh-keygen -f ${SSH_DIR}/id_rsa -q
-expect \"empty for no passphrase\"
-send \n
-expect assphrase
-send \n
-expect eof"
-}
-
-add_host_key_to_authorizedkeys () {
-    # test to see if the host key is already in its own authorized_keys file - if not then add it.  This is then later copied
-    # to the guest image
-    is_in_keyfile=`cat ${SSH_DIR}/id_rsa.pub | grep -f - ${SSH_DIR}/authorized_keys | wc -l`
-    if [ $is_in_keyfile == 0 ]; then
-        echo "Adding keyfile to authorized_keys, it does not yet exist"
-        cat ${SSH_DIR}/id_rsa.pub >> ${SSH_DIR}/authorized_keys
-    else
-        echo "Keyfile already exists in authorized_keys - skipping"
-    fi
 }
