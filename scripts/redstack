@@ -38,7 +38,7 @@ fi
 # Public facing bits
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT=${SERVICE_TENANT:-service}
-NETWORK_GATEWAY=${NETWORK_GATEWAY:-$SERVICE_HOST}
+NETWORK_GATEWAY=${NETWORK_GATEWAY:-$BRIDGE_IP}
 NETWORK_INTERFACE=${NETWORK_INTERFACE:-eth0}
 NETWORK_SUBNET=${NETWORK_SUBNET:-10.0.0.0/24}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
@@ -169,7 +169,8 @@ function install_devstack_code() {
     fi
     # Clones all of the code to where devstack expects it to be
     pushd $PATH_DEVSTACK_OUTPUT
-    cmd_clone_projects
+    cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/projects-list \
+        $REDSTACK_SCRIPTS/image-projects-list
     popd
 }
 
@@ -326,7 +327,6 @@ function upload_image_to_glance() {
     # Unused since support of multiple datastores added.
     # Still need for another datastores in future
     DATASTORE_TYPE=$6
-    source $PATH_DEVSTACK_SRC/openrc admin admin
     GLANCE_IMAGEID=`get_glance_id glance image-create \
         --name="$IMAGE_NAME" --is-public=True \
         --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
@@ -432,7 +432,34 @@ function cmd_test_init() {
 
     exclaim "Creating Test Flavors."
     add_test_flavors
+
+    if [[ -n $KEY_DIR ]]; then
+        exclaim "Installing the SSH key from $KEY_DIR to the test environment."
+        mkdir -p $USERHOME/.ssh
+        install -b --mode 0400 $SSH_KEY_DIR/id_rsa $USERHOME/.ssh
+        cat $SSH_KEY_DIR/authorized_keys >> $USERHOME/.ssh/authorized_keys
+    fi
 }
+
+function cmd_build_image() {
+    exclaim "Ensuring we have all packages needed to build image."
+    sudo apt-get -y install qemu
+    cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
+
+    exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
+    build_guest_image $1
+}
+
+function cmd_build_and_upload_image() {
+    exclaim "First build the image"
+    cmd_build_image $1
+
+    exclaim "Now upload it to Glance"
+    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
+    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
+    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+}
+
 
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove...'
@@ -649,7 +676,7 @@ function cmd_run_ci() {
     cmd_install
     cmd_test_init
     # The arg will be the image type
-    cmd_build_image $1
+    cmd_build_and_upload_image $1
 
     # Test in fake mode.
     exclaim "Testing in fake mode."
@@ -680,13 +707,9 @@ function cmd_clear() {
 }
 
 function cmd_kick_start() {
+    source $PATH_DEVSTACK_SRC/openrc admin admin
     cmd_test_init
-    cmd_build_image $1
-}
-
-function cmd_post_devstack() {
-    cmd_test_init
-    cmd_build_image $1
+    cmd_build_and_upload_image $1
 }
 
 function cmd_reset_task() {
@@ -695,12 +718,13 @@ function cmd_reset_task() {
 
 function cmd_clone_projects() {
     UPDATE_PROJECTS=$1
-    for project in $(cat $REDSTACK_SCRIPTS/projects-list); do
+    PROJECT_LIST_FILES=${@:2}
+    for project in $(cat $PROJECT_LIST_FILES); do
         if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
             echo "Creating a new clone of $project..."
             git_clone $OPENSTACK_GITSOURCE/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
         else
-            if [ -z $UPDATE_PROJECTS ]; then
+            if [ $UPDATE_PROJECTS != "force_update" ]; then
                 echo "$project was already cloned or exists in a shared folder. Ignoring..."
             else
                 echo "$project was already cloned. Pulling changes to update."
@@ -739,14 +763,13 @@ function print_usage() {
         --setup environment--
           install         - Install all the required dependencies and bring up tr-api and tr-tmgr
           test-init       - Configure the test configuration files and add keystone test users
-          build-image     - Builds the vm image and adds it to glance
+          build-image     - Builds the vm image for the trove guest
           initialize      - Reinitialize the trove database, users, services, and test config
-          post-devstack   - Configures testing environment, builds image and uploads to glance
 
         --helper for environment--
           kick-start      - kick start the setup of trove.
                             (redstack test-init/build-image in one step)
-                            [mysql no-clean] no clean avoids rebuilding pacakges from scratch
+                            [mysql no-clean] no clean avoids rebuilding packages from scratch
 
         --trove dependency services--
           start-deps      - Start or resume daemons Trove depends on.
@@ -787,7 +810,6 @@ function run_command() {
         "test-init" ) cmd_test_init;;
         "build-image" ) shift; cmd_build_image $@;;
         "initialize" ) cmd_initialize;;
-        "post-devstack" ) shift; cmd_post_devstack $@;;
         "unit-tests" ) cmd_unit_tests;;
         "start-deps" ) cmd_start_deps;;
         "stop-deps" ) cmd_stop_deps;;
@@ -808,7 +830,9 @@ function run_command() {
         "kick-start" ) shift; cmd_kick_start $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
         "start-fake" ) shift; cmd_start_fake $@;;
-        "update-projects" ) cmd_clone_projects force_update;;
+        "update-projects" ) cmd_clone_projects force_update \
+                            $REDSTACK_SCRIPTS/projects-list \
+                            $REDSTACK_SCRIPTS/image-projects-list;;
         "reset-task" ) shift; cmd_reset_task $@;;
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
