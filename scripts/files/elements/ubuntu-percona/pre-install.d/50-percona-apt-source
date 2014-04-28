@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during PRE-CONSTRUCTION as ROOT
+# PURPOSE: Setup apt-repo list so that we can connect to Percona's repo
+
+set -e
+set -o xtrace
+
+[ -n "${GUEST_USERNAME}" ] || die "GUEST_USERNAME needs to be set to the user for the guest image"
+[ -n "${RELEASE}" ] || die "RELEASE must be set to either Precise or Quantal"
+
+#5  add Percona GPG key
+if [ ! -e /home/${GUEST_USERNAME}/.gnupg ]; then
+    mkdir -p /home/${GUEST_USERNAME}/.gnupg
+fi
+
+apt-key adv --keyserver hkp://keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+
+# add Percona repo
+# creates the percona sources list
+cat <<EOL > /etc/apt/sources.list.d/percona.list
+deb http://repo.percona.com/apt $RELEASE main
+deb-src http://repo.percona.com/apt $RELEASE main
+EOL
