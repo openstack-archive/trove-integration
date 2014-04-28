@@ -40,5 +40,8 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
 
+# SSH Public key to bake into the Trove Guest
+SSH_PUB_KEY=${SSH_PUB_KEY:-$REDSTACK_SCRIPTS/files/keys/trove_guest_key.pub}
+
 DISTRO=ubuntu
 #DISTRO=fedora

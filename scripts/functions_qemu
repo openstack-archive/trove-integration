@@ -38,7 +38,7 @@ function build_vm() {
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
 
-function cmd_build_image() {
+function build_guest_image() {
     exclaim "Building an image for use with development and integration tests."
     if [ -z "$1" ]
     then
@@ -79,12 +79,6 @@ function cmd_build_image() {
     else
         exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
-
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
-
-    # Now upload it
-    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
 }
 
 function clean_instances() {
