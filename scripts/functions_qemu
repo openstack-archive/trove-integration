@@ -14,7 +14,7 @@ function build_vm() {
     DISTRO=$4
     SERVICE_TYPE=$5
 
-    readonly SSH_DIR=${HOMEDIR}/.ssh
+    readonly SSH_DIR=${KEY_DIR:-${HOMEDIR}/.ssh}
     manage_ssh_keys
 
     if [ $DISTRO == 'ubuntu' ]; then
@@ -39,7 +39,7 @@ function build_vm() {
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
 
-function cmd_build_image() {
+function build_guest_image() {
     exclaim "Building an image for use with development and integration tests."
     if [ -z "$1" ]
     then
@@ -80,12 +80,6 @@ function cmd_build_image() {
     else
         exclaim "Found image in $VM_PATH using the qcow2 image found here..."
     fi
-
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
-
-    # Now upload it
-    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
 }
 
 function clean_instances() {
@@ -109,7 +103,7 @@ function manage_ssh_keys() {
     add_host_key_to_authorizedkeys
 }
 
-generate_empty_passphrase_ssh_key () {
+function generate_empty_passphrase_ssh_key () {
     echo "generating a empty passphrase DEV ONLY rsa key"
     expect -c "
 spawn sudo -Hiu ${HOST_USERNAME} /usr/bin/ssh-keygen -f ${SSH_DIR}/id_rsa -q
@@ -120,7 +114,7 @@ send \n
 expect eof"
 }
 
-add_host_key_to_authorizedkeys () {
+function add_host_key_to_authorizedkeys () {
     # test to see if the host key is already in its own authorized_keys file - if not then add it.  This is then later copied
     # to the guest image
     is_in_keyfile=`cat ${SSH_DIR}/id_rsa.pub | grep -f - ${SSH_DIR}/authorized_keys | wc -l`
