@@ -40,5 +40,9 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
 
+# SSH key dir. This dir contains the SSH keys that
+# are baked into the reference Trove Guest
+SSH_DIR=${SSH_DIR:-$REDSTACK_SCRIPTS/files/keys}
+
 DISTRO=ubuntu
 #DISTRO=fedora
