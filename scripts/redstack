@@ -226,10 +226,6 @@ function run_devstack() {
         eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" > localrc
     fi
 
-    if [ -n "$USE_UUID_TOKEN" ];  then
-        echo "KEYSTONE_TOKEN_FORMAT=UUID" >> localrc
-    fi
-
     if [ -n "$USING_VAGRANT" ]
     then
         eval echo "\"$(cat $REDSTACK_SCRIPTS/vagrant.rc)\"" >> localrc
