@@ -8,4 +8,3 @@ EOF
 
 mv /etc/ntp.conf /etc/ntp.conf.orig
 mv $ntpfile /etc/ntp.conf
-service ntp restart

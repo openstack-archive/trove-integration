@@ -40,5 +40,5 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
 
-DISTRO=ubuntu
+DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora

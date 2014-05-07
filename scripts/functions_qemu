@@ -30,6 +30,7 @@ function build_vm() {
     export NETWORK_GATEWAY
     export REDSTACK_SCRIPTS
     export SERVICE_TYPE
+    export PATH_TROVE
     export ESCAPED_PATH_TROVE
     export SSH_DIR
     export GUEST_LOGDIR
