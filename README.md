@@ -2,6 +2,13 @@
 
 ***
 
+### Clone repo and setup upstream 
+
+    git clone git@github.com:Tesora/tesora-trove-integration.git
+    cd tesora-trove-integration/
+    git remote add upstream https://github.com/openstack/trove-integration.git
+    git fetch upstream
+
 ### Steps to setup this environment:
 
 Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a virtual machine_ )
