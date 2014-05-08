@@ -8,7 +8,8 @@ set -o xtrace
 
 if ! id -u ${GUEST_USERNAME} >/dev/null 2>&1; then
     echo "Adding ${GUEST_USERNAME} user"
-    useradd -G admin -m ${GUEST_USERNAME} -s /bin/bash
+    useradd -G adm -m ${GUEST_USERNAME} -s /bin/bash
+    chown ${GUEST_USERNAME}:${GUEST_USERNAME} /home/${GUEST_USERNAME}
     passwd ${GUEST_USERNAME} <<_EOF_
 ${GUEST_USERNAME}
 ${GUEST_USERNAME}
