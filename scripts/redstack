@@ -387,7 +387,7 @@ function rd_manage() {
 }
 
 function install_test_packages() {
-    sudo pip install openstack.nose_plugin proboscis pexpect mockito
+    sudo pip install openstack.nose_plugin proboscis pexpect
 }
 
 function mod_test_conf() {
