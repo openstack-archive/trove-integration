@@ -148,7 +148,7 @@ function install_prep_packages() {
     exclaim 'Updating dependencies (part 1a)...'
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
-    pkg_install git-core kvm-ipxe python-pip
+    pkg_install git-core kvm-ipxe python-pip gettext
     sudo pip install --upgrade pip
 }
 
