@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -e
+set -o xtrace
+
+yum -y install postgresql91
