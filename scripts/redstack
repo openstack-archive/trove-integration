@@ -12,7 +12,7 @@
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
-USERHOME=$HOME
+export USERHOME=$HOME
 # Load options not checked into VCS.
 if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
@@ -33,6 +33,11 @@ function get_default_host_ip() {
 # allow overrides from devstack if already set
 if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
     . $PATH_DEVSTACK_SRC/localrc
+fi
+
+#Reset no proxy
+if [ -f $USERHOME/noproxy ]; then
+      . $USERHOME/noproxy
 fi
 
 # Public facing bits
