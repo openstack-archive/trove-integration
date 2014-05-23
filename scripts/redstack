@@ -450,13 +450,30 @@ function cmd_build_image() {
 }
 
 function cmd_build_and_upload_image() {
-    exclaim "First build the image"
-    cmd_build_image $1
+    set -x
+    local IMAGE_URL=""
+    if [[ -n $DOWNLOAD_IMAGE_URL]]; then
+        IMAGE_URL=$DOWNLOAD_IMAGE_URL
+    else
+        exclaim "First build the image"
+        cmd_build_image $1
+        QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
+        IMAGE_URL="file://$QCOW_IMAGE"
+    fi
 
     exclaim "Now upload it to Glance"
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
     TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
-    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+    # Use /tmp as file_cache
+    FILES=/tmp
+
+    GLANCE_IMAGEID=`get_glance_id upload_image "file://$QCOW_IMAGE" $TROVE_TOKEN`
+    echo "IMAGE ID: $GLANCE_IMAGEID"
+    if [ -z "$GLANCE_IMAGEID" ];
+    then
+        echo "Glance upload failed!"
+        exit 1
+    fi
+    cmd_set_datastore $GLANCE_IMAGEID $DATASTORE_TYPE
 }
 
 
