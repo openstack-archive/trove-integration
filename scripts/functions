@@ -46,16 +46,6 @@ function git_clone {
     fi
 }
 
-# Authenticates and gets a token. Requires a username, password, and tenant name.
-# This function assumes localhost keystone at the default port a la devstack.
-function retrieve_token {
-    USERNAME=$1
-    PASSWORD=$2
-    TENANT_NAME=$3
-    curl -d "{\"auth\":{\"passwordCredentials\":{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"},\"tenantName\":\"$TENANT_NAME\"}}" \
-       -H "Content-type: application/json" http://$KEYSTONE_AUTH_HOST:35357/v2.0/tokens | python -c 'import json, sys; print json.loads("\n".join(sys.stdin))["access"]["token"]["tenant"]["id"]'
-}
-
 # Determinate is the given option present in the INI file
 # ini_has_option config-file section option
 function ini_has_option() {
