@@ -40,5 +40,9 @@ SERVICE_PASSWORD=7de4162d826bc5a11ad9
 # Swift hash used by devstack.
 SWIFT_HASH=12go358snjw24501
 
+# URL to download the qcow2 guest image from.
+# If this isn't set, we will attempt to build the image using the trove guest elements.
+IMAGE_DOWNLOAD_URL=${IMAGE_DOWNLOAD_URL:-"http://lihk.in/trove/ubuntu_mysql.qcow2"}
+
 DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora
