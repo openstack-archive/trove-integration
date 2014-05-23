@@ -44,5 +44,9 @@ SWIFT_HASH=12go358snjw24501
 # are baked into the reference Trove Guest
 SSH_DIR=${SSH_DIR:-$REDSTACK_SCRIPTS/files/keys}
 
+# URL to download the qcow2 guest image from.
+# If this isn't set, we will attempt to build the image using the trove guest elements.
+IMAGE_DOWNLOAD_URL=${IMAGE_DOWNLOAD_URL:-"http://lihk.in/trove/ubuntu_mysql.qcow2"}
+
 DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora

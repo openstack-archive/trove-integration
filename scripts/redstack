@@ -33,6 +33,7 @@ function get_default_host_ip() {
 # allow overrides from devstack if already set
 if [ -f $PATH_DEVSTACK_SRC/localrc ]; then
     . $PATH_DEVSTACK_SRC/localrc
+    . $PATH_DEVSTACK_SRC/functions
 fi
 
 # Public facing bits
@@ -44,6 +45,7 @@ NETWORK_SUBNET=${NETWORK_SUBNET:-10.0.0.0/24}
 KEYSTONE_AUTH_HOST=${KEYSTONE_AUTH_HOST:-$SERVICE_HOST}
 KEYSTONE_AUTH_PROTOCOL=${KEYSTONE_AUTH_PROTOCOL:-$SERVICE_PROTOCOL}
 KEYSTONE_AUTH_PORT=${KEYSTONE_AUTH_PORT:-35357}
+GLANCE_HOSTPORT=${GLANCE_HOSTPORT:-$SERVICE_HOST:9292}
 TROVE_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH_PORT/v2.0
 
 # PATH_TROVE more than likely has file separators, which sed does not like
@@ -316,34 +318,6 @@ function cmd_set_datastore() {
     cmd_start
 }
 
-function upload_image_to_glance() {
-    exclaim "Uploading the image to glance."
-
-    IMAGE_NAME=$1
-    CONTAINER_FORMAT=$2
-    DISK_FORMAT=$3
-    TROVE_TENANT=$4
-    IMAGE_LOC=$5
-    # Unused since support of multiple datastores added.
-    # Still need for another datastores in future
-    DATASTORE_TYPE=$6
-    source $PATH_DEVSTACK_SRC/openrc admin admin
-    GLANCE_IMAGEID=`get_glance_id glance image-create \
-        --name="$IMAGE_NAME" --is-public=True \
-        --container-format=$CONTAINER_FORMAT --disk-format=$DISK_FORMAT \
-        --owner=$TROVE_TENANT < $IMAGE_LOC`
-
-    echo "IMAGE ID: $GLANCE_IMAGEID"
-    if [ -z "$GLANCE_IMAGEID" ];
-    then
-        echo "Glance upload failed!"
-        exit 1
-    fi
-
-    cmd_set_datastore $GLANCE_IMAGEID $DATASTORE_TYPE
-}
-
-
 ###############################################################################
 # Run Unit Tests
 ###############################################################################
@@ -450,13 +424,27 @@ function cmd_build_image() {
 }
 
 function cmd_build_and_upload_image() {
-    exclaim "First build the image"
-    cmd_build_image $1
+    local IMAGE_URL=""
+    # Use /tmp as file_cache
+    FILES=/tmp
+    if [[ -n $IMAGE_DOWNLOAD_URL ]]; then
+        exclaim "Downloading and using cached image"
+        IMAGE_URL=$IMAGE_DOWNLOAD_URL
+    else
+        exclaim "Trying to build image"
+        build_guest_image $1
+        QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
+        IMAGE_URL="file://$QCOW_IMAGE"
+    fi
 
-    exclaim "Now upload it to Glance"
-    QCOW_IMAGE=`find $VM_PATH -name '*.qcow2'`
-    TROVE_TOKEN=`retrieve_token trove $SERVICE_PASSWORD $SERVICE_TENANT`
-    upload_image_to_glance "${IMAGENAME}" ovf qcow2 $TROVE_TOKEN $QCOW_IMAGE $SERVICE_TYPE
+    source $PATH_DEVSTACK_SRC/openrc demo demo
+    TOKEN=$(keystone token-get | grep ' id ' | get_field 2)
+    GLANCE_IMAGEID=`get_glance_id upload_image $IMAGE_URL $TOKEN`
+    [[ -z "$GLANCE_IMAGEID" ]] && echo "Glance upload failed!" && exit 1
+    echo "IMAGE ID: $GLANCE_IMAGEID"
+
+    exclaim "Updating Datastores"
+    cmd_set_datastore $GLANCE_IMAGEID $1
 }
 
 
