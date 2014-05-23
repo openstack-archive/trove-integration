@@ -47,12 +47,15 @@ function cmd_build_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
-
     VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql'
-    if [ `expr "$VALID_SERVICES" : ".*$SERVICE_TYPE"` -eq 0 ] ; then
+
+    set +e
+    echo  "$VALID_SERVICES" | grep -wq "$SERVICE_TYPE"
+    if [ $? -ne 0 ] ; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
     fi
+    set -e
 
     GUEST_LOGDIR=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
     GUEST_LOGFILE=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
