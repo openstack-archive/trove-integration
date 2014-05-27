@@ -1,0 +1,47 @@
+#!/bin/sh
+# CONTEXT: GUEST during CONSTRUCTION as ROOT - install.d
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get install build-essential bc iptables curl sysstat pstack mcelog python-dev python-pip g++ unixODBC unixODBC-dev -y
+wget http://h30537.www3.hp.com/prdownloads/vertica_7.0.1-0_amd64.deb?downloadid=kfgOdXyQ5mBk_H43Pf1HXu8MYy5ZJ0c3wy48_7ta84EdFRE0lvsWMyi3JcTzLoeK8Q2w65kh2GM_bT7Xrd5e51Hb6Leusrigugf83o4Cd2dFmFUM7FIs4XssR9jcFkNjaIQHD24o1II= -O vertica_7.0.1-0_amd64.deb
+dpkg -i vertica_7.0.1-0_amd64.deb
+
+# Creating dbadmin user
+groupadd verticadba
+useradd -g verticadba -d /home/dbadmin -s /bin/bash -m dbadmin
+
+# INSTALL VERTICA
+touch /etc/mtab
+/opt/vertica/sbin/install_vertica -s localhost -X -N -S 'default' -r /vertica_7.0.1-0_amd64.deb -L CE -Y --failure-threshold NONE
+service vertica_agent stop
+# Base Directory for database creation
+mkdir /var/lib/vertica
+chown dbadmin:verticadba /var/lib/vertica
+
+#check for directory existance
+if [ ! -d '/opt/vertica/lib64' ]; then
+    exit 'lib64 missing'
+fi
+
+#Adding vertica related config files in /etc 
+touch vertica.ini
+echo "[Driver]
+DriverManagerEncoding=UTF-16
+ODBCInstLib=/usr/lib/x86_64-linux-gnu/libodbcinst.so
+ErrorMessagesPath=/opt/vertica/lib64
+LogLevel=4
+LogPath=/tmp" >> vertica.ini
+touch odbcinst.ini
+echo "[vertica]
+Driver=/opt/vertica/lib64/libverticaodbc.so
+Setup=/opt/vertica/lib64/libverticaodbc.so" >> odbcinst.ini
+install --backup --suffix=".default" odbcinst.ini /etc/
+install --backup --suffix=".default" vertica.ini /etc/
+
+#installing vertica-sqlalchemy and dependencies
+pip install https://pyodbc.googlecode.com/files/pyodbc-3.0.6.zip
+pip install vertica-sqlalchemy
