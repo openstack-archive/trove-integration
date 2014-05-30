@@ -50,7 +50,7 @@ function build_guest_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
-    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql'
+    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql vertica'
     if ! [[ " $VALID_SERVICES " =~ " $SERVICE_TYPE " ]]; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1

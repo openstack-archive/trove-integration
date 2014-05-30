@@ -305,6 +305,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "postgresql" ]; then
         PACKAGES=${PACKAGES:-"postgresql-9.1"}
         VERSION="9.1"
+    elif [ "$DATASTORE_TYPE" == "vertica" ]; then
+        PACKAGES=${PACKAGES:-"vertica"}
+        VERSION="7.0"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
@@ -320,6 +323,7 @@ function cmd_set_datastore() {
     rd_manage datastore_update Test_Datastore_1 ""
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
+    iniset $TROVE_CONF_DIR/trove.conf DEFAULT datastore_manager "$DATASTORE_TYPE"
     sleep 1.5
     cmd_start
 }
@@ -369,6 +373,7 @@ function install_test_packages() {
 }
 
 function mod_confs() {
+    DATASTORE_TYPE=$1
     sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
@@ -395,6 +400,13 @@ function mod_confs() {
     # Create a conf for the guestagent based on the sample
     sudo install -b --mode 0664 $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
     sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $TROVE_CONF_DIR/trove-guestagent.conf
+
+    if [ "$DATASTORE_TYPE" = "vertica" ]; then
+        # Add Vertica flavors to the test conf
+        sed -i "s/m1.rd-tiny/m1.small/g" $TROVE_CONF_DIR/test.conf
+        sed -i "s/latin2/utf8/g" $TROVE_CONF_DIR/test.conf
+        sed -i "s/latin2_general_ci/utf8_general_ci/g" $TROVE_CONF_DIR/test.conf
+    fi
 }
 
 
@@ -413,7 +425,7 @@ function cmd_test_init() {
     install_test_packages
 
     exclaim "Modifying test.conf and guest.conf with appropriate values."
-    mod_confs
+    mod_confs $1
 
     exclaim "Creating Test Flavors."
     add_test_flavors
@@ -712,7 +724,7 @@ function cmd_clear() {
 
 function cmd_kick_start() {
     source $PATH_DEVSTACK_SRC/openrc admin admin
-    cmd_test_init
+    cmd_test_init $1
     cmd_build_and_upload_image $1
 }
 
