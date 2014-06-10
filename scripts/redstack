@@ -307,6 +307,10 @@ function cmd_set_datastore() {
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
     fi
+
+    sed -i "s/%datastore%/$DATASTORE_TYPE/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%datastore_version%/$VERSION/g" $TROVE_CONF_DIR/test.conf
+
     #rd_manage datastore_version_update <datastore_name> <version_name> <datastore_manager> <image_id> <packages> <active>
     rd_manage datastore_version_update "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID "$PACKAGES" 1
     rd_manage datastore_version_update "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID "" 0
