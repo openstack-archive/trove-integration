@@ -85,7 +85,7 @@ Allows the services to continue running in the background
 
 #### Initialize the test configuration and set up test users
 
-    $ ./redstack test-init
+    $ ./redstack test-init mysql
 
 #### Build the image and add it to glance
 

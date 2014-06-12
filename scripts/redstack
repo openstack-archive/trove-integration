@@ -279,6 +279,12 @@ function get_glance_id () {
 function cmd_set_datastore() {
     IMAGEID=$1
     DATASTORE_TYPE=$2
+
+    FLAVOR="m1.rd-tiny"
+    BIGGER_FLAVOR="m1.rd-smaller"
+    EPH_FLAVOR="eph.rd-tiny"
+    BIGGER_EPH_FLAVOR="eph.rd-smaller"
+
     # rd_manage datastore_update <datastore_name> <default_version>
     rd_manage datastore_update "$DATASTORE_TYPE" ""
     PACKAGES=${PACKAGES:-""}
@@ -307,6 +313,7 @@ function cmd_set_datastore() {
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
     fi
+
     #rd_manage datastore_version_update <datastore_name> <version_name> <datastore_manager> <image_id> <packages> <active>
     rd_manage datastore_version_update "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID "$PACKAGES" 1
     rd_manage datastore_version_update "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID "" 0
@@ -391,6 +398,8 @@ function install_test_packages() {
 }
 
 function mod_confs() {
+    DATASTORE_TYPE=$1
+
     cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
@@ -417,6 +426,26 @@ function mod_confs() {
     # Create a conf for the guestagent based on the sample
     cp $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
     sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $TROVE_CONF_DIR/trove-guestagent.conf
+
+    if [ "$DATASTORE_TYPE" == "cassandra" ]; then
+        FLAVOR="m1.small"
+        BIGGER_FLAVOR="m1.medium"
+        EPH_FLAVOR="eph.rd-small"
+        BIGGER_EPH_FLAVOR="eph.rd-bigger"
+    else
+        FLAVOR="m1.rd-tiny"
+        BIGGER_FLAVOR="m1.rd-smaller"
+        EPH_FLAVOR="eph.rd-tiny"
+        BIGGER_EPH_FLAVOR="eph.rd-smaller"
+    fi
+
+    # Setting specific flavors for datastore since each
+    # datastore requires its own flavors
+    sed -i "s/%flavor%/$FLAVOR/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%bigger_flavor%/$BIGGER_FLAVOR/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%eph_flavor%/$EPH_FLAVOR/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%bigger_eph_flavor%/$BIGGER_EPH_FLAVOR/g" $TROVE_CONF_DIR/test.conf
+
 }
 
 
@@ -426,6 +455,8 @@ function add_test_flavors() {
     add_flavor 'm1.rd-smaller' 8 768 3 1 0
     add_flavor 'eph.rd-tiny' 9 512 3 1 1
     add_flavor 'eph.rd-smaller' 10 768 3 1 2
+    add_flavor 'eph.rd-small' 11 2048 6 2 3
+    add_flavor 'eph.rd-bigger' 11 4096 10 2 6
 }
 
 function cmd_test_init() {
@@ -435,7 +466,7 @@ function cmd_test_init() {
     install_test_packages
 
     exclaim "Modifying test.conf and guest.conf with appropriate values."
-    mod_confs
+    mod_confs $1
 
     exclaim "Creating Test Flavors."
     add_test_flavors
@@ -654,7 +685,7 @@ function cmd_run_ci() {
     cmd_stop
     set -e
     cmd_install
-    cmd_test_init
+    cmd_test_init $1
     # The arg will be the image type
     cmd_build_image $1
 
