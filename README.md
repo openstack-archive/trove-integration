@@ -146,3 +146,22 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+### VMWare Workstation speed improvement
+
+Similar to suggestions above for VMWare Fusion, if you are running in a VMWare instance without the proper settings your performance could be quite pathetic.
+
+Before installing Ubuntu, or after installing Ubuntu and before getting into redstack stuff, do the following.
+
+Under VM->Settings->Processors, you will find a box with options labeled "Virtualization engine".
+
+You want to ensure that "Virtualize Intel VT-x/EPT or AMD-V/RVI" is checked, and that "Virtualize CPU performance counters" is checked.
+
+You can only change these settings when your VM is stopped so if you notice that the boxes are grayed out, it means that your VM is running.
+
+```
+amrith@amrith-u1204-lts:~$ kvm-ok
+INFO: /dev/kvm exists
+KVM acceleration can be used
+amrith@amrith-u1204-lts:~$ 
+```
