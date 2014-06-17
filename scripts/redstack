@@ -251,6 +251,21 @@ function cmd_install() {
     exclaim "FINISHED INSTALL"
 }
 
+function cmd_enable_heat() {
+    exclaim "Preparing Trove with enabled Heat support"
+    cmd_stop
+    TM_CONF=$TROVE_CONF_DIR/trove-taskamanager.conf
+    iniset $TM_CONF DEFAULT use_heat True
+    cmd_start
+}
+
+function cmd_disable_heat() {
+    exclaim "Preparing Trove with disabled Heat support"
+    cmd_stop
+    TM_CONF=$TROVE_CONF_DIR/trove-taskamanager.conf
+    iniset $TM_CONF DEFAULT use_heat False
+    cmd_start
+}
 
 ###############################################################################
 # Build the image
@@ -751,6 +766,8 @@ function print_usage() {
           post-devstack   - Configures testing environment, builds image and uploads to glance
 
         --helper for environment--
+          enable-heat     - enables heat support for trove
+          disable-heat     - enables heat support for trove
           kick-start      - kick start the setup of trove.
                             (redstack test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding pacakges from scratch
@@ -791,6 +808,8 @@ function run_command() {
 
     case "$1" in
         "install" ) cmd_install;;
+        "enable-heat" ) cmd_enable_heat;;
+        "disable-heat" ) cmd_disable_heat;;
         "test-init" ) cmd_test_init;;
         "build-image" ) shift; cmd_build_image $@;;
         "initialize" ) cmd_initialize;;
