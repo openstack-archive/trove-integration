@@ -146,3 +146,19 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+### VMware Workstation performance improvements
+
+In recent versions of VMWare, you can get much better performance if you enable the right virtualization options. For example in VMWare Workstation, (noticed in version 10.0.2), click on VM->Settings->Processor.
+
+You should see a box of "Virtualization Engine" options that can be changed only when the VM is shutdown.
+
+Make sure you check "Virtualize Intel VT-x/EPT or AMD-V/RVI" and "Virtualize CPU performance counters". Set the preferred mode to "Automatic".
+
+Then boot the VM and ensure that the proper virtualization is enabled.
+
+```
+amrith@ubuntu-1404-lts:~$ kvm-ok
+INFO: /dev/kvm exists
+KVM acceleration can be used
+```
