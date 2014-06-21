@@ -38,7 +38,8 @@ function build_vm() {
     export GUEST_LOGDIR
     export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
-    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
+    export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
+    ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools cloud-init-datasources ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
 
 function build_guest_image() {
