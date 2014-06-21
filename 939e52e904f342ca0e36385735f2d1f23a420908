@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Nikhil Manchanda <SlickNik@gmail.com>
+Workflow+1: Nikhil Manchanda <SlickNik@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review+1: amrith <amrith@tesora.com>
+Submitted-by: Jenkins
+Submitted-at: Sat, 21 Jun 2014 00:43:00 +0000
+Reviewed-on: https://review.openstack.org/99482
+Project: openstack/trove-integration
+Branch: refs/heads/master
