@@ -1,0 +1,14 @@
+Verified+2: Jenkins
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review+2: Auston McReynolds <amcreynolds@ebaysf.com>
+Workflow+1: Auston McReynolds <amcreynolds@ebaysf.com>
+Code-Review+1: Denis M. <dmakogon@mirantis.com>
+Code-Review+1: amrith <amrith@tesora.com>
+Code-Review+1: Peter Stachowski <peter@tesora.com>
+Code-Review+1: Shayne Burgess <shayne.burgess@hp.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 25 Jun 2014 00:42:06 +0000
+Reviewed-on: https://review.openstack.org/102048
+Project: openstack/trove-integration
+Branch: refs/heads/master
