@@ -369,13 +369,13 @@ function install_test_packages() {
 }
 
 function mod_confs() {
-    cp $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
+    sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
     if [ -e $EXTRA_CONF ]; then
         cat $EXTRA_CONF >> $TROVE_CONF_DIR/test.conf
     fi
-    cat $REDSTACK_SCRIPTS/conf/test_end.conf >> $TROVE_CONF_DIR/test.conf
+    cat $REDSTACK_SCRIPTS/conf/test_end.conf | sudo tee -a $TROVE_CONF_DIR/test.conf > /dev/null
 
     #Add the paths to the test conf
     sed -i "s,%report_directory%,$TROVE_REPORT_DIR,g" $TROVE_CONF_DIR/test.conf
@@ -393,7 +393,7 @@ function mod_confs() {
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 
     # Create a conf for the guestagent based on the sample
-    cp $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
+    sudo install -b --mode 0664 $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
     sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $TROVE_CONF_DIR/trove-guestagent.conf
 }
 
