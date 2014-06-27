@@ -539,7 +539,7 @@ function cmd_int_tests() {
     cd $REDSTACK_SCRIPTS
     export TEST_CONF=$TROVE_CONF_DIR/test.conf
     if [ $# -lt 1 ]; then
-        args="--group=blackbox"
+        args="--group=mysql"
     else
         args="$@"
     fi
