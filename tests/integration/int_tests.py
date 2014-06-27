@@ -184,7 +184,7 @@ def import_tests():
             versions.GROUP,
             "dbaas.guest.start.test",
             ]
-        proboscis.register(groups=["blackbox"],
+        proboscis.register(groups=["blackbox", "mysql"],
                            depends_on_groups=black_box_groups)
 
         simple_black_box_groups = [
@@ -219,6 +219,8 @@ def import_tests():
         ]
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)
+
+        # Datastores int-tests groups
 
         cassandra_groups = [
             "services.initialize",
