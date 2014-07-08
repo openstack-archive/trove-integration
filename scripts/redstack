@@ -388,7 +388,6 @@ function mod_confs() {
 
     # Add the tenant id's into test.conf
     sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
 
