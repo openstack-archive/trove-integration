@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+2: Vipul Sabhaya <vipuls@gmail.com>
+Code-Review+2: Craig Vyvial <cp16net@gmail.com>
+Workflow+1: Craig Vyvial <cp16net@gmail.com>
+Verified+1: reddwarf <reddwarf-jenkins@googlegroups.com>
+Code-Review+1: Denis M. <dmakogon@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 15 Jul 2014 19:19:58 +0000
+Reviewed-on: https://review.openstack.org/106954
+Project: openstack/trove-integration
+Branch: refs/heads/master
