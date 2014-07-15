@@ -171,6 +171,7 @@ def import_tests():
             instances.GROUP_START,
             "dbaas_quotas",
             "dbaas.api.security_groups",
+            "dbaas.api.replication",
             backups.GROUP,
             configurations.GROUP,
             datastores.GROUP,
@@ -361,4 +362,3 @@ def run_main(test_importer):
 
 if __name__ == "__main__":
     run_main(import_tests)
-
