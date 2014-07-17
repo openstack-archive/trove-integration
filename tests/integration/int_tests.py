@@ -134,81 +134,21 @@ def import_tests():
     # run its functional tests only.
     ADD_DOMAINS = os.environ.get("ADD_DOMAINS", "False") == 'True'
     if not ADD_DOMAINS:
-        from tests import initialize
         from tests.api import delete_all
-        from trove.tests.api import flavors
-        from trove.tests.api import versions
-        from trove.tests.api import instances
-        from trove.tests.api import instances_actions
-        from trove.tests.api import instances_mysql_down
         from tests.api import instances_pagination
-        from trove.tests.api import instances_delete
         from tests.api import instances_quotas
         from tests.api import instances_states
-        from trove.tests.api import databases
-        from trove.tests.api import root
-        from trove.tests.api import users
-        from trove.tests.api import user_access
-        from trove.tests.api import backups
-        from trove.tests.api import configurations
-        from trove.tests.api import datastores
-        from trove.tests.api.mgmt import accounts
-        from trove.tests.api.mgmt import admin_required
-        from trove.tests.api.mgmt import hosts
-        from trove.tests.api.mgmt import instances as mgmt_instances
-        from trove.tests.api.mgmt import storage
         from tests.dns import dns
-        from tests.volumes import driver
+        from tests import initialize
         from tests.smoke import instance
+        from tests.volumes import driver
 
-        black_box_groups = [
-            flavors.GROUP,
-            users.GROUP,
-            user_access.GROUP,
-            databases.GROUP,
-            root.GROUP,
-            "services.initialize",
-            instances.GROUP_START,
-            "dbaas_quotas",
-            "dbaas.api.security_groups",
-            "dbaas.api.replication",
-            backups.GROUP,
-            configurations.GROUP,
-            datastores.GROUP,
-            "dbaas.api.instances.actions.resize.instance",
-            # TODO(SlickNik): The restart tests fail intermittently so pulling
-            # them out of the blackbox group temporarily. Refer to Trove bug:
-            # https://bugs.launchpad.net/trove/+bug/1204233
-            # "dbaas.api.instances.actions.restart",
-            instances_actions.GROUP_STOP_MYSQL,
-            instances.GROUP_STOP,
-            versions.GROUP,
-            "dbaas.guest.start.test",
-            "dbaas.neutron",
-            ]
-        proboscis.register(groups=["blackbox", "mysql"],
-                           depends_on_groups=black_box_groups)
+        # Groups that exist as core int-tests are registered from the
+        # trove.tests.int_tests module
+        from trove.tests import int_tests
 
-        simple_black_box_groups = [
-            "services.initialize",
-            flavors.GROUP,
-            versions.GROUP,
-            instances.GROUP_START_SIMPLE,
-            "dbaas.api.mgmt.admin",
-        ]
-        proboscis.register(groups=["simple_blackbox"],
-                           depends_on_groups=simple_black_box_groups)
-
-        black_box_mgmt_groups = [
-            accounts.GROUP,
-            hosts.GROUP,
-            storage.GROUP,
-            instances_actions.GROUP_REBOOT,
-            admin_required.GROUP,
-            mgmt_instances.GROUP,
-            ]
-        proboscis.register(groups=["blackbox_mgmt"],
-                           depends_on_groups=black_box_mgmt_groups)
+        # Groups defined in trove-integration, or any other externally
+        # defined groups can be registered here
         heavy_black_box_groups = [
             "dbaas.api.instances.pagination",
             "dbaas.api.instances.delete",
@@ -221,35 +161,6 @@ def import_tests():
         ]
         proboscis.register(groups=["heavy_blackbox"],
                            depends_on_groups=heavy_black_box_groups)
-
-        # Datastores int-tests groups
-
-        cassandra_groups = [
-            "services.initialize",
-            flavors.GROUP,
-            versions.GROUP,
-            instances.GROUP_START_SIMPLE, ]
-        proboscis.register(groups=["cassandra"],
-                           depends_on_groups=cassandra_groups)
-
-        couchbase_groups = [
-            "services.initialize",
-            flavors.GROUP,
-            versions.GROUP,
-            instances.GROUP_START_SIMPLE,
-        ]
-        proboscis.register(groups=["couchbase"],
-                           depends_on_groups=couchbase_groups)
-
-
-        mongodb_groups = [
-            "services.initialize",
-            flavors.GROUP,
-            versions.GROUP,
-            instances.GROUP_START_SIMPLE,
-        ]
-        proboscis.register(groups=["mongodb"],
-                           depends_on_groups=mongodb_groups)
 
 
 def run_main(test_importer):
