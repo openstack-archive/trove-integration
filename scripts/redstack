@@ -32,10 +32,12 @@ function get_default_host_ip() {
 . $REDSTACK_SCRIPTS/reviews.rc
 
 # allow overrides from devstack if already set
-[[ -f $PATH_DEVSTACK_SRC/localrc ]] && source $PATH_DEVSTACK_SRC/localrc
+[[ -f $PATH_DEVSTACK_SRC/functions-common ]] && source $PATH_DEVSTACK_SRC/functions-common
 [[ -f $PATH_DEVSTACK_SRC/functions ]] && source $PATH_DEVSTACK_SRC/functions
+[[ -f $PATH_DEVSTACK_SRC/localrc ]] && source $PATH_DEVSTACK_SRC/localrc
 
 # Public facing bits
+[[ $ENABLE_NEUTRON = true ]] && BRIDGE_IP=172.24.4.1 || BRIDGE_IP=10.0.0.1
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT=${SERVICE_TENANT:-service}
 NETWORK_GATEWAY=${NETWORK_GATEWAY:-$BRIDGE_IP}
@@ -397,6 +399,32 @@ function mod_confs() {
     sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
+
+    # Enable neutron tests if needed
+    sed -i "s/%neutron_enabled%/$ENABLE_NEUTRON/g" $TROVE_CONF_DIR/test.conf
+
+    # If neutron is enabled, we create a shared network and write this info to the
+    # confs so that the integration tests can use it.
+    if [[ $ENABLE_NEUTRON = true ]]; then
+        # customer_network_id=$(neutron net-list | awk '/customer/ {print $2}')
+        # if [[ -z "$customer_network_id" ]]; then
+        #    customer_network_id=$(neutron net-create customer | awk '/ id / {print $4}')
+        #    customer_subnet_id=$(neutron subnet-create customer 10.0.1.0/24 --no-gateway | awk '/ id / {print $4}')
+        # fi
+        management_network_id=$(neutron net-list | awk '/private/ {print $2}')
+        management_subnet=$(neutron net-list | awk '/private/ {print $7}')
+        sed -i "s,%shared_network%,$management_network_id,g" $TROVE_CONF_DIR/test.conf
+        sed -i "s,%shared_network_subnet%,$management_subnet,g" $TROVE_CONF_DIR/test.conf
+        # sed -i "s,%private_network%,$customer_network_id,g" $TROVE_CONF_DIR/test.conf
+        # sed -i "s,%private_network_subnet%,10.0.1.0/24,g" $TROVE_CONF_DIR/test.conf
+        iniset $TROVE_CONF_DIR/trove.conf DEFAULT network_label_regex .*
+        iniset $TROVE_CONF_DIR/trove.conf DEFAULT ip_regex .*
+        iniset $TROVE_CONF_DIR/trove.conf DEFAULT black_list_regex ^10.0.1.*
+        iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_neutron_networks $management_network_id
+        iniset $TROVE_CONF_DIR/trove.conf DEFAULT network_driver trove.network.neutron.NeutronDriver
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT network_driver trove.network.neutron.NeutronDriver
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf mysql tcp_ports 22,3306
+    fi
 
     # Create a conf for the guestagent based on the sample
     sudo install -b --mode 0664 $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf

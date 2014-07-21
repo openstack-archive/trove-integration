@@ -10,4 +10,4 @@ yum install -y python-devel libxml2-devel libxslt-devel python-setuptools python
     python-routes python-eventlet python-webob python-kombu python-paste-deploy python-paste python-netaddr \
     python-httplib2 python-iso8601 python-pexpect MySQL-python python-migrate python-pip python-anyjson gcc
 
-pip-python install extras oslo.config>=1.2.0 python-novaclient python-swiftclient python-cinderclient kombu>2.4.7 six babel python-heatclient passlib jinja2 oslo.messaging>=1.3.0
+pip-python install extras oslo.config>=1.2.0 python-novaclient python-swiftclient python-cinderclient kombu>2.4.7 six babel python-heatclient passlib jinja2 oslo.messaging>=1.3.0 python-neutronclient

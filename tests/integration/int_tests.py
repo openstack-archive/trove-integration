@@ -184,6 +184,7 @@ def import_tests():
             instances.GROUP_STOP,
             versions.GROUP,
             "dbaas.guest.start.test",
+            "dbaas.neutron",
             ]
         proboscis.register(groups=["blackbox", "mysql"],
                            depends_on_groups=black_box_groups)
