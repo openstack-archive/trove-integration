@@ -433,6 +433,14 @@ function mod_confs() {
         iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT network_driver trove.network.neutron.NeutronDriver
         iniset $TROVE_CONF_DIR/trove-taskmanager.conf mysql tcp_ports 22,3306
     fi
+
+    # Create a conf for the guestagent based on the sample
+    sudo install -b --mode 0664 $PATH_TROVE/etc/trove/trove-guestagent.conf.sample $TROVE_CONF_DIR/trove-guestagent.conf
+    sed -i "s/10.0.0.1/$NETWORK_GATEWAY/g" $TROVE_CONF_DIR/trove-guestagent.conf
+
+    # Setting use_heat for taskmanager
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT use_heat "${HEAT_PROVISIONING_SUPPORT:-"False"}"
+
 }
 
 
