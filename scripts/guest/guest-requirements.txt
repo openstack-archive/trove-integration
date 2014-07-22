@@ -1,0 +1,13 @@
+# from https://github.com/openstack/trove-integration/blob/master/scripts/files/elements/ubuntu-guest/install.d/15-reddwarf-dep#L14
+extras
+oslo.config>=1.2.0
+python-novaclient
+python-swiftclient
+python-cinderclient
+kombu>2.4.7
+six
+babel
+python-heatclient
+passlib
+jinja2
+oslo.messaging>=1.3.0
