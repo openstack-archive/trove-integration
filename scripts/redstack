@@ -821,6 +821,11 @@ function cmd_repl() {
     INT_TEST_OPTIONS=-i cmd_int_tests_white_box --repl --group=_does_not_exist_ $@
 }
 
+function cmd_package_guest() {
+    cd $REDSTACK_SCRIPTS/guest
+    ./package-builder.sh
+}
+
 
 ###############################################################################
 # Process the user provided command and run the appropriate command
@@ -878,6 +883,7 @@ function print_usage() {
           update-projects - Git pull on all the daemons trove dependencies.
           reset-task      - Sets an instance task to NONE.
           wipe-queues     - Resets RabbitMQ queues.
+          package-guest   - Creates a guest package using virtualenv
     "
     exit 1
 }
@@ -921,6 +927,7 @@ function run_command() {
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
         "repl" ) shift; cmd_repl $@;;
+        "package-guest" ) cmd_package_guest $@;;
         * )
             echo "'$1' not a valid command"
             exit 1
