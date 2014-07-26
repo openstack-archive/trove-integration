@@ -744,10 +744,19 @@ function cmd_clear() {
     cmd_wipe_queues
 }
 
+function cmd_map_flavors() {
+    exclaim "Mapping default flavors to the default datatstore version"
+    DEFAULT_VERSION=`rd_manage get_datastore_version_id`
+    DEFAULT_FLAVORS=`source ~/devstack/openrc; nova flavor-list | awk -vORS=, '{ print $2}'|sed 's/,$//'|sed 's/,$//'|cut -d',' -f4- -s`
+    rd_manage datastore_flavor_add `echo $DEFAULT_VERSION|cut -d' ' -f3`\
+         `echo $DEFAULT_FLAVORS|cut -d' ' -f2`
+}
+
 function cmd_kick_start() {
     source $PATH_DEVSTACK_SRC/openrc admin admin
     cmd_test_init
     cmd_build_and_upload_image $1
+    cmd_map_flavors
 }
 
 function cmd_reset_task() {
