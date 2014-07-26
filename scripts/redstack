@@ -324,6 +324,7 @@ function cmd_set_datastore() {
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
     sleep 1.5
     cmd_start
+    cmd_map_flavors
 }
 
 ###############################################################################
@@ -742,6 +743,14 @@ function cmd_clear() {
     mysql_trove "DELETE FROM instances;"
     mysql_trove "DELETE FROM service_statuses;"
     cmd_wipe_queues
+}
+
+function cmd_map_flavors() {
+    exclaim "Mapping default flavors to the default datatstore version"
+    DEFAULT_VERSION=`trove datastore-show $DATASTORE_TYPE | get_field 2 | awk 'FNR == 4'`
+    DEFAULT_FLAVORS=`nova flavor-list | awk -vORS=, '{ print $2}'|sed 's/,$//'|sed 's/,$//'|cut -d',' -f4- -s`
+    rd_manage datastore_flavor_add `echo $DEFAULT_VERSION|cut -d' ' -f3`\
+         `echo $DEFAULT_FLAVORS|cut -d' ' -f2`
 }
 
 function cmd_kick_start() {
