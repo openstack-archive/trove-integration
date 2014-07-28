@@ -157,6 +157,7 @@ def import_tests():
         from trove.tests.api.mgmt import hosts
         from trove.tests.api.mgmt import instances as mgmt_instances
         from trove.tests.api.mgmt import storage
+        from trove.tests.api.mgmt import datastores as mgmt_datastores
         from tests.dns import dns
         from tests.volumes import driver
         from tests.smoke import instance
@@ -205,6 +206,7 @@ def import_tests():
             instances_actions.GROUP_REBOOT,
             admin_required.GROUP,
             mgmt_instances.GROUP,
+            mgmt_datastores.GROUP,
             ]
         proboscis.register(groups=["blackbox_mgmt"],
                            depends_on_groups=black_box_mgmt_groups)
