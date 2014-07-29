@@ -22,3 +22,6 @@ cat <<EOL > /etc/apt/sources.list.d/percona.list
 deb http://repo.percona.com/apt $RELEASE main
 deb-src http://repo.percona.com/apt $RELEASE main
 EOL
+
+# force an update
+apt-get update
