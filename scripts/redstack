@@ -283,8 +283,7 @@ function get_glance_id () {
 function cmd_set_datastore() {
     IMAGEID=$1
     DATASTORE_TYPE=$2
-    # rd_manage datastore_update <datastore_name> <default_version>
-    rd_manage datastore_update "$DATASTORE_TYPE" ""
+
     PACKAGES=${PACKAGES:-""}
     if [ "$DATASTORE_TYPE" == "mysql" ]; then
         PACKAGES=${PACKAGES:-"mysql-server-5.5"}
@@ -315,11 +314,18 @@ function cmd_set_datastore() {
     sed -i "s/%datastore_type%/$DATASTORE_TYPE/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%datastore_version%/$VERSION/g" $TROVE_CONF_DIR/test.conf
 
-    #rd_manage datastore_version_update <datastore_name> <version_name> <datastore_manager> <image_id> <packages> <active>
-    rd_manage datastore_version_update "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID "$PACKAGES" 1
-    rd_manage datastore_version_update "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID "" 0
-    rd_manage datastore_update "$DATASTORE_TYPE" "$VERSION"
-    rd_manage datastore_update Test_Datastore_1 ""
+    exclaim "Using admin role to create datastores and versions"
+    source ~/devstack/openrc admin admin
+
+    trove datastore-create "$DATASTORE_TYPE"
+    trove datastore-version-create "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID --packages "$PACKAGES" --active 1
+    trove datastore-update "$DATASTORE_TYPE" --datastore_version "$VERSION"
+
+    trove datastore-version-create "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID --packages "" --active 0
+    trove datastore-update "$DATASTORE_TYPE" --datastore_version "inactive_version"
+
+    trove datastore-create Test_Datastore_1 ""
+
     cmd_stop
     iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
     sleep 1.5
