@@ -489,8 +489,10 @@ function cmd_build_and_upload_image() {
         IMAGE_URL="file://$QCOW_IMAGE"
     fi
 
+    source $PATH_DEVSTACK_SRC/openrc admin admin
     TOKEN=$(keystone token-get | grep ' id ' | get_field 2)
     GLANCE_IMAGEID=`get_glance_id upload_image $IMAGE_URL $TOKEN`
+    source $PATH_DEVSTACK_SRC/openrc demo demo
     [[ -z "$GLANCE_IMAGEID" ]] && echo "Glance upload failed!" && exit 1
     echo "IMAGE ID: $GLANCE_IMAGEID"
 
@@ -745,7 +747,6 @@ function cmd_clear() {
 }
 
 function cmd_kick_start() {
-    source $PATH_DEVSTACK_SRC/openrc admin admin
     cmd_test_init
     cmd_build_and_upload_image $1
 }
