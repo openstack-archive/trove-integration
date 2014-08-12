@@ -23,8 +23,8 @@ PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
 # Devstack and OpenStack git repo source path
-REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
-OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
+REPO_DEVSTACK=${REPO_DEVSTACK:-git://git.openstack.org/openstack-dev/devstack.git}
+OPENSTACK_GITSOURCE=${OPENSTACK_GITSOURCE:-git://git.openstack.org/openstack}
 
 # Destination for working data
 DATA_DIR=${DEST}/data
