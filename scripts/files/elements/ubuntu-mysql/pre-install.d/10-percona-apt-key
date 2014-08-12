@@ -14,7 +14,7 @@ if [ ! -e /home/${GUEST_USERNAME}/.gnupg ]; then
     mkdir -p /home/${GUEST_USERNAME}/.gnupg
 fi
 
-apt-key adv --keyserver hkp://keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+apt-key adv --keyserver hkp://keys.gnupg.net:80 --recv-keys 1C4CBDCDCD2EFD2A
 
 # add Percona repo
 # creates the percona sources list
