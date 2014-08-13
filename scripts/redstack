@@ -87,12 +87,12 @@ function exclaim () {
 
 function pkg_install () {
     echo Installing $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS install $@
+    $SUDO DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS install $@
 }
 
 function pkg_update () {
     echo Updating $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS update $@
+    $SUDO DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS update $@
 }
 
 function set_home_dir() {
@@ -152,7 +152,7 @@ function install_prep_packages() {
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
     pkg_install git-core kvm-ipxe python-pip gettext
-    sudo pip install --upgrade pip
+    $SUDO pip install --upgrade pip
 }
 
 function install_devstack_code() {
@@ -166,9 +166,9 @@ function install_devstack_code() {
 
     exclaim "Installing devstack projects..."
     # Ensures present user can get to the devstack dirs
-    sudo mkdir -p $PATH_DEVSTACK_OUTPUT
+    $SUDO mkdir -p $PATH_DEVSTACK_OUTPUT
     if [ ! -w $PATH_DEVSTACK_OUTPUT ]; then
-        sudo chown `whoami` $PATH_DEVSTACK_OUTPUT
+        $SUDO chown `whoami` $PATH_DEVSTACK_OUTPUT
     fi
     # Clones all of the code to where devstack expects it to be
     pushd $PATH_DEVSTACK_OUTPUT
@@ -340,14 +340,14 @@ function cmd_unit_tests() {
 ###############################################################################
 
 function cmd_start_deps() {
-    if ! sudo vgs $VOLUME_GROUP; then
+    if ! $SUDO vgs $VOLUME_GROUP; then
         exclaim "Reconnecting Volume Group to Backing File"
-        sudo losetup -f --show ${VOLUME_BACKING_FILE}
+        $SUDO losetup -f --show ${VOLUME_BACKING_FILE}
     fi
 
     if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
         exclaim "Re-mounting Swift Disk Image"
-        sudo mount -t xfs -o loop,noatime,nodiratime,nobarrier,logbufs=8  ${SWIFT_DISK_IMAGE} ${SWIFT_DATA_DIR}/drives/sdb1
+        $SUDO mount -t xfs -o loop,noatime,nodiratime,nobarrier,logbufs=8  ${SWIFT_DISK_IMAGE} ${SWIFT_DATA_DIR}/drives/sdb1
     fi
 
     if [[ -e $PATH_DEVSTACK_SRC/stack-screenrc ]]; then
@@ -373,17 +373,17 @@ function rd_manage() {
 }
 
 function install_test_packages() {
-    sudo pip install openstack.nose_plugin proboscis pexpect
+    $SUDO pip install openstack.nose_plugin proboscis pexpect
 }
 
 function mod_confs() {
-    sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
+    $SUDO install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
     if [ -e $EXTRA_CONF ]; then
         cat $EXTRA_CONF >> $TROVE_CONF_DIR/test.conf
     fi
-    cat $REDSTACK_SCRIPTS/conf/test_end.conf | sudo tee -a $TROVE_CONF_DIR/test.conf > /dev/null
+    cat $REDSTACK_SCRIPTS/conf/test_end.conf | $SUDO tee -a $TROVE_CONF_DIR/test.conf > /dev/null
 
     #Add the paths to the test conf
     sed -i "s,%report_directory%,$TROVE_REPORT_DIR,g" $TROVE_CONF_DIR/test.conf
@@ -463,8 +463,8 @@ function cmd_build_image() {
     GUEST_USERNAME=${4:-'ubuntu'}
 
     exclaim "Ensuring we have all packages needed to build image."
-    sudo apt-get -y update
-    sudo apt-get -y install qemu
+    $SUDO apt-get -y update
+    $SUDO apt-get -y install qemu
     cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
 
     exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
@@ -729,7 +729,7 @@ function cmd_run_ci() {
 function cmd_wipe_queues() {
     # Obliterate rabbit.
     for i in stop_app reset start_app "change_password guest $RABBIT_PASSWORD"; \
-    do sudo rabbitmqctl $i; done
+    do $SUDO rabbitmqctl $i; done
 }
 
 function cmd_clear() {
