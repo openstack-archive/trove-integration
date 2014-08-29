@@ -152,7 +152,7 @@ function install_prep_packages() {
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
     pkg_install git-core kvm-ipxe python-pip gettext
-    sudo pip install --upgrade pip
+    sudo $HTTP_PROXY pip install --upgrade pip
 }
 
 function install_devstack_code() {
@@ -379,7 +379,7 @@ function rd_manage() {
 }
 
 function install_test_packages() {
-    sudo pip install openstack.nose_plugin proboscis pexpect
+    sudo $HTTP_PROXY pip install openstack.nose_plugin proboscis pexpect
 }
 
 function mod_confs() {
@@ -469,8 +469,8 @@ function cmd_build_image() {
     GUEST_USERNAME=${4:-'ubuntu'}
 
     exclaim "Ensuring we have all packages needed to build image."
-    sudo apt-get -y update
-    sudo apt-get -y install qemu
+    sudo $HTTP_PROXY apt-get -y update
+    sudo $HTTP_PROXY apt-get -y install qemu
     cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
 
     exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
