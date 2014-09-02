@@ -751,6 +751,14 @@ function cmd_kick_start() {
     cmd_build_and_upload_image $1
 }
 
+function cmd_dsvm_gate_tests() {
+    sudo chown -R $(whoami) /etc/trove
+    sudo chown -R $(whoami) $DEST/trove-integration
+    cd $DEST/trove-integration/scripts
+    cmd_kick_start $1
+    cmd_int_tests --group=$1
+}
+
 function cmd_reset_task() {
     mysql_trove "UPDATE instances SET task_id=1 WHERE id='$1'"
 }
@@ -822,6 +830,7 @@ function print_usage() {
           unit-tests      - Run the unit tests.dependencies
           int-tests       - Runs the integration tests (requires all daemons).
           simple-tests    - Runs the simple integration tests (requires all daemons).
+          dsvm-gate-tests - Runs the simple integration tests (requires all daemons).
 
         --tools--
           debug           - Debug this script (shows all commands).
@@ -867,6 +876,7 @@ function run_command() {
         "clear" ) shift; cmd_clear $@;;
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
+        "dsvm-gate-tests" ) shift; cmd_dsvm_gate_tests $@;;
         "run-fake" ) shift; cmd_run_fake $@;;
         "start-fake" ) shift; cmd_start_fake $@;;
         "update-projects" ) cmd_clone_projects force_update \
