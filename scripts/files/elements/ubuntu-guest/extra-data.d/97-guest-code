@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# CONTEXT: HOST prior to IMAGE BUILD as SCRIPT USER
+# PURPOSE: Stages the guest agent artifacts to remove the need for the
+#          initial rsync on boot
+
+source $_LIB/die
+
+[ -n "$TMP_HOOKS_PATH." ] || die "Temp hook path not set"
+
+if [ -n "${GUEST_LOCAL_TROVE_DIR}" ] &&
+   [ -n "${GUEST_LOCAL_TROVE_CONF}" ]; then
+
+    if [ -e ${GUEST_LOCAL_TROVE_DIR} ]; then
+        sudo cp -R ${GUEST_LOCAL_TROVE_DIR} ${TMP_HOOKS_PATH}/trove
+    else
+        die "GUEST_LOCAL_TROVE_DIR needs to be set to the local directory of the guest agent code"
+    fi
+
+    if [ -e ${GUEST_LOCAL_TROVE_CONF} ]; then
+        sudo cp ${GUEST_LOCAL_TROVE_CONF} ${TMP_HOOKS_PATH}/trove-guestagent.conf
+    else
+        die "GUEST_LOCAL_TROVE_CONF needs to be set to the local path of trove-guestagent.conf"
+    fi
+
+fi

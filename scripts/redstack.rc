@@ -49,3 +49,7 @@ SWIFT_DISK_IMAGE=${SWIFT_DATA_DIR}/drives/images/swift.img
 
 DISTRO=${DISTRO:-ubuntu}
 #DISTRO=fedora
+
+# Optionally install code and conf in image instead of using rsync
+#GUEST_LOCAL_TROVE_DIR=$PATH_TROVE
+#GUEST_LOCAL_TROVE_CONF=$TROVE_CONF_DIR/trove-guestagent.conf
