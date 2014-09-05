@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Take staged guest agent artifacts (see extra-data.d/97-guest-code)
+#          and place them appropriately
+
+TMP_HOOKS_DIR="/tmp/in_target.d"
+
+if [ -e "${TMP_HOOKS_DIR}/trove" ]; then
+    sudo cp -R ${TMP_HOOKS_DIR}/trove "/home/${GUEST_USERNAME}/trove"
+    sudo chown ${GUEST_USERNAME}:${GUEST_USERNAME} "/home/${GUEST_USERNAME}/trove"
+fi
+
+if [ -e "${TMP_HOOKS_DIR}/trove-guestagent.conf" ]; then
+    sudo mkdir -p /etc/trove
+    sudo cp ${TMP_HOOKS_DIR}/trove-guestagent.conf /etc/trove/trove-guestagent.conf
+    sudo chown -R ${GUEST_USERNAME}:${GUEST_USERNAME} /etc/trove
+fi
