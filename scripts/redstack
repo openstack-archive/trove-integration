@@ -785,8 +785,7 @@ function cmd_dsvm_gate_tests() {
     NETWORK_GATEWAY=${4:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
 
-    sudo chown -R $(whoami) /etc/trove
-    sudo chown -R $(whoami) $DEST/trove-integration
+    sudo su stack
     iniset $TROVE_CONF_DIR/trove-guestagent.conf DEFAULT rabbit_host $NETWORK_GATEWAY
     cd $DEST/trove-integration/scripts
     cmd_kick_start $DATASTORE_TYPE
