@@ -326,10 +326,10 @@ function cmd_set_datastore() {
     DATASTORE_VERSION_ID=`trove datastore-version-list "$DATASTORE_TYPE" | grep -F "$VERSION" | get_field 1`
     rd_manage db_load_datastore_config_parameters "$DATASTORE_VERSION_ID" "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json
 
-    cmd_stop
-    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
-    sleep 1.5
-    cmd_start
+    #cmd_stop
+    #iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
+    #sleep 1.5
+    #cmd_start
 }
 
 ###############################################################################
