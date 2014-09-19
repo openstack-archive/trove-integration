@@ -323,9 +323,7 @@ function cmd_set_datastore() {
 
     if [ -f "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json ]; then
         # add the configuration parameters to the database for the kick-start datastore
-        source $PATH_DEVSTACK_SRC/openrc admin admin
-        DATASTORE_VERSION_ID=`trove datastore-version-list "$DATASTORE_TYPE" | awk -v VERSION=$VERSION '{if ($4 == VERSION) { print $2 }}'`
-        rd_manage db_load_datastore_config_parameters "$DATASTORE_VERSION_ID" "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json
+        rd_manage db_load_datastore_config_parameters "$DATASTORE_TYPE" "$VERSION" "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json
     fi
 
     cmd_stop
