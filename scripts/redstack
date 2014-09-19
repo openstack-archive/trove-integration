@@ -152,7 +152,7 @@ function install_prep_packages() {
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
     pkg_install git-core kvm-ipxe python-pip gettext
-    sudo $HTTP_PROXY pip install --upgrade pip
+    sudo $HTTP_PROXY pip install --upgrade pip dib-utils
 }
 
 function install_devstack_code() {
