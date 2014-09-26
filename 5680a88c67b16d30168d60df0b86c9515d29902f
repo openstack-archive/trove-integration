@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Nikhil Manchanda <SlickNik@gmail.com>
+Workflow+1: Nikhil Manchanda <SlickNik@gmail.com>
+Verified+1: Deprecated Trove CI <reddwarf-jenkins@googlegroups.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 26 Sep 2014 19:37:17 +0000
+Reviewed-on: https://review.openstack.org/124482
+Project: openstack/trove-integration
+Branch: refs/heads/master
