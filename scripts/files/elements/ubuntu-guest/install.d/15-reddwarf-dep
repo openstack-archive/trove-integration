@@ -7,11 +7,15 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools python-pip python-sqlalchemy python-lxml \
-    python-routes python-eventlet python-webob python-pastedeploy python-paste python-netaddr \
+apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools \
+	python-pip python-sqlalchemy python-lxml \
+    python-routes python-eventlet python-webob python-pastedeploy \
+    python-paste python-netaddr \
     python-httplib2 python-iso8601 python-pexpect python-mysqldb python-migrate
 
 
 pip install extras python-novaclient python-swiftclient python-cinderclient \
-    kombu>2.4.7 six babel python-heatclient passlib jinja2 python-neutronclient netifaces \
-    oslo.config>=1.2.0 oslo.messaging>=1.4.0 oslo.i18n>=1.0.0 oslo.serialization>=1.0.0 oslo.utils>=1.0.0
+    'kombu>2.4.7' 'six>1.6.1' babel python-heatclient passlib jinja2 \
+    python-neutronclient netifaces 'oslo.config>=1.2.0' \
+    'oslo.messaging>=1.4.0' 'oslo.i18n>=1.0.0' 'oslo.serialization>=1.0.0' \
+    'oslo.utils>=1.0.0'
