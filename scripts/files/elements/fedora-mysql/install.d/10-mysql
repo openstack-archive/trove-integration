@@ -6,4 +6,4 @@
 set -e
 set -o xtrace
 
-yum -y install mysql mysql-server percona-xtrabackup
+yum -y install mysql mysql-server-5.5 percona-xtrabackup
