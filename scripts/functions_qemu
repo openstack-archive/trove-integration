@@ -19,7 +19,7 @@ function build_vm() {
     manage_ssh_keys
 
     if [ $DISTRO == 'ubuntu' ]; then
-        export RELEASE=precise
+        export RELEASE=trusty
         export DIB_RELEASE=$RELEASE
         export DIB_CLOUD_IMAGES=cloud-images.ubuntu.com
     fi
