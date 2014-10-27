@@ -472,6 +472,7 @@ function cmd_build_image() {
     exclaim "Ensuring we have all packages needed to build image."
     sudo $HTTP_PROXY apt-get -y update
     sudo $HTTP_PROXY apt-get -y install qemu
+    sudo $HTTP_PROXY pip install --upgrade pip dib-utils
     cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
 
     exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
@@ -790,6 +791,8 @@ function cmd_dsvm_gate_tests() {
     sudo chown -R $(whoami) $DEST/trove-integration
     iniset $TROVE_CONF_DIR/trove-guestagent.conf DEFAULT rabbit_host $NETWORK_GATEWAY
     cd $DEST/trove-integration/scripts
+    sudo $HTTP_PROXY pip install --upgrade pip dib-utils
+
     cmd_kick_start $DATASTORE_TYPE
     cmd_int_tests --group=$DATASTORE_TYPE
 }
