@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Auston McReynolds <amcreynolds@ebaysf.com>
+Workflow+1: Auston McReynolds <amcreynolds@ebaysf.com>
+Code-Review+2: amrith <amrith@tesora.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 27 Oct 2014 17:57:59 +0000
+Reviewed-on: https://review.openstack.org/131014
+Project: openstack/trove-integration
+Branch: refs/heads/master
