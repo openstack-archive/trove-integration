@@ -523,9 +523,11 @@ function cmd_initialize() {
 ###############################################################################
 
 function tr_screen_it {
-    echo "Starting $@..."
-    screen -S stack -X screen -t $1 bash
-    screen -S stack -p $1 -X stuff "$2"$'\015'
+    if screen -ls | grep -q stack; then
+        echo "Starting $@..."
+        screen -S stack -X screen -t $1 bash
+        screen -S stack -p $1 -X stuff "$2"$'\015'
+    fi
 }
 
 function init_fake_mode() {
@@ -608,10 +610,12 @@ function cmd_run_fake() {
 ###############################################################################
 
 function cmd_stop() {
-    screen -S stack -p tr-api -X stuff $'\003 exit \015'
-    screen -S stack -p tr-tmgr -X stuff $'\003 exit \015'
-    screen -S stack -p tr-cond -X stuff $'\003 exit \015'
-    screen -S stack -p tr-fake -X stuff $'\003 exit \015'
+    if screen -ls | grep -q stack; then
+        screen -S stack -p tr-api -X stuff $'\003 exit \015'
+        screen -S stack -p tr-tmgr -X stuff $'\003 exit \015'
+        screen -S stack -p tr-cond -X stuff $'\003 exit \015'
+        screen -S stack -p tr-fake -X stuff $'\003 exit \015'
+    fi
 }
 
 
