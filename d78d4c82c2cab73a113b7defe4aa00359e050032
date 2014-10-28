@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Nikhil Manchanda <SlickNik@gmail.com>
+Workflow+1: Nikhil Manchanda <SlickNik@gmail.com>
+Code-Review+2: Auston McReynolds <amcreynolds@ebaysf.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 28 Oct 2014 21:37:14 +0000
+Reviewed-on: https://review.openstack.org/131057
+Project: openstack/trove-integration
+Branch: refs/heads/master
