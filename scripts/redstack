@@ -791,6 +791,12 @@ function cmd_dsvm_gate_tests() {
     NETWORK_GATEWAY=${4:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
 
+    # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
+    echo "User=ubuntu" | sudo tee -a /home/ubuntu/.ssh/config > /dev/null
+
+    # Fix iptables rules that prevent amqp connections from the devstack box to the guests
+    sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
+
     sudo chown -R $(whoami) /etc/trove
     sudo chown -R $(whoami) $DEST/trove-integration
     iniset $TROVE_CONF_DIR/trove-guestagent.conf DEFAULT rabbit_host $NETWORK_GATEWAY
@@ -798,6 +804,14 @@ function cmd_dsvm_gate_tests() {
     sudo $HTTP_PROXY pip install --upgrade pip dib-utils
 
     cmd_kick_start $DATASTORE_TYPE
+
+    # Update the local swift endpoint in the catalog to use the NETWORK_GATEWAY instead of 127.0.0.1
+    source $DEST/devstack/accrc/admin/admin
+    SWIFT_ENDPOINT=$(keystone endpoint-list | awk '/8080/{print $2}')
+    keystone endpoint-create  --region RegionOne --service swift --publicurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' \
+        --internalurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'$NETWORK_GATEWAY':8080'
+    keystone endpoint-delete $SWIFT_ENDPOINT
+
     cmd_int_tests --group=$DATASTORE_TYPE
 }
 
