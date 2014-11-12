@@ -796,6 +796,9 @@ function cmd_dsvm_gate_tests() {
     # Fix iptables rules that prevent amqp connections from the devstack box to the guests
     sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
 
+    # Fix the tests that ssh onto the instance to use the ubuntu user by default
+    sed -i 's/StrictHostKeyChecking=no/StrictHostKeyChecking=no -o User=ubuntu/g' $DEST/trove/trove/tests/__init__.py
+
     sudo chown -R $(whoami) /etc/trove
     sudo chown -R $(whoami) $DEST/trove-integration
     iniset $TROVE_CONF_DIR/trove-guestagent.conf DEFAULT rabbit_host $NETWORK_GATEWAY
