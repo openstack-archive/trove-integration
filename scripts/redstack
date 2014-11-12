@@ -791,7 +791,7 @@ function cmd_dsvm_gate_tests() {
     ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
 
     # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
-    echo "User=ubuntu" | sudo tee -a /home/ubuntu/.ssh/config > /dev/null
+    echo "User=ubuntu" >> /home/jenkins/.ssh/config
 
     # Fix iptables rules that prevent amqp connections from the devstack box to the guests
     sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
