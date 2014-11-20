@@ -18,6 +18,14 @@ if [[ $ENABLE_NEUTRON = true ]]; then
     ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
     disable_service n-net
 fi
+# Use Git repositories for client components
+LIBS_FROM_GIT=python-keystoneclient,python-glanceclient
+LIBS_FROM_GIT+=,python-novaclient,python-cinderclient
+LIBS_FROM_GIT+=,python-swiftclient,python-troveclient
+LIBS_FROM_GIT+=,python-heatclient,python-openstackclient
+if [[ $ENABLE_NEUTRON = true ]]; then
+    LIBS_FROM_GIT+=,python-neutronclient
+fi
 NOVNC_FROM_PACKAGE=false
 SWIFT_HASH=$SWIFT_HASH
 # Set Cinder Volume from Redstack so that later Redstack can help manage
