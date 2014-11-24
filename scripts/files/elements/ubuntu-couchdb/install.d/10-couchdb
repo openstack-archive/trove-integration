@@ -1,0 +1,10 @@
+set -e
+set -o xtrace
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get install python-software-properties -y
+add-apt-repository ppa:couchdb/stable -y
+apt-get update -y
+apt-get remove couchdb couchdb-bin couchdb-common -yf
+apt-get install -yV couchdb
