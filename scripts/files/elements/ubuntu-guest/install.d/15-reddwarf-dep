@@ -14,4 +14,5 @@ apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools python-
 
 pip install extras python-novaclient python-swiftclient python-cinderclient \
     kombu>2.4.7 six babel python-heatclient passlib jinja2 python-neutronclient netifaces \
-    oslo.config>=1.2.0 oslo.messaging>=1.4.0 oslo.i18n>=1.0.0 oslo.serialization>=1.0.0 oslo.utils>=1.0.0
+    oslo.config>=1.2.0 oslo.messaging>=1.4.0 oslo.i18n>=1.0.0 oslo.serialization>=1.0.0 oslo.utils>=1.0.0 \
+    osprofiler>=0.3.0
