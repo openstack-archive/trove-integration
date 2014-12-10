@@ -123,6 +123,21 @@ Use screen to ensure all modules have started without error
 
 ***
 
+### Running Integration Tests
+Once Trove is running on DevStack, you can use the dev scripts to run the integration tests locally.
+
+    $./redstack int-tests
+
+This will runs all of the blackbox tests by default. Use the --group option to run a different group:
+
+    $./redstack int-tests --group=simple_blackbox
+
+You can also specify the TESTS_USE_INSTANCE_ID environment variable to have the integration tests use an existing instance for the tests rather than creating a new one.
+
+    $./TESTS_DO_NOT_DELETE_INSTANCE=True TESTS_USE_INSTANCE_ID=INSTANCE_UUID ./redstack int-tests --group=simple_blackbox
+
+***
+
 ### VMware Fusion 5 speed improvement
 We found out that if you are running ubuntu with KVM or Qemu it can be extremely slow. We found some ways of making this better with in VMware settings.
 On a clean install of ubuntu 12.04 enable these options in VMware. (likey the same in other virutalizing platforms)
