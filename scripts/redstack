@@ -224,6 +224,10 @@ function run_devstack() {
         if [ $is_in_localrc == 0 ]; then
             #Otherwise append them to the existing file
             eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" >> localrc
+        else
+            #replace localrc section
+            sed -i '/Trove-integration/,/Trove-integration-end/d' localrc
+            eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" >> localrc
         fi
 
     else
