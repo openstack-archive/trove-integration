@@ -14,4 +14,4 @@ yum install -y python-devel libxml2-devel libxslt-devel python-setuptools python
 pip-python install extras python-novaclient python-swiftclient python-cinderclient \
     kombu>2.4.7 six babel python-heatclient passlib jinja2  python-neutronclient netifaces \
     oslo.config>=1.2.0 oslo.messaging>=1.4.0 oslo.i18n>=1.0.0 oslo.serialization>=1.0.0 oslo.utils>=1.0.0 \
-    osprofiler>=0.3.0
+    osprofiler>=0.3.0 oslo.concurrency>=0.3.0
