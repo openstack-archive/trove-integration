@@ -443,6 +443,24 @@ function add_test_flavors() {
     add_flavor 'eph.rd-smaller' 10 768 3 1 2
 }
 
+function setup_clustering_configuration() {
+
+    exclaim "Setting Trove to run clustering integration tests for supported datastores."
+
+    # Cassandra clustering configuration
+    iniset $TROVE_CONF_DIR/trove.conf cassandra cluster_size 1
+    iniset $TROVE_CONF_DIR/trove.conf cassandra initial_cluster_data_to_seed_nodes_ratio 0
+
+    # MongoDB clustering configuration
+    iniset $TROVE_CONF_DIR/trove.conf mongodb num_config_servers_per_cluster 1
+    iniset $TROVE_CONF_DIR/trove.conf mongodb num_query_routers_per_cluster 1
+
+    # Trove common configuration
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT usage_timeout 1000
+    iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT agent_call_high_timeout 300
+
+}
+
 function cmd_test_init() {
     exclaim 'Initializing Configuration for Running Tests...'
 
@@ -461,6 +479,8 @@ function cmd_test_init() {
         install -b --mode 0400 $KEY_DIR/id_rsa $USERHOME/.ssh
         cat $KEY_DIR/authorized_keys >> $USERHOME/.ssh/authorized_keys
     fi
+
+    setup_clustering_configuration
 }
 
 function cmd_build_image() {
