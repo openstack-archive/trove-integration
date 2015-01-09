@@ -1,0 +1,25 @@
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, which may cause wedges in the gate later.
+unittest2
+testtools
+extras
+python-novaclient
+python-swiftclient
+python-cinderclient
+kombu>2.5.0
+six>=1.7.0
+babel
+python-heatclient
+passlib
+jinja2
+python-neutronclient
+netifaces
+oslo.config>=1.4.0
+oslo.messaging>=1.4.0
+oslo.i18n>=1.0.0
+oslo.serialization>=1.0.0
+oslo.utils>=1.1.0
+osprofiler>=0.3.0
+oslo.concurrency>=0.3.0
+
