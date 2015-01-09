@@ -6,12 +6,15 @@
 set -e
 set -o xtrace
 
-yum install -y python-devel libxml2-devel libxslt-devel python-setuptools python-pip python-sqlalchemy python-lxml \
-    python-routes python-eventlet python-webob python-kombu python-paste-deploy python-paste python-netaddr \
-    python-httplib2 python-iso8601 python-pexpect MySQL-python python-migrate python-pip python-anyjson gcc
+yum install -y python-devel libxml2-devel libxslt-devel python-setuptools \
+    python-pip python-sqlalchemy python-lxml \
+    python-routes python-eventlet python-webob \
+    python-kombu python-paste-deploy python-paste python-netaddr \
+    python-httplib2 python-iso8601 python-pexpect MySQL-python \
+    python-migrate python-pip python-anyjson gcc
 
 
-pip-python install extras python-novaclient python-swiftclient python-cinderclient \
-    kombu>2.4.7 six babel python-heatclient passlib jinja2  python-neutronclient netifaces \
-    oslo.config>=1.2.0 oslo.messaging>=1.4.0 oslo.i18n>=1.0.0 oslo.serialization>=1.0.0 oslo.utils>=1.0.0 \
-    osprofiler>=0.3.0 oslo.concurrency>=0.3.0
+pip-python install -q extras python-novaclient python-swiftclient python-cinderclient \
+    "kombu>2.4.7" six babel python-heatclient passlib jinja2 python-neutronclient netifaces \
+    "oslo.config>=1.2.0" "oslo.messaging>=1.4.0" "oslo.i18n>=1.0.0" "oslo.serialization>=1.0.0" \
+    "oslo.utils>=1.0.0" "osprofiler>=0.3.0" "oslo.concurrency>=0.3.0"
