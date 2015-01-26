@@ -4,7 +4,7 @@
 
 ### Steps to setup this environment:
 
-Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a virtual machine_ )
+Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a development virtual machine using the image_ )
 
 #### Login to the machine as root
 
@@ -69,6 +69,30 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     $ chmod 660 /dev/pts/1
 
+#### Navigate the log screens
+To produce the list of screens that you can scroll through and select
+
+    ctrl+a then "
+
+Num Name
+
+..... (full list ommitted)
+
+20 c-vol
+21 h-eng
+22 h-api
+23 h-api-cfn
+24 h-api-cw
+25 tr-api
+26 tr-tmgr
+27 tr-cond
+
+Alternatively, to go directly to a specific screen window
+
+    ctrl+a then '
+
+then enter a number (like 25) or name (like tr-api)
+
 #### Detach from the screen session
 Allows the services to continue running in the background
 
@@ -77,13 +101,13 @@ Allows the services to continue running in the background
 ***
 
 #### Kick start the build/test-init/build-image commands
-*Add mysql as a parameter to set build and add the mysql guest image*
+*Add mysql as a parameter to set build and add the mysql guest image. This will also populate /etc/trove/test.conf with appropriate values for running the integration tests.*
 
     $ ./redstack kick-start mysql
 
 *Optional commands if you did not run kick-start*
 
-#### Initialize the test configuration and set up test users
+#### Initialize the test configuration and set up test users (overwrites /etc/trove/test.conf)
 
     $ ./redstack test-init
 
@@ -105,7 +129,6 @@ Allows the services to continue running in the background
  or
 
     $ RECLONE=yes ./redstack install
-    $ ./redstack build
     $ ./redstack test-init
     $ ./redstack build-image mysql
 
@@ -124,6 +147,16 @@ Use screen to ensure all modules have started without error
 ***
 
 ### Running Integration Tests
+Check the values in /etc/trove/test.conf in case it has been re-initialized prior to running the tests. For example, from the previous mysql steps:
+
+    "dbaas_datastore": "%datastore_type%",
+    "dbaas_datastore_version": "%datastore_version%",
+
+should be:
+
+    "dbaas_datastore": "mysql",
+    "dbaas_datastore_version": "5.5",
+
 Once Trove is running on DevStack, you can use the dev scripts to run the integration tests locally.
 
     $./redstack int-tests
@@ -139,19 +172,17 @@ You can also specify the TESTS_USE_INSTANCE_ID environment variable to have the 
 ***
 
 ### VMware Fusion 5 speed improvement
-We found out that if you are running ubuntu with KVM or Qemu it can be extremely slow. We found some ways of making this better with in VMware settings.
-On a clean install of ubuntu 12.04 enable these options in VMware. (likey the same in other virutalizing platforms)
+Running Ubuntu with KVM or Qemu can be extremely slow without certain optimizations. The following are some VMware settings that can improve performance and may also apply to other virtualization platforms.
 
 1. Shutdown the Ubuntu VM.
 
-2. Go to the VM Settings -> Processors & Memory -> Advanced Options
+2. Go to VM Settings -> Processors & Memory -> Advanced Options.
    Check the "Enable hypervisor applications in this virtual machine"
-   There is one other option that may improve your performance overall as well.
 
-3. Go to the VM Settings -> Advanced
+3. Go to VM Settings -> Advanced.
    Set the "Troubleshooting" option to "None"
 
-4. I would suggest after setting these create a snapshot so that in cases where things break down you can revert to a clean snapshot.
+4. After setting these create a snapshot so that in cases where things break down you can revert to a clean snapshot.
 
 5. Boot up the VM and run the `./redstack install`
 
@@ -164,7 +195,7 @@ KVM acceleration can be used
 
 ### VMware Workstation performance improvements
 
-In recent versions of VMWare, you can get much better performance if you enable the right virtualization options. For example in VMWare Workstation, (noticed in version 10.0.2), click on VM->Settings->Processor.
+In recent versions of VMWare, you can get much better performance if you enable the right virtualization options. For example, in VMWare Workstation (found in version 10.0.2), click on VM->Settings->Processor.
 
 You should see a box of "Virtualization Engine" options that can be changed only when the VM is shutdown.
 
