@@ -4,7 +4,7 @@
 
 ### Steps to setup this environment:
 
-Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a virtual machine_ )
+Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a development virtual machine using the image_ )
 
 #### Login to the machine as root
 
@@ -69,6 +69,21 @@ Install a fresh Ubuntu 12.04 (Precise Pangolin) image ( _We suggest to create a 
 
     $ chmod 660 /dev/pts/1
 
+#### Navigate the screens
+To move in sequential order through the screens
+
+    ctrl+a then n
+
+Or in the opposite direction
+
+    ctrl+a then p
+
+To go directly to a specific screen window
+
+    ctrl+a then '
+
+then enter a number (like 25) or name (like tr-api)
+
 #### Detach from the screen session
 Allows the services to continue running in the background
 
@@ -77,13 +92,13 @@ Allows the services to continue running in the background
 ***
 
 #### Kick start the build/test-init/build-image commands
-*Add mysql as a parameter to set build and add the mysql guest image*
+*Add mysql as a parameter to set build and add the mysql guest image. This will also populate /etc/trove/test.conf with appropriate values for running the integration tests.*
 
     $ ./redstack kick-start mysql
 
 *Optional commands if you did not run kick-start*
 
-#### Initialize the test configuration and set up test users
+#### Initialize the test configuration and set up test users (overwrites /etc/trove/test.conf)
 
     $ ./redstack test-init
 
@@ -105,7 +120,6 @@ Allows the services to continue running in the background
  or
 
     $ RECLONE=yes ./redstack install
-    $ ./redstack build
     $ ./redstack test-init
     $ ./redstack build-image mysql
 
@@ -124,6 +138,16 @@ Use screen to ensure all modules have started without error
 ***
 
 ### Running Integration Tests
+Check the values in /etc/trove/test.conf in case it has been re-initialized prior to running the tests. For example, from the previous mysql steps:
+
+    "dbaas_datastore": "%datastore_type%",
+    "dbaas_datastore_version": "%datastore_version%",
+
+should be:
+
+    "dbaas_datastore": "mysql",
+    "dbaas_datastore_version": "5.5",
+
 Once Trove is running on DevStack, you can use the dev scripts to run the integration tests locally.
 
     $./redstack int-tests
@@ -140,7 +164,7 @@ You can also specify the TESTS_USE_INSTANCE_ID environment variable to have the 
 
 ### VMware Fusion 5 speed improvement
 We found out that if you are running ubuntu with KVM or Qemu it can be extremely slow. We found some ways of making this better with in VMware settings.
-On a clean install of ubuntu 12.04 enable these options in VMware. (likey the same in other virutalizing platforms)
+On a clean install of ubuntu 14.04 enable these options in VMware. (likey the same in other virutalizing platforms)
 
 1. Shutdown the Ubuntu VM.
 
