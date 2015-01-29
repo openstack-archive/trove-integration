@@ -76,11 +76,41 @@ function build_guest_image() {
     mkdir -p $VM_PATH
 
     # If the path does not exist, build it, otherwise just upload it
-    if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ]
+    # (unless we're explicitly told to rebuild it)
+    REBUILD_IMAGE=$(echo "${REBUILD_IMAGE}" | tr '[:upper:]' '[:lower:]')
+    if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ] || [ "${REBUILD_IMAGE}" = "true" ]
     then
+        if [ "${REBUILD_IMAGE}" = "true" ]
+        then
+            exclaim "Rebuilding image"
+            rm -rf "${VM_PATH}"
+        fi
         build_vm $USERHOME $USERNAME $VM_PATH_NAME $DISTRO $SERVICE_TYPE
+        touch -c "${VM_PATH}"
     else
-        exclaim "Found image in $VM_PATH using the qcow2 image found here..."
+        exclaim "Found image in $VM_PATH - using the qcow2 image found here..."
+        ELEMENTS_DIR="files/elements/${DISTRO}-${SERVICE_TYPE}"
+        ELEMENTS_DIR_GUEST="files/elements/${DISTRO}-guest"
+        # Print out a warning on all the elements files that are newer than the image.
+        # Directories are not excluded as that is the only way to determine if a file
+        # has been removed.
+        # The rebuild is not automatically triggered as there are valid reasons for a
+        # new file to be present (rollback of change, inadvertent .log files present,
+        # feature half implemented, etc.).
+        IMAGE_OLD=
+        while IFS= read -r -d '' ELEMENT_FILE
+        do
+            if [ "${ELEMENT_FILE}" -nt "${VM_PATH}" ]
+            then
+                IMAGE_OLD=true
+                exclaim "${COLOR_RED}WARNING: Element file '${ELEMENT_FILE}' is newer than cached image${COLOR_NONE}"
+            fi
+        done < <(find "${ELEMENTS_DIR}" "${ELEMENTS_DIR_GUEST}" -depth -print0)
+        if [ "${IMAGE_OLD}" = "true" ]
+        then
+            exclaim "${COLOR_RED}Use ${COLOR_NONE}REBUILD_IMAGE=True${COLOR_RED} to rebuild image${COLOR_NONE}"
+        fi
+
     fi
 }
 
