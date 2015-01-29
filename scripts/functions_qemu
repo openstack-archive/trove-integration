@@ -76,11 +76,31 @@ function build_guest_image() {
     mkdir -p $VM_PATH
 
     # If the path does not exist, build it, otherwise just upload it
-    if [ ! -d $VM_PATH ] || [ `ls -1 $VM_PATH | wc -l` -eq '0' ]
+    # (unless we're explicitly told to rebuild it)
+    REBUILD_IMAGE=$(echo "${REBUILD_IMAGE}" | tr '[:upper:]' '[:lower:]')
+    if [ ! -d "${VM_PATH}" ] || [ "$(find "${VM_PATH}" -maxdepth 1 -type f | wc -l)" -eq '0' ] || [ "${REBUILD_IMAGE}" = "true" ]
     then
-        build_vm $USERHOME $USERNAME $VM_PATH_NAME $DISTRO $SERVICE_TYPE
+        if [ "${REBUILD_IMAGE}" = "true" ]
+        then
+            exclaim "Rebuilding image"
+            rm -f "${VM_PATH_NAME}"
+        fi
+        build_vm "$USERHOME" "$USERNAME" "$VM_PATH_NAME" "$DISTRO" "$SERVICE_TYPE"
+        touch -c "${VM_PATH}"
     else
-        exclaim "Found image in $VM_PATH using the qcow2 image found here..."
+        exclaim "Found image in $VM_PATH - using the qcow2 image found here..."
+        ELEMENTS_DIR="files/elements/${DISTRO}-${SERVICE_TYPE}"
+        ELEMENTS_DIR_GUEST="files/elements/${DISTRO}-guest"
+        # Print out a warning on the first elements file that is newer than the image, if one is found
+        while IFS= read -r -d '' ELEMENT_FILE
+        do
+            if [ "${ELEMENT_FILE}" -nt "${VM_PATH}" ]
+            then
+                exclaim "${COLOR_RED}WARNING: Element file '${ELEMENT_FILE}' is newer than cached image${COLOR_NONE}"
+                exclaim "${COLOR_RED}Use ${COLOR_NONE}REBUILD_IMAGE=True${COLOR_RED} to rebuild image${COLOR_NONE}"
+                break
+            fi
+        done < <(find "${ELEMENTS_DIR}" "${ELEMENTS_DIR_GUEST}" -print0)
     fi
 }
 
