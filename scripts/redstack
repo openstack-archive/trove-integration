@@ -133,8 +133,8 @@ function add_flavor() {
     FLAVOR_VCPUS=$5
     FLAVOR_EPHEMERAL=$6
 
-    if [[ -z $(nova --os-username=trove --os-password=$SERVICE_PASSWORD --os-tenant-name=$SERVICE_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=trove --os-password=$SERVICE_PASSWORD --os-tenant-name=$SERVICE_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+    if [[ -z $(nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
+        nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
     fi
 }
 
