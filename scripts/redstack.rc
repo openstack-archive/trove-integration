@@ -6,7 +6,15 @@
 [ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
 
 # Enable neutron instead of nova-network
-[ -z $ENABLE_NEUTRON ] && ENABLE_NEUTRON=false
+ENABLE_NEUTRON=$(get_bool ENABLE_NEUTRON false)
+
+# Enable LIBS_FROM_GIT
+LIBS_FROM_GIT_ALL_CLIENTS=$(get_bool LIBS_FROM_GIT_ALL_CLIENTS true)
+LIBS_FROM_GIT_ALL_OSLO=$(get_bool LIBS_FROM_GIT_ALL_OSLO true)
+
+# Don't include certain .rc files in local.conf.d by default
+USING_VAGRANT=$(get_bool USING_VAGRANT false)
+USE_UUID_TOKEN=$(get_bool USE_UUID_TOKEN false)
 
 # Paths for various OpenStack components
 PATH_DEVSTACK_OUTPUT=$DEST
