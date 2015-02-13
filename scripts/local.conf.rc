@@ -1,5 +1,10 @@
 # Trove-integration
 # Set some arguments for devstack.
+
+#
+# This section is for stuff that used to be in localrc
+#
+[[local|localrc]]
 # These passwords originally come from redstack.rc.
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 RABBIT_PASSWORD=$RABBIT_PASSWORD
@@ -31,3 +36,42 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False)
 UNDO_REQUIREMENTS=False
+
+#
+# Additional options here were inserted by trove-integration automatically
+# Edits will not persist
+#
+$ADD_OPTS_TAG
+# All line are removed from between these tags and replaced
+# by trove-integration
+$ADD_OPTS_TAG_END
+#
+
+#
+# User options here were inserted from the file USER_LOCAL_CONF
+# Edits will not persist
+#
+$USER_OPTS_TAG
+# All line are removed from between these tags and replaced with
+# the contents of the file specified by USER_LOCAL_CONF
+$USER_OPTS_TAG_END
+#
+
+#
+# Put project specific code here
+#
+# A '\' is required in front of variables that should be evaluated by devstack
+# since this file is parsed first
+#
+
+#
+# Trove stuff
+#
+[[post-config|\$TROVE_CONF]]
+
+[[post-config|\$TROVE_TASKMANAGER_CONF]]
+
+[[post-config|\$TROVE_CONDUCTOR_CONF]]
+
+[[post-config|\$TROVE_API_PASTE_INI]]
+
