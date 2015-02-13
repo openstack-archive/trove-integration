@@ -1,3 +1,5 @@
+[[local|localrc]]
+
 # This is similar to code found at
 # https://github.com/bcwaldon/vagrant_devstack/blob/master/Vagrantfile
 # and seems to make instances ping'able in VirtualBox.

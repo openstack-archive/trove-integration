@@ -1,0 +1,8 @@
+[[post-config|\$TROVE_CONF]]
+
+[[post-config|\$TROVE_TASKMANAGER_CONF]]
+
+[[post-config|\$TROVE_CONDUCTOR_CONF]]
+
+[[post-config|\$TROVE_API_PASTE_INI]]
+
