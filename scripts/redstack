@@ -39,7 +39,7 @@ function get_default_host_ip() {
 # Public facing bits
 [[ $ENABLE_NEUTRON = true ]] && BRIDGE_IP=172.24.4.1 || BRIDGE_IP=10.0.0.1
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
-SERVICE_TENANT=${SERVICE_TENANT:-service}
+ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
 NETWORK_GATEWAY=${NETWORK_GATEWAY:-$BRIDGE_IP}
 NETWORK_INTERFACE=${NETWORK_INTERFACE:-eth0}
 NETWORK_SUBNET=${NETWORK_SUBNET:-10.0.0.0/24}
@@ -133,8 +133,8 @@ function add_flavor() {
     FLAVOR_VCPUS=$5
     FLAVOR_EPHEMERAL=$6
 
-    if [[ -z $(nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+    if [[ -z $(nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=$ADMIN_TENANT_NAME --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
+        nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=$ADMIN_TENANT_NAME --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
     fi
 }
 
@@ -402,7 +402,7 @@ function mod_confs() {
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
 
     # Add the tenant id's into test.conf
-    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant $ADMIN_TENANT_NAME 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
@@ -493,7 +493,7 @@ function cmd_build_and_upload_image() {
         IMAGE_URL="file://$QCOW_IMAGE"
     fi
 
-    source $PATH_DEVSTACK_SRC/openrc admin admin
+    source $PATH_DEVSTACK_SRC/openrc admin $ADMIN_TENANT_NAME
     TOKEN=$(keystone token-get | grep ' id ' | get_field 2)
     GLANCE_IMAGEIDS=$(glance image-list | grep $(basename $IMAGE_URL .qcow2) | get_field 1)
     if [[ -n $GLANCE_IMAGEIDS ]]; then
