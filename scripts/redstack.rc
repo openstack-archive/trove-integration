@@ -8,6 +8,10 @@
 # Enable neutron instead of nova-network
 [ -z $ENABLE_NEUTRON ] && ENABLE_NEUTRON=false
 
+# Don't include certain .rc files in local.conf.d by default
+[ -z $USING_VAGRANT ] && USING_VAGRANT=false
+[ -z $USE_UUID_TOKEN ] && USE_UUID_TOKEN=false
+
 # Paths for various OpenStack components
 PATH_DEVSTACK_OUTPUT=$DEST
 PATH_NOVA=$DEST/nova
