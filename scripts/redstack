@@ -34,7 +34,7 @@ function get_default_host_ip() {
 # allow overrides from devstack if already set
 [[ -f $PATH_DEVSTACK_SRC/functions-common ]] && source $PATH_DEVSTACK_SRC/functions-common
 [[ -f $PATH_DEVSTACK_SRC/functions ]] && source $PATH_DEVSTACK_SRC/functions
-[[ -f $PATH_DEVSTACK_SRC/localrc ]] && source $PATH_DEVSTACK_SRC/localrc
+[[ -f $PATH_DEVSTACK_SRC/$LOCALRC ]] && source $PATH_DEVSTACK_SRC/$LOCALRC
 
 # Public facing bits
 [[ $ENABLE_NEUTRON = true ]] && BRIDGE_IP=172.24.4.1 || BRIDGE_IP=10.0.0.1
@@ -214,30 +214,63 @@ function run_devstack() {
     exclaim "Running devstack..."
 
     # (Re)Creating this lock directory seems sure-fire.
-    rm -rf $USERHOME/nova_locks
-    mkdir -p $USERHOME/nova_locks
+    rm -rf "$USERHOME/nova_locks"
+    mkdir -p "$USERHOME/nova_locks"
 
-    pushd $PATH_DEVSTACK_SRC
-    if [ -f localrc ]; then
-        #Check if we have already configured localrc
-        is_in_localrc=`grep "# Trove-integration" localrc | wc -l`
-        if [ $is_in_localrc == 0 ]; then
-            #Otherwise append them to the existing file
-            eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" >> localrc
+    DEFAULT_LOCAL_CONF=local.conf.rc
+    LOCAL_CONF=local.conf
+    LOCALRC=localrc
+
+    USER_LOCAL_CONF=$(readlink -f "${USER_LOCAL_CONF:-$USERHOME/.$LOCAL_CONF}")
+    USER_OPTS_TAG="##### User Specified Options #####"
+    USER_OPTS_TAG_END="##### End Of User Specified Options #####"
+    ADD_OPTS_TAG="##### Additional Options #####"
+    ADD_OPTS_TAG_END="##### End Of Additional Options #####"
+
+    pushd "$PATH_DEVSTACK_SRC"
+    DEVSTACK_LOCAL_CONF=$LOCAL_CONF
+    # remain backwards compatible with existing localrc files
+    if [ -f "$LOCALRC" ]; then
+        DEVSTACK_LOCAL_CONF=$LOCALRC
+        echo "Old-style devstack config file $PATH_DEVSTACK_SRC/$DEVSTACK_LOCAL_CONF found."
+        echo "Consider removing to generate the preferred-sytle config file $LOCAL_CONF."
+    fi
+    if [ -f "$DEVSTACK_LOCAL_CONF" ]; then
+        # Check if we have already configured the devstack config file
+        already_in_conf=$(grep "# Trove-integration" "$DEVSTACK_LOCAL_CONF" | wc -l)
+        if [ "$already_in_conf" == 0 ]; then
+            # We can no longer append to an existing old-style localrc file
+            if [ "$DEVSTACK_LOCAL_CONF" == "$LOCALRC" ]; then
+                echo "The devstack config file $PATH_DEVSTACK_SRC/$DEVSTACK_LOCAL_CONF is too old to append to."
+                echo "Please remove and try again."
+                exit 1
+            fi
+            # Otherwise append the redstack version to the existing file
+            eval echo "\"$(cat "$REDSTACK_SCRIPTS/$DEFAULT_LOCAL_CONF")\"" >> "$DEVSTACK_LOCAL_CONF"
         fi
-
     else
-        #If localrc doesn't exist, create it
-        eval echo "\"$(cat $REDSTACK_SCRIPTS/localrc.rc)\"" > localrc
+        # If a devstack config file doesn't exist, create it
+        eval echo "\"$(cat "$REDSTACK_SCRIPTS/$DEFAULT_LOCAL_CONF")\"" > "$DEVSTACK_LOCAL_CONF"
     fi
 
-    if [ -n "$USE_UUID_TOKEN" ];  then
-        echo "KEYSTONE_TOKEN_FORMAT=UUID" >> localrc
+    # add any additional options to the tagged area
+    sed -i "/^$ADD_OPTS_TAG$/,/^$ADD_OPTS_TAG_END$/{/$ADD_OPTS_TAG/!{/$ADD_OPTS_TAG_END/!d;}}" "$DEVSTACK_LOCAL_CONF"
+    if [ -n "$USE_UUID_TOKEN" ]; then
+        sed -i "/$ADD_OPTS_TAG_END/iKEYSTONE_TOKEN_FORMAT=UUID" "$DEVSTACK_LOCAL_CONF"
+    fi
+    if [ -n "$USING_VAGRANT" ]; then
+        VAGRANT_FILE=vagrant.rc
+        TEMP_FILE=.$VAGRANT_FILE
+        eval echo "\"$(cat "$REDSTACK_SCRIPTS/$VAGRANT_FILE")\"" > "$TEMP_FILE"
+        sed -i "/$ADD_OPTS_TAG/r $TEMP_FILE" "$DEVSTACK_LOCAL_CONF"
+        rm -f "$TEMP_FILE"
     fi
 
-    if [ -n "$USING_VAGRANT" ]
-    then
-        eval echo "\"$(cat $REDSTACK_SCRIPTS/vagrant.rc)\"" >> localrc
+    # now add any user options to the tagged area
+    sed -i "/^$USER_OPTS_TAG$/,/^$USER_OPTS_TAG_END$/{/$USER_OPTS_TAG/!{/$USER_OPTS_TAG_END/!d;}}" "$DEVSTACK_LOCAL_CONF"
+    if [ -f "$USER_LOCAL_CONF" ]; then
+        sed -i "/$USER_OPTS_TAG_END/i# Options found in file $USER_LOCAL_CONF" "$DEVSTACK_LOCAL_CONF"
+        sed -i "/$USER_OPTS_TAG/r $USER_LOCAL_CONF" "$DEVSTACK_LOCAL_CONF"
     fi
 
     export MYSQL_HOST=$SERVICE_HOST
@@ -864,6 +897,9 @@ function print_usage() {
     Commands :
         --setup environment--
           install         - Install all the required dependencies and bring up tr-api and tr-tmgr
+                          - devstack config can be altered by using a USER_LOCAL_CONF file
+                            which will be copied into devstack/local.conf on each 'install' run
+                            (defaults to ~/.local.conf)
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image for the trove guest
           initialize      - Reinitialize the trove database, users, services, and test config
@@ -941,6 +977,7 @@ function run_command() {
         "wipe-queues" ) shift; cmd_wipe_queues $@;;
         "example-tests" ) shift; cmd_example_tests $@;;
         "repl" ) shift; cmd_repl $@;;
+        "help" ) print_usage;;
         * )
             echo "'$1' not a valid command"
             exit 1
