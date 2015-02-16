@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Take "staged" package installer (see extra-data.d/93-copy-vertica-deb)
+# and put as /vertica.deb for guest usage.
+
+set -e
+set -o xtrace
+
+TMP_HOOKS_DIR="/tmp/in_target.d"
+
+dd if=${TMP_HOOKS_DIR}/vertica.deb of=/vertica.deb
