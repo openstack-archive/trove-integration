@@ -317,6 +317,12 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "couchdb" ]; then
         PACKAGES=${PACKAGES:-"couchdb"}
         VERSION="1.6.1"
+    elif [ "$DATASTORE_TYPE" == "vertica" ]; then
+        PACKAGES=${PACKAGES:-"vertica"}
+        VERSION="7.1"
+        if [ $DISTRO == 'ubuntu' ]; then
+            DATASTORE_PKG_FILE="vertica_7.1.1-0_amd64.deb"
+        fi
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
