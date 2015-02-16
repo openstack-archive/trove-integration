@@ -55,6 +55,7 @@ ESCAPED_PATH_TROVE=`echo $PATH_TROVE | sed 's/\//\\\\\//g'`
 ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
 TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 TROVE_LOGDIR=${TROVE_LOGDIR:-$DEST/logs}
+DATASTORE_PKG_LOCATION=${DATASTORE_PKG_LOCATION:-$DEST/packages}
 
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
@@ -317,6 +318,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "couchdb" ]; then
         PACKAGES=${PACKAGES:-"couchdb"}
         VERSION="1.6.1"
+    elif [ "$DATASTORE_TYPE" == "vertica" ]; then
+        PACKAGES=${PACKAGES:-"vertica"}
+        VERSION="7.1"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1

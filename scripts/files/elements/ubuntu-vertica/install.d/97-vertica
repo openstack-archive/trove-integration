@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT - install.d
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+export DEBIAN_FRONTEND=noninteractive
+
+
+# Copy the package file to the image,
+#  as it needs to be used later during configuration.
+dd if=/tmp/in_target.d/vertica.deb of=/vertica.deb
+
+# Install base packages
+apt-get install -qy build-essential bc iptables
+apt-get install -qy curl sysstat pstack mcelog
+apt-get install -qy python-dev g++ unixODBC unixODBC-dev
+
+# Install Vertica package
+dpkg -i /vertica.deb
+
+# Creating dbadmin user and verticadba group
+groupadd verticadba
+useradd -g verticadba -d /home/dbadmin -s /bin/bash -m dbadmin
+echo "export PATH=/opt/vertica/bin:\$PATH" >> ~dbadmin/.profile
+echo "export TZ=`date +%Z`" >>  ~dbadmin/.profile
+
+# Create base directory for to be used for database creation
+mkdir /var/lib/vertica
+chown dbadmin:verticadba /var/lib/vertica
+
+# Backup /etc/hosts
+cp -p /etc/hosts /etc/hosts.bkp
