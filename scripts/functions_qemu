@@ -39,6 +39,9 @@ function build_vm() {
     export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
     export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
+    export DATASTORE_PACKAGE_LOCATION
+    export DATASTORE_PACKAGE_FILE
+
     local QEMU_IMG_OPTIONS=$(! $(qemu-img | grep -q 'version 1') && echo "--qemu-img-options compat=0.10")
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${QEMU_IMG_OPTIONS} ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools cloud-init-datasources ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
@@ -51,11 +54,16 @@ function build_guest_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
-    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql couchdb'
+    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql couchdb vertica'
     if ! [[ " $VALID_SERVICES " =~ " $SERVICE_TYPE " ]]; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
     fi
+
+    # Configuration variables to govern the location and name of package file
+    # for datastores which do not host software on Ubuntu apt-repository.
+    DATASTORE_PACKAGE_LOCATION=${DATASTORE_PACKAGE_LOCATION:-${REDSTACK_SCRIPTS}/files/elements/${DISTRO}-${SERVICE_TYPE}}
+    DATASTORE_PACKAGE_FILE=${DATASTORE_PACKAGE_FILE:-${SERVICE_TYPE}}
 
     GUEST_LOGDIR=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_dir)
     GUEST_LOGFILE=$(iniget $PATH_TROVE/etc/trove/trove-guestagent.conf.sample DEFAULT log_file)
