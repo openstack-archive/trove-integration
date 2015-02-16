@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Take "staged" VERTICA_PACKAGE_FILE (see extra-data.d/93-copy-vertica-deb)
+# and put as /vertica.deb for guest usage.
+
+set -e
+set -o xtrace
+
+TMP_HOOKS_DIR="/tmp/in_target.d"
+
+if [ ! -z ${VERTICA_PACKAGE_FILE} ]; then
+    dd if=${TMP_HOOKS_DIR}/${VERTICA_PACKAGE_FILE} of=/vertica.deb
+else
+    echo "VERTICA_PACKAGE_FILE is not set"
+    exit -1
+fi
