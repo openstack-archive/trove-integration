@@ -1,0 +1,93 @@
+#!/bin/bash
+# The packages for DB2 Express-C can be accessed from the following link:
+#  http://www-01.ibm.com/software/data/db2/express-c/download.html
+# and click on the link "DB2 Express-C for Linux 64-bit".
+# New users can either get an IBM ID or click on the "Proceed without an
+# IBM ID". User is provided with a registration form which needs to be
+# completed inorder to proceed further to download the DB2 Express-C
+# packages. After accepting the license agreement, user can download the
+# the DB2 Express-C package (.tar.gz file).
+#
+# User has 2 options for making the DB2 Express-C package accessible to
+# Trove disk-image building process:
+#  - place the packages in a private repository and define the variable
+#    DATASTORE_PACKAGE_LOCATION by specifying the base url for this
+#    repository. This variable can be defined in this file.
+#  - default option is to place the package under
+#    /trove-integration/scripts/files/elements/ubuntu-db2/install.d
+#    directory. By default, DATASTORE_PACKAGE_LOCATION points to this
+#    directory on the temporary filesystem during the guest image build
+#    process.
+
+# DB2_DOWNLOAD_LOCATION - the directory on the guest image where we will
+#                       copy the packages to and install from there.
+# DATASTORE_PACKAGE_LOCATION - is the place where user stores the DB2
+#                       Express-C package after registration. This can be
+#                       either a base url to a private repository or the
+#                       default is the install.d directory for DB2 DIB
+#                       element.
+# WGET_OPTS - defines any wget options user wants to specify like user,
+#             password, etc.
+#
+
+WGET_OPTS=""
+DB2_DOWNLOAD_LOCATION="/home/${GUEST_USERNAME}/db2"
+mkdir ${DB2_DOWNLOAD_LOCATION}
+cd ${DB2_DOWNLOAD_LOCATION}
+
+# First check if the package is available for download in a private repository.
+# If not, then check the default directory to see if packages are available
+# there.
+if ! wget ${WGET_OPTS} ${DATASTORE_PACKAGE_LOCATION}/v10.5_linuxx64_expc.tar.gz; then
+      echo "Could not find a private repository to download DB2-Express-C packages from."
+      echo "Trying the local filesystem."
+      if [ -a ${DATASTORE_PACKAGE_LOCATION}/v10.5_linuxx64_expc.tar.gz ]
+          then
+              echo "Found the DB2 Express-C packages in ${DATASTORE_PACKAGE_LOCATION}."
+              install -D -g ubuntu -o ubuntu -m 0600 ${DATASTORE_PACKAGE_LOCATION}/v10.5_linuxx64_expc.tar.gz ${DB2_DOWNLOAD_LOCATION}/
+          else
+              echo "Unable to find the DB2 package under ${DATASTORE_PACKAGE_LOCATION}."
+              echo "Please register and download the DB2 Express-C packages to a private"
+              echo "repository or local filesystem."
+              exit -1
+      fi
+fi
+
+tar -xvzf v10.5_linuxx64_expc.tar.gz
+cd expc
+
+# installing dependencies
+apt-get install libaio1
+apt-get install libstdc++5
+apt-get install libstdc++.so.6
+
+# start the installation process. Accepts the default installation directory 'opt/ibm/db2/V10.5'
+${DB2_DOWNLOAD_LOCATION}/expc/db2_install -b /opt/ibm/db2/V10.5 -f sysreq
+
+# create the DB2 users.
+# DB2 instance owner - db2inst1
+# DB2 fence user - db2fenc1
+# DB2 admin user - db2das1
+useradd -m db2inst1
+useradd -m db2fenc1
+useradd -m db2das1
+
+# During the DB2 server instance create process, it kept throwing an error
+# saying that the hostname could not be resolved. Hence added the following
+# line to /etc/hosts.
+echo $(hostname -I | cut -d\  -f1) $(hostname) | sudo tee -a /etc/hosts
+
+# Create the DB2 server instance
+/opt/ibm/db2/V10.5/instance/db2icrt -a server -u db2fenc1 db2inst1
+/opt/ibm/db2/V10.5/cfg/db2ln
+
+# Configure DB2 server instance to communicate via TCP/IP on a particulat port.
+echo 'db2c_db2inst1 50000/tcp # DB2 connection service port' >> /etc/services
+
+# Configure DB2 to use the TCP/IP settings defined above.
+sudo su - db2inst1 -c "db2 update database manager configuration using svcename db2c_db2inst1"
+
+# Start the actual TCP/IP communication.
+sudo su - db2inst1 -c "db2set DB2COMM=tcpip"
+
+

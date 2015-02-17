@@ -39,6 +39,13 @@ function build_vm() {
     export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
     export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
+    # For datastores that do not provide a public repository to download packages from,
+    # DATASTORE_PACKAGE_LOCATION provides user the option to:
+    #   - specify a base url to a private repository where the datastore packages are
+    #     available, OR
+    #   - store the packages in the default directory under /trove-integration/scripts/
+    #     files/elements/{os-type}-{datastore}/install.d/
+    export DATASTORE_PACKAGE_LOCATION="/tmp/in_target.d/install.d"
     local QEMU_IMG_OPTIONS=$(! $(qemu-img | grep -q 'version 1') && echo "--qemu-img-options compat=0.10")
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${QEMU_IMG_OPTIONS} ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools cloud-init-datasources ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
@@ -51,7 +58,7 @@ function build_guest_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
-    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql couchdb'
+    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql couchdb db2'
     if ! [[ " $VALID_SERVICES " =~ " $SERVICE_TYPE " ]]; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
