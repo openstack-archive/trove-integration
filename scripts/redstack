@@ -79,9 +79,13 @@ fi
 
 APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
 
+# Colors that can be used in 'exclaim'
+COLOR_RED='\033[0;31m'
+COLOR_NONE='\033[0m'
+
 function exclaim () {
     echo "*******************************************************************************"
-    echo "$@"
+    echo -e "$@"
     echo "*******************************************************************************"
 }
 
