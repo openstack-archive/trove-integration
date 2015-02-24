@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+1: Sushil Kumar <skm.net@gmail.com>
+Code-Review+2: amrith <amrith@tesora.com>
+Code-Review+2: Edmond Kotowski <ekotowski@gmail.com>
+Workflow+1: Edmond Kotowski <ekotowski@gmail.com>
+Code-Review+1: Petr Malik <pmalik@tesora.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 24 Feb 2015 05:30:23 +0000
+Reviewed-on: https://review.openstack.org/151348
+Project: openstack/trove-integration
+Branch: refs/heads/master
