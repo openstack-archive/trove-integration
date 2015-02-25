@@ -421,8 +421,8 @@ function mod_confs() {
         #    customer_network_id=$(neutron net-create customer | awk '/ id / {print $4}')
         #    customer_subnet_id=$(neutron subnet-create customer 10.0.1.0/24 --no-gateway | awk '/ id / {print $4}')
         # fi
-        management_network_id=$(neutron --os-username=trove --os-password=$SERVICE_PASSWORD --os-tenant-name=$SERVICE_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $2}')
-        management_subnet=$(neutron --os-username=trove --os-password=$SERVICE_PASSWORD --os-tenant-name=$SERVICE_TENANT --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $7}')
+        management_network_id=$(neutron --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $2}')
+        management_subnet=$(neutron --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $7}')
         sed -i "s,%shared_network%,$management_network_id,g" $TROVE_CONF_DIR/test.conf
         sed -i "s,%shared_network_subnet%,$management_subnet,g" $TROVE_CONF_DIR/test.conf
         # sed -i "s,%private_network%,$customer_network_id,g" $TROVE_CONF_DIR/test.conf
