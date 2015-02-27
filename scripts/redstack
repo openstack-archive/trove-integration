@@ -250,7 +250,10 @@ function run_devstack() {
 
 
 function cmd_install() {
-    mkdir -p $TROVE_LOGDIR # Creates TROVE_LOGDIR if it does not exist
+    sudo mkdir -p $TROVE_LOGDIR # Creates TROVE_LOGDIR if it does not exist
+    if [ ! -w $TROVE_LOGDIR ]; then
+        sudo chown `whoami` $TROVE_LOGDIR
+    fi
     install_prep_packages
     install_devstack_code
     install_reviews_on_top_of_devstack
