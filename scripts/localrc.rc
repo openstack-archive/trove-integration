@@ -18,6 +18,14 @@ if [[ $ENABLE_NEUTRON = true ]]; then
     ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
     disable_service n-net
 fi
+if [[ $ENABLE_CEILOMETER = true ]]; then
+    CEILOMETER_BACKEND=mysql
+    CEILOMETER_NOTIFICATION_TOPICS=notifications,profiler
+    ENABLED_SERVICES+=,ceilometer-acompute,ceilometer-acentral
+    ENABLED_SERVICES+=,ceilometer-anotification,ceilometer-collector
+    ENABLED_SERVICES+=,ceilometer-alarm-evaluator,ceilometer-alarm-notifier
+    ENABLED_SERVICES+=,ceilometer-api
+fi
 
 # Use Git repositories for client components
 LIBS_FROM_GIT=python-troveclient
