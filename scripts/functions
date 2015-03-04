@@ -252,3 +252,22 @@ function get_python_exec_prefix() {
         echo "/usr/local/bin"
     fi
 }
+
+# Returns 'true' if 'true', 'yes', 'on' or '1' - false, otherwise.
+# Converts values to lower case first.
+# If no default is provided, assumes false.
+function get_bool() {
+    local VARIABLE="$1"
+    local DEFAULT=${2:-false}
+
+    VALUE=${!VARIABLE:-$DEFAULT}
+
+    VALUE=$(eval echo "$VALUE" | tr '[:upper:]' '[:lower:]')
+    if [[ "1 yes true on" =~ "$VALUE" ]]; then
+        VALUE=true
+    else
+        VALUE=false
+    fi
+
+    echo $VALUE
+}
