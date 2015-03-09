@@ -22,3 +22,4 @@ oslo.serialization>=1.0.0
 oslo.utils>=1.1.0
 osprofiler>=0.3.0
 oslo.concurrency>=0.3.0
+oslo.log
