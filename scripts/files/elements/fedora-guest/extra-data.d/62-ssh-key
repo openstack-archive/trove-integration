@@ -11,7 +11,7 @@ set -o xtrace
 
 source $_LIB/die
 
-[ -n "$TMP_HOOKS_PATH." ] || die "Temp hook path not set"
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 
 [ -n "${HOST_USERNAME}" ] || die "HOST_USERNAME needs to be set to the user for the current user on the host"
 

@@ -10,7 +10,7 @@ source $_LIB/die
 
 REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements.txt
 
-[ -n "$TMP_HOOKS_PATH." ] || die "Temp hook path not set"
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 [ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
 
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
