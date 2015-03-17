@@ -295,8 +295,8 @@ function cmd_set_datastore() {
     rd_manage datastore_update "$DATASTORE_TYPE" ""
     PACKAGES=${PACKAGES:-""}
     if [ "$DATASTORE_TYPE" == "mysql" ]; then
-        PACKAGES=${PACKAGES:-"mysql-server-5.5"}
-        VERSION="5.5"
+        PACKAGES=${PACKAGES:-"mysql-server-5.6"}
+        VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
         PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
         VERSION="5.5"
@@ -567,8 +567,8 @@ function init_fake_mode() {
          INSERT INTO datastores values ('e00000e0-00e0-0e00-00e0-000e000000ee', \
             'Test_Datastore_1', ''); \
          INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-000b000000bb', \
-            'a00000a0-00a0-0a00-00a0-000a000000aa', '5.5', \
-            'c00000c0-00c0-0c00-00c0-000c000000cc', 'mysql-server-5.5', 1, 'mysql'); \
+            'a00000a0-00a0-0a00-00a0-000a000000aa', '5.6', \
+            'c00000c0-00c0-0c00-00c0-000c000000cc', 'mysql-server-5.6', 1, 'mysql'); \
          INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-000d000000dd', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', 'inactive_version', \
             '', '', 0, 'manager1'); \
