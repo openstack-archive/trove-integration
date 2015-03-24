@@ -36,6 +36,15 @@ function get_default_host_ip() {
 [[ -f $PATH_DEVSTACK_SRC/functions ]] && source $PATH_DEVSTACK_SRC/functions
 [[ -f $PATH_DEVSTACK_SRC/localrc ]] && source $PATH_DEVSTACK_SRC/localrc
 
+# Set up variables for the CONF files - this has to happen after loading redstack.rc, since
+# TROVE_CONF_DIR is defined there
+TROVE_CONF=$TROVE_CONF_DIR/trove.conf
+TROVE_TASKMANAGER_CONF=$TROVE_CONF_DIR/trove-taskmanager.conf
+TROVE_CONDUCTOR_CONF=$TROVE_CONF_DIR/trove-conductor.conf
+TROVE_GUESTAGENT_CONF=$TROVE_CONF_DIR/trove-guestagent.conf
+TROVE_API_PASTE_INI=$TROVE_CONF_DIR/api-paste.ini
+TEST_CONF=$TROVE_CONF_DIR/test.conf
+
 # Public facing bits
 [[ $ENABLE_NEUTRON = true ]] && BRIDGE_IP=172.24.4.1 || BRIDGE_IP=10.0.0.1
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
@@ -326,8 +335,8 @@ function cmd_set_datastore() {
         exit 1
     fi
 
-    sed -i "s/%datastore_type%/$DATASTORE_TYPE/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%datastore_version%/$VERSION/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%datastore_type%/$DATASTORE_TYPE/g" $TEST_CONF
+    sed -i "s/%datastore_version%/$VERSION/g" $TEST_CONF
 
     #rd_manage datastore_version_update <datastore_name> <version_name> <datastore_manager> <image_id> <packages> <active>
     rd_manage datastore_version_update "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID "$PACKAGES" 1
@@ -341,7 +350,7 @@ function cmd_set_datastore() {
     fi
 
     cmd_stop
-    iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_datastore "$DATASTORE_TYPE"
+    iniset $TROVE_CONF DEFAULT default_datastore "$DATASTORE_TYPE"
     sleep 1.5
     cmd_start
 }
@@ -388,7 +397,7 @@ function cmd_stop_deps() {
 
 function rd_manage() {
     pushd $PATH_TROVE
-    $TROVE_BIN_DIR/trove-manage --config-file=$TROVE_CONF_DIR/trove.conf "$@"
+    $TROVE_BIN_DIR/trove-manage --config-file=$TROVE_CONF "$@"
     popd
 }
 
@@ -397,31 +406,31 @@ function install_test_packages() {
 }
 
 function mod_confs() {
-    sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TROVE_CONF_DIR/test.conf
+    sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TEST_CONF
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
     if [ -e $EXTRA_CONF ]; then
-        cat $EXTRA_CONF >> $TROVE_CONF_DIR/test.conf
+        cat $EXTRA_CONF >> $TEST_CONF
     fi
-    cat $REDSTACK_SCRIPTS/conf/test_end.conf | sudo tee -a $TROVE_CONF_DIR/test.conf > /dev/null
+    cat $REDSTACK_SCRIPTS/conf/test_end.conf | sudo tee -a $TEST_CONF > /dev/null
 
     #Add the paths to the test conf
-    sed -i "s,%report_directory%,$TROVE_REPORT_DIR,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%nova_path%,$PATH_NOVA,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%glance_path%,$PATH_GLANCE,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%trove_path%,$PATH_TROVE,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%service_host%,$SERVICE_HOST,g" $TROVE_CONF_DIR/test.conf
-    sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TROVE_CONF_DIR/test.conf
+    sed -i "s,%report_directory%,$TROVE_REPORT_DIR,g" $TEST_CONF
+    sed -i "s,%keystone_path%,$PATH_KEYSTONE,g" $TEST_CONF
+    sed -i "s,%nova_path%,$PATH_NOVA,g" $TEST_CONF
+    sed -i "s,%glance_path%,$PATH_GLANCE,g" $TEST_CONF
+    sed -i "s,%trove_path%,$PATH_TROVE,g" $TEST_CONF
+    sed -i "s,%service_host%,$SERVICE_HOST,g" $TEST_CONF
+    sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TEST_CONF
 
     # Add the tenant id's into test.conf
-    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TROVE_CONF_DIR/test.conf
-    sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TEST_CONF
+    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TEST_CONF
+    sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TEST_CONF
+    sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TEST_CONF
 
     # Enable neutron tests if needed
-    sed -i "s/%neutron_enabled%/$ENABLE_NEUTRON/g" $TROVE_CONF_DIR/test.conf
+    sed -i "s/%neutron_enabled%/$ENABLE_NEUTRON/g" $TEST_CONF
 
     # If neutron is enabled, we create a shared network and write this info to the
     # confs so that the integration tests can use it.
@@ -433,17 +442,17 @@ function mod_confs() {
         # fi
         management_network_id=$(neutron --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $2}')
         management_subnet=$(neutron --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT net-list | awk '/private/ {print $7}')
-        sed -i "s,%shared_network%,$management_network_id,g" $TROVE_CONF_DIR/test.conf
-        sed -i "s,%shared_network_subnet%,$management_subnet,g" $TROVE_CONF_DIR/test.conf
-        # sed -i "s,%private_network%,$customer_network_id,g" $TROVE_CONF_DIR/test.conf
-        # sed -i "s,%private_network_subnet%,10.0.1.0/24,g" $TROVE_CONF_DIR/test.conf
-        iniset $TROVE_CONF_DIR/trove.conf DEFAULT network_label_regex .*
-        iniset $TROVE_CONF_DIR/trove.conf DEFAULT ip_regex .*
-        iniset $TROVE_CONF_DIR/trove.conf DEFAULT black_list_regex ^10.0.1.*
-        iniset $TROVE_CONF_DIR/trove.conf DEFAULT default_neutron_networks $management_network_id
-        iniset $TROVE_CONF_DIR/trove.conf DEFAULT network_driver trove.network.neutron.NeutronDriver
-        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT network_driver trove.network.neutron.NeutronDriver
-        iniset $TROVE_CONF_DIR/trove-taskmanager.conf mysql tcp_ports 22,3306
+        sed -i "s,%shared_network%,$management_network_id,g" $TEST_CONF
+        sed -i "s,%shared_network_subnet%,$management_subnet,g" $TEST_CONF
+        # sed -i "s,%private_network%,$customer_network_id,g" $TEST_CONF
+        # sed -i "s,%private_network_subnet%,10.0.1.0/24,g" $TEST_CONF
+        iniset $TROVE_CONF DEFAULT network_label_regex .*
+        iniset $TROVE_CONF DEFAULT ip_regex .*
+        iniset $TROVE_CONF DEFAULT black_list_regex ^10.0.1.*
+        iniset $TROVE_CONF DEFAULT default_neutron_networks $management_network_id
+        iniset $TROVE_CONF DEFAULT network_driver trove.network.neutron.NeutronDriver
+        iniset $TROVE_TASKMANAGER_CONF DEFAULT network_driver trove.network.neutron.NeutronDriver
+        iniset $TROVE_TASKMANAGER_CONF mysql tcp_ports 22,3306
     fi
 }
 
@@ -596,9 +605,9 @@ function init_fake_mode() {
 }
 
 function cmd_start() {
-    tr_screen_it tr-api "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-api --config-file=$TROVE_CONF_DIR/trove.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
-    tr_screen_it tr-tmgr "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-taskmanager --config-file=$TROVE_CONF_DIR/trove-taskmanager.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
-    tr_screen_it tr-cond "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-conductor --config-file=$TROVE_CONF_DIR/trove-conductor.conf --debug 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
+    tr_screen_it tr-api "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-api --config-file=$TROVE_CONF --debug 2>&1 | tee $TROVE_LOGDIR/trove-api.log"
+    tr_screen_it tr-tmgr "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-taskmanager --config-file=$TROVE_TASKMANAGER_CONF --debug 2>&1 | tee $TROVE_LOGDIR/trove-taskmanager.log"
+    tr_screen_it tr-cond "cd $PATH_TROVE; $TROVE_BIN_DIR/trove-conductor --config-file=$TROVE_CONDUCTOR_CONF --debug 2>&1 | tee $TROVE_LOGDIR/trove-conductor.log"
 }
 
 function cmd_start_fake() {
@@ -609,7 +618,7 @@ function cmd_start_fake() {
 
 function cmd_run() {
     cd $PATH_TROVE; $TROVE_BIN_DIR/trove-api \
-        --config-file=$TROVE_CONF_DIR/trove.conf $@
+        --config-file=$TROVE_CONF $@
 }
 
 function cmd_run_fake() {
@@ -642,7 +651,7 @@ function cmd_int_tests() {
         export USAGE_ENDPOINT=trove.tests.util.usage.FakeVerifier
     fi
     cd $REDSTACK_SCRIPTS
-    export TEST_CONF=$TROVE_CONF_DIR/test.conf
+    export TEST_CONF
     if [ $# -lt 1 ]; then
         args="--group=blackbox"
     else
@@ -660,7 +669,7 @@ function cmd_int_tests() {
 function cmd_int_tests_simple() {
     exclaim "Running Trove Simple Integration Tests..."
     cd $REDSTACK_SCRIPTS
-    export TEST_CONF=$TROVE_CONF_DIR/test.conf
+    export TEST_CONF
     if [ $# -lt 1 ]; then
         args="--group=simple_blackbox"
     else
@@ -679,7 +688,7 @@ function cmd_int_tests_white_box() {
     export PYTHONPATH=$PYTHONPATH:$PATH_TROVE
     export PYTHONPATH=$PYTHONPATH:$PATH_NOVA
     cmd_int_tests --test-config white_box=True \
-        --config-file=$TROVE_CONF_DIR/trove.conf \
+        --config-file=$TROVE_CONF \
         --nova-flags=/etc/nova/nova.conf $@
 }
 
@@ -811,7 +820,7 @@ function cmd_dsvm_gate_tests() {
 
     sudo chown -R $(whoami) /etc/trove
     sudo chown -R $(whoami) $DEST/trove-integration
-    iniset $TROVE_CONF_DIR/trove-guestagent.conf DEFAULT rabbit_host $NETWORK_GATEWAY
+    iniset $TROVE_GUESTAGENT_CONF DEFAULT rabbit_host $NETWORK_GATEWAY
     cd $DEST/trove-integration/scripts
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
 
