@@ -3,4 +3,4 @@
 set -e
 set -o xtrace
 
-yum -y install postgresql91
+yum -y install postgresql93
