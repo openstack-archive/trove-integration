@@ -55,7 +55,12 @@ ESCAPED_PATH_TROVE=`echo $PATH_TROVE | sed 's/\//\\\\\//g'`
 ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
 TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 TROVE_LOGDIR=${TROVE_LOGDIR:-$DEST/logs}
-DATASTORE_PKG_LOCATION=${DATASTORE_PKG_LOCATION:-$DEST/packages}
+# DATASTORE_PKG_LOCATION defines the location from where the datastore packages
+# can be accessed by the DIB elements. This is applicable only for datastores
+# that do not have a public repository from where their packages can be accessed.
+# This can either be a url to a private repository or a location on the local
+# filesystem that contains the datastore packages.
+DATASTORE_PKG_LOCATION=${DATASTORE_PKG_LOCATION:-}
 
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
@@ -321,6 +326,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "vertica" ]; then
         PACKAGES=${PACKAGES:-"vertica"}
         VERSION="7.1"
+    elif [ "$DATASTORE_TYPE" == "db2" ]; then
+        PACKAGES=${PACKAGES:-""}
+        VERSION="10.5"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1
