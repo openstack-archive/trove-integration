@@ -618,8 +618,13 @@ function cmd_start() {
         USE_SCREEN=True
         TOP_DIR=$PATH_DEVSTACK_SRC
         LOGDIR=$TROVE_LOGDIR
-        source /dev/stdin < <(sed -n '/^function start_trove\(\)/,/^}/p' $PATH_DEVSTACK_SRC/lib/trove)
-        start_trove
+        RUNNING=$(screen -S stack -Q windows)
+        if [[ "$RUNNING" =~ " tr-" ]]; then
+            exclaim "${COLOR_RED}WARNING: Trove services appear to be running. Please run 'stop' or 'restart'${COLOR_NONE}"
+        else
+            source /dev/stdin < <(sed -n '/^function start_trove\(\)/,/^}/p' $PATH_DEVSTACK_SRC/lib/trove)
+            start_trove
+        fi
     fi
 }
 
@@ -649,7 +654,21 @@ function cmd_stop() {
         rm -f $DEST/status/stack/tr-*
         USE_SCREEN=True
         source /dev/stdin < <(sed -n '/^function stop_trove\(\)/,/^}/p' $PATH_DEVSTACK_SRC/lib/trove)
-        stop_trove
+        MAX_RETRY=5
+        COUNT=1
+        while true; do
+            RUNNING=$(screen -S stack -Q windows)
+            if [[ "$RUNNING" =~ " tr-" ]]; then
+                stop_trove
+            else
+                break
+            fi
+            ((COUNT++))
+            if [ "$COUNT" -gt "$MAX_RETRY" ]; then
+                exclaim "${COLOR_RED}WARNING: Could not stop Trove services after ${MAX_RETRY} attempts${COLOR_NONE}"
+                break
+            fi
+        done
     fi
 }
 
@@ -902,7 +921,7 @@ function print_usage() {
           initialize      - Reinitialize the trove database, users, services, and test config
 
         --helper for environment--
-          kick-start      - kick start the setup of trove.
+          kick-start      - Kick start the setup of Trove.
                             (redstack test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding packages from scratch
 
@@ -913,6 +932,7 @@ function print_usage() {
         --trove services--
           start           - Start or resume daemons Trove depends on.
           stop            - Kill daemons Trove depends on.
+          restart         - Runs stop then start for Trove services.
 
         --tests--
           unit-tests      - Run the unit tests.dependencies
@@ -928,7 +948,7 @@ function print_usage() {
           clear           - Destroy instances and rabbit queues.
           run             - Starts RD but not in a screen.
           run-fake        - Runs the server in fake mode.
-          update-projects - Git pull on all the daemons trove dependencies.
+          update-projects - Git pull on all the daemons' Trove dependencies.
           reset-task      - Sets an instance task to NONE.
           wipe-queues     - Resets RabbitMQ queues.
     "
@@ -954,6 +974,7 @@ function run_command() {
         "int-tests-wb" ) shift; cmd_int_tests_white_box $@;;
         "simple-tests") shift; cmd_int_tests_simple $@;;
         "stop" ) cmd_stop;;
+        "restart" ) cmd_stop; cmd_start;;
         "wipe-logs" ) cmd_wipe_logs;;
         "rd-sql" ) shift; cmd_rd_sql $@;;
         "fake-sql" ) shift; cmd_fake_sql $@;;
