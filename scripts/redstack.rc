@@ -28,6 +28,8 @@ OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
 
 # Destination for working data
 DATA_DIR=${DEST}/data
+# Destination for status files
+SERVICE_DIR=${DEST}/status
 
 # Cinder Volume Group Name
 VOLUME_GROUP=${VOLUME_GROUP:-stack-volumes}

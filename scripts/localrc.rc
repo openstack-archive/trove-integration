@@ -50,6 +50,7 @@ SWIFT_HASH=$SWIFT_HASH
 # reconnecting Volume Group to Backing File
 DEST=$DEST
 DATA_DIR=$DATA_DIR
+SERVICE_DIR=$SERVICE_DIR
 VOLUME_GROUP=${VOLUME_GROUP}
 VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared
