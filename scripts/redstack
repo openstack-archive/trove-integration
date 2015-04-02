@@ -415,6 +415,8 @@ function install_test_packages() {
 }
 
 function mod_confs() {
+    DATASTORE_TYPE=$1
+
     sudo install -b --mode 0664 $REDSTACK_SCRIPTS/conf/test_begin.conf $TEST_CONF
     TROVE_REPORT_DIR=$REDSTACK_SCRIPTS/../report/
     EXTRA_CONF=$REDSTACK_SCRIPTS/conf/test.extra.conf
@@ -463,6 +465,22 @@ function mod_confs() {
         iniset $TROVE_TASKMANAGER_CONF DEFAULT network_driver trove.network.neutron.NeutronDriver
         iniset $TROVE_TASKMANAGER_CONF mysql tcp_ports 22,3306
     fi
+
+    if [ "$DATASTORE_TYPE" = "vertica" ]; then
+        # Setting cluster_member_count to 2 to decrease cluster spawn time.
+        iniset $TROVE_CONF_DIR/trove.conf vertica cluster_member_count 2
+
+        # Vertica needs more time than mysql for its boot/start/stop operations.
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT agent_call_high_timeout 300
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT cluster_usage_timeout 2000
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT resize_time_out 900
+        iniset $TROVE_CONF_DIR/trove-taskmanager.conf DEFAULT usage_timeout 1500
+
+        # Setting flavor to be >= 2GB RAM for Vertica guest instances in test.conf.
+        sed -i "s/m1.rd-tiny/m1.small/g" $TROVE_CONF_DIR/test.conf
+        sed -i "s/m1.rd-smaller/m1.medium/g" $TROVE_CONF_DIR/test.conf
+    fi
+
 }
 
 
@@ -481,7 +499,7 @@ function cmd_test_init() {
     install_test_packages
 
     exclaim "Modifying test.conf and guest.conf with appropriate values."
-    mod_confs
+    mod_confs $1
 
     exclaim "Creating Test Flavors."
     add_test_flavors
@@ -779,7 +797,7 @@ function cmd_run_ci() {
     cmd_stop
     set -e
     cmd_install
-    cmd_test_init
+    cmd_test_init $1
     # The arg will be the image type
     cmd_build_and_upload_image $1
 
@@ -812,7 +830,7 @@ function cmd_clear() {
 }
 
 function cmd_kick_start() {
-    cmd_test_init
+    cmd_test_init $1
     cmd_build_and_upload_image $1
 }
 
@@ -943,7 +961,7 @@ function run_command() {
 
     case "$1" in
         "install" ) cmd_install;;
-        "test-init" ) cmd_test_init;;
+        "test-init" ) cmd_test_init $@;;
         "build-image" ) shift; cmd_build_image $@;;
         "initialize" ) cmd_initialize;;
         "unit-tests" ) cmd_unit_tests;;
