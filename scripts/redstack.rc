@@ -17,6 +17,7 @@ PATH_SWIFT=$DEST/swift
 PATH_TROVE=$DEST/trove
 PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
 PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
+PATH_OPENSTACKCLIENT=$DEST/python-openstackclient
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder

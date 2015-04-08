@@ -4,7 +4,7 @@
     "horizon":null,
     "keystone":null,
     "nova":null,
-    "python_keystoneclient":null,
+    "python_openstackclient":null,
     "python_novaclient":null,
     "trove":null,
     "python_troveclient":null,
