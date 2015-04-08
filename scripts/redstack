@@ -157,7 +157,7 @@ function add_flavor() {
 }
 
 function get_attribute_id() {
-    keystone --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1-list | grep " $2" | get_field $3
+    openstack --os-username=admin --os-password=$ADMIN_PASSWORD --os-endpoint $TROVE_AUTH_ENDPOINT --os-token $SERVICE_TOKEN $1 list | grep " $2" | get_field $3
 }
 
 
@@ -202,6 +202,7 @@ function install_reviews_on_top_of_devstack() {
     run_review_for python-novaclient $PATH_PYTHON_NOVACLIENT $REVIEW_PYTHON_NOVACLIENT
     run_review_for keystone $PATH_KEYSTONE $REVIEW_KEYSTONE
     run_review_for python-keystoneclient $PATH_KEYSTONECLIENT $REVIEW_PYTHON_KEYSTONECLIENT
+    run_review_for python-openstackclient $PATH_OPENSTACKCLIENT $REVIEW_PYTHON_OPENSTACKCLIENT
     run_review_for glance $PATH_GLANCE $REVIEW_GLANCE
     run_review_for swift $PATH_SWIFT $REVIEW_SWIFT
     run_review_for python-swiftclient $PATH_PYTHON_SWIFTCLIENT $REVIEW_PYTHON_SWIFTCLIENT
@@ -433,9 +434,9 @@ function mod_confs() {
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TEST_CONF
 
     # Add the tenant id's into test.conf
-    sed -i "s/%admin_tenant_id%/$(get_attribute_id tenant admin 1)/g" $TEST_CONF
-    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id tenant alt_demo 1)/g" $TEST_CONF
-    sed -i "s/%demo_tenant_id%/$(get_attribute_id tenant demo 1)/g" $TEST_CONF
+    sed -i "s/%admin_tenant_id%/$(get_attribute_id project admin 1)/g" $TEST_CONF
+    sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id project alt_demo 1)/g" $TEST_CONF
+    sed -i "s/%demo_tenant_id%/$(get_attribute_id project demo 1)/g" $TEST_CONF
     sed -i "s/%admin_password%/$ADMIN_PASSWORD/g" $TEST_CONF
 
     # Enable neutron tests if needed
@@ -525,7 +526,7 @@ function cmd_build_and_upload_image() {
     fi
 
     source $PATH_DEVSTACK_SRC/openrc admin admin
-    TOKEN=$(keystone token-get | grep ' id ' | get_field 2)
+    TOKEN=$(openstack token issue | grep ' id ' | get_field 2)
     GLANCE_IMAGEIDS=$(glance image-list | grep $(basename $IMAGE_URL .qcow2) | get_field 1)
     if [[ -n $GLANCE_IMAGEIDS ]]; then
         glance image-delete $GLANCE_IMAGEIDS
@@ -839,10 +840,10 @@ function cmd_dsvm_gate_tests() {
 
     # Update the local swift endpoint in the catalog to use the NETWORK_GATEWAY instead of 127.0.0.1
     source $DEST/devstack/accrc/admin/admin
-    SWIFT_ENDPOINT=$(keystone endpoint-list | awk '/8080/{print $2}')
-    keystone endpoint-create  --region RegionOne --service swift --publicurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' \
+    SWIFT_ENDPOINT=$(openstack endpoint list | grep 'swift' | get_field 1)
+    openstack endpoint create swift --region RegionOne --publicurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' \
         --internalurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'$NETWORK_GATEWAY':8080'
-    keystone endpoint-delete $SWIFT_ENDPOINT
+    openstack endpoint delete $SWIFT_ENDPOINT
 
     cmd_int_tests --group=$DATASTORE_TYPE
 }
