@@ -9,6 +9,9 @@ PUBLIC_INTERFACE=eth0
 TROVE_LOGDIR=$TROVE_LOGDIR
 TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 
+# Enable the Trove plugin for devstack
+enable_plugin trove $OPENSTACK_GITSOURCE/trove
+
 # Enable Trove, Swift, and Heat
 ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
 ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
