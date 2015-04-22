@@ -1,0 +1,16 @@
+Verified+2: Jenkins
+Code-Review+2: Nikhil Manchanda <SlickNik@gmail.com>
+Code-Review+1: Takashi NATSUME <natsume.takashi@lab.ntt.co.jp>
+Code-Review+1: Sushil Kumar <skm.net@gmail.com>
+Code-Review+2: amrith <amrith@tesora.com>
+Code-Review+1: Morgan Jones <morgan@parelastic.com>
+Workflow+1: Peter Stachowski <peter@tesora.com>
+Code-Review+1: Shayne Burgess <shayne.burgess@hp.com>
+Code-Review+2: Edmond Kotowski <ekotowski@gmail.com>
+Workflow+1: Edmond Kotowski <ekotowski@gmail.com>
+Code-Review+1: Ashleigh Farnham <ashleighfarnham@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 22 Apr 2015 22:14:34 +0000
+Reviewed-on: https://review.openstack.org/174489
+Project: openstack/trove-integration
+Branch: refs/heads/master
