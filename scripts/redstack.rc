@@ -8,6 +8,9 @@
 # Enable neutron instead of nova-network
 ENABLE_NEUTRON=$(get_bool ENABLE_NEUTRON false)
 
+# Enable ceilometer
+ENABLE_CEILOMETER=$(get_bool ENABLE_CEILOMETER false)
+
 # Enable LIBS_FROM_GIT
 LIBS_FROM_GIT_ALL_CLIENTS=$(get_bool LIBS_FROM_GIT_ALL_CLIENTS true)
 LIBS_FROM_GIT_ALL_OSLO=$(get_bool LIBS_FROM_GIT_ALL_OSLO true)
