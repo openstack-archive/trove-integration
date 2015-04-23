@@ -21,7 +21,8 @@ if [[ $ENABLE_NEUTRON = true ]]; then
     ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
     disable_service n-net
 fi
-if [[ $ENABLE_CEILOMETER = true ]]; then
+# OSprofiler depends on Ceilometer
+if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
     CEILOMETER_BACKEND=mysql
     CEILOMETER_NOTIFICATION_TOPICS=notifications,profiler
     ENABLED_SERVICES+=,ceilometer-acompute,ceilometer-acentral
