@@ -16,6 +16,7 @@ DEFAULT_LOCAL_CONF=local.conf.rc
 DEFAULT_LOCALRC=localrc.rc
 LOCAL_CONF=local.conf
 LOCALRC=localrc
+LOCALRC_AUTO=.localrc.auto
 USER_LOCAL_CONF_NAME=.devstack.$LOCAL_CONF
 
 USERHOME=$HOME
@@ -47,7 +48,12 @@ function get_default_host_ip() {
 # allow overrides from devstack if already set
 [[ -f $PATH_DEVSTACK_SRC/functions-common ]] && source $PATH_DEVSTACK_SRC/functions-common
 [[ -f $PATH_DEVSTACK_SRC/functions ]] && source $PATH_DEVSTACK_SRC/functions
+# source the old-style localrc, or new-style .local.auto - only one should exist
 [[ -f $PATH_DEVSTACK_SRC/$LOCALRC ]] && source $PATH_DEVSTACK_SRC/$LOCALRC
+[[ -f $PATH_DEVSTACK_SRC/$LOCALRC_AUTO ]] && source $PATH_DEVSTACK_SRC/$LOCALRC_AUTO
+
+# Location of the Trove setup commands file for devstack - now as a plugin
+TROVE_SETUP_CMD_FILE="$DEST/trove/devstack/plugin.sh"
 
 # Set up variables for the CONF files - this has to happen after loading redstack.rc, since
 # TROVE_CONF_DIR is defined there - these will be used by devstack too
@@ -742,7 +748,7 @@ function cmd_start() {
         USE_SCREEN=True
         TOP_DIR=$PATH_DEVSTACK_SRC
         LOGDIR=$TROVE_LOGDIR
-        source /dev/stdin < <(sed -n '/^function start_trove\(\)/,/^}/p' $PATH_DEVSTACK_SRC/lib/trove)
+        source /dev/stdin < <(sed -n '/^function start_trove\(\)/,/^}/p' "$TROVE_SETUP_CMD_FILE")
         start_trove
     fi
 }
@@ -772,7 +778,7 @@ function cmd_stop() {
     if screen -ls | grep -q stack; then
         rm -f $DEST/status/stack/tr-*
         USE_SCREEN=True
-        source /dev/stdin < <(sed -n '/^function stop_trove\(\)/,/^}/p' $PATH_DEVSTACK_SRC/lib/trove)
+        source /dev/stdin < <(sed -n '/^function stop_trove\(\)/,/^}/p' "$TROVE_SETUP_CMD_FILE")
         stop_trove
     fi
 }
