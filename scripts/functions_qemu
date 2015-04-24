@@ -22,6 +22,11 @@ function build_vm() {
         export RELEASE=trusty
         export DIB_RELEASE=$RELEASE
         export DIB_CLOUD_IMAGES=cloud-images.ubuntu.com
+        # Use the apt sources.list on the build host, its almost always preferred
+        if [ -f /etc/apt/sources.list ]; then
+            export DIB_APT_SOURCES=/etc/apt/sources.list
+            EXTRA_ELEMENTS=apt-sources
+        fi
     fi
     if [ $DISTRO == 'fedora' ]; then
         EXTRA_ELEMENTS=selinux-permissive
