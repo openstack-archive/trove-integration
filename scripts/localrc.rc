@@ -10,7 +10,9 @@ TROVE_LOGDIR=$TROVE_LOGDIR
 TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 
 # Enable the Trove plugin for devstack
-enable_plugin trove $OPENSTACK_GITSOURCE/trove
+if [[ $USE_DEVSTACK_TROVE_PLUGIN = true ]]; then
+    enable_plugin trove $OPENSTACK_GITSOURCE/trove
+fi
 
 # Enable Trove, Swift, and Heat
 ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
