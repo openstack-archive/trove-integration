@@ -271,3 +271,44 @@ function get_bool() {
 
     echo $VALUE
 }
+
+# Get the project branch to switch to.  Uses PROJECT_BRANCH_NAME,
+# then BRANCH_DEFAULT, then 'master'
+function get_project_branch() {
+    local PROJECT_BRANCH_NAME=$1
+    local BRANCH_DEFAULT=${2:-master}
+
+    PROJECT_BRANCH_OVERRIDE=${!PROJECT_BRANCH_NAME}
+
+    BRANCH=${PROJECT_BRANCH_OVERRIDE:-$BRANCH_DEFAULT}
+
+    echo "$BRANCH"
+}
+
+# Try to switch to a branch or commit in a repo
+# Fails if the branch/commit doesn't exist
+function git_checkout() {
+    local PROJECT=$1
+    local REPO_DIR=$2
+    local REPO_BRANCH=$3
+    local REPO_BRANCH_VAR_NAME=$4
+
+    if [ -n "$REPO_BRANCH" ]; then
+        pushd "$REPO_DIR"
+        if [ $PROJECT == "diskimage-builder" ] || [ $PROJECT == "tripleo-image-elements" ]; then
+            REPO_BRANCH=master
+        fi
+        GIT_STATUS=$(git checkout "$REPO_BRANCH" &> /dev/null || echo "failed")
+        if [[ "$GIT_STATUS" = "failed" ]]; then
+            exclaim "${COLOR_RED}Could not switch to branch/commit '$REPO_BRANCH' in $PROJECT, exiting${COLOR_NONE}"
+            echo "Please set '$REPO_BRANCH_VAR_NAME' to a valid branch/commit and try again."
+            echo "Note: This error may also mean that there are modified files in $PROJECT."
+            echo "      If that is the case, please stash them and re-run your command."
+            exit 1
+        else
+            exclaim "${COLOR_BLUE}Using $PROJECT branch '$REPO_BRANCH'${COLOR_NONE}"
+        fi
+        popd
+    fi
+}
+
