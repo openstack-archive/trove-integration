@@ -39,8 +39,11 @@ PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
-# Devstack and OpenStack git repo source path
+# Devstack and OpenStack git repo source info
 REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
+DEVSTACK_DEFAULT_BRANCH=master
+# Set this to peg the branch of devstack (i.e. 'stable/kilo')
+DEVSTACK_BRANCH=${DEVSTACK_BRANCH:-$DEVSTACK_DEFAULT_BRANCH}
 OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
 
 # Destination for working data

@@ -105,6 +105,7 @@ APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
 
 # Colors that can be used in 'exclaim'
 COLOR_RED='\033[0;31m'
+COLOR_BLUE='\033[0;34m'
 COLOR_NONE='\033[0m'
 
 function exclaim () {
@@ -190,6 +191,17 @@ function install_devstack_code() {
         echo "DevStack not in a shared folder, cloning from git."
         mkdir -p $PATH_DEVSTACK_SRC
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
+        if [ "$DEVSTACK_BRANCH" != "$DEVSTACK_DEFAULT_BRANCH" ]; then
+            pushd $PATH_DEVSTACK_SRC
+            DEVSTACK_BRANCHES=$(git branch -r | grep -v "origin/HEAD")
+            if [[ "$DEVSTACK_BRANCHES" =~ "origin/$DEVSTACK_BRANCH" ]]; then
+                exclaim "${COLOR_BLUE}Using devstack branch '$DEVSTACK_BRANCH'${COLOR_NONE}"
+                git checkout "$DEVSTACK_BRANCH"
+            else
+                exclaim "${COLOR_RED}Branch '$DEVSTACK_BRANCH' not found in devstack, staying on 'master'${COLOR_NONE}"
+            fi
+            popd
+        fi
     fi
 
     exclaim "Installing devstack projects..."
