@@ -105,6 +105,8 @@ APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
 
 # Colors that can be used in 'exclaim'
 COLOR_RED='\033[0;31m'
+COLOR_GREEN='\033[0;32m'
+COLOR_BLUE='\033[0;34m'
 COLOR_NONE='\033[0m'
 
 function exclaim () {
@@ -190,6 +192,19 @@ function install_devstack_code() {
         echo "DevStack not in a shared folder, cloning from git."
         mkdir -p $PATH_DEVSTACK_SRC
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
+    fi
+    # See if we need to switch devstack to a new branch (i.e. 'stable/kilo')
+    if [ -n "$DEVSTACK_BRANCH" ]; then
+        pushd $PATH_DEVSTACK_SRC
+        GIT_STATUS=$(git checkout "$DEVSTACK_BRANCH" &> /dev/null || echo "failed")
+        if [[ "$GIT_STATUS" = "failed" ]]; then
+            exclaim "${COLOR_RED}Branch/commit '$DEVSTACK_BRANCH' not found in devstack, exiting${COLOR_NONE}"
+            echo "Please set 'DEVSTACK_BRANCH' to a valid branch/commit and try again."
+            exit 1
+        else
+            exclaim "${COLOR_BLUE}Using devstack branch '$DEVSTACK_BRANCH'${COLOR_NONE}"
+        fi
+        popd
     fi
 
     exclaim "Installing devstack projects..."
@@ -398,7 +413,7 @@ function cmd_install() {
     install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
-    exclaim "FINISHED INSTALL"
+    exclaim "${COLOR_GREEN}FINISHED INSTALL${COLOR_NONE}"
 }
 
 
@@ -1024,6 +1039,8 @@ function print_usage() {
                           - devstack config can be altered by using a USER_LOCAL_CONF file
                             which will be copied into devstack/local.conf on each 'install' run
                             (defaults to \$HOME/$USER_LOCAL_CONF_NAME)
+                          - Set DEVSTACK_BRANCH to switch the branch/commit of devstack
+                            (i.e. 'stable/kilo' or '7ef2462')
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image for the trove guest
           initialize      - Reinitialize the trove database, users, services, and test config
@@ -1032,6 +1049,7 @@ function print_usage() {
           kick-start      - kick start the setup of trove.
                             (redstack test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding packages from scratch
+                          - Set REBUILD_IMAGE=True to force rebuild (won't use cached image)
 
         --trove dependency services--
           start-deps      - Start or resume daemons Trove depends on.
