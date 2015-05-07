@@ -14,7 +14,7 @@ set -o xtrace
 # First check if the package is available on the local filesystem.
 if [ -f "${DATASTORE_PKG_LOCATION}" ]; then
     echo "Found the DB2 Express-C packages in ${DATASTORE_PKG_LOCATION}."
-    dd if="${DATASTORE_PKG_LOCATION}" of=${TMP_HOOKS_PATH}/db2.tar.gz
+    cp ${DATASTORE_PKG_LOCATION}/*.tar.gz ${TMP_HOOKS_PATH}/db2.tar.gz
 # else, check if the package is available for download in a private repository.
 elif wget ${DATASTORE_DOWNLOAD_OPTS} "${DATASTORE_PKG_LOCATION}" -O ${TMP_HOOKS_PATH}/db2.tar.gz; then
     echo "Downloaded the DB2 Express-C package from the private repository"
