@@ -155,7 +155,7 @@ Check the values in /etc/trove/test.conf in case it has been re-initialized prio
 should be:
 
     "dbaas_datastore": "mysql",
-    "dbaas_datastore_version": "5.5",
+    "dbaas_datastore_version": "5.6",
 
 Once Trove is running on DevStack, you can use the dev scripts to run the integration tests locally.
 
