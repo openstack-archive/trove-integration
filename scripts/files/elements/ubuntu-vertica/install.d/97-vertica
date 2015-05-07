@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # CONTEXT: GUEST during CONSTRUCTION as ROOT - install.d
 # PURPOSE: Install controller base required packages
@@ -6,11 +6,6 @@
 set -e
 set -o xtrace
 export DEBIAN_FRONTEND=noninteractive
-
-
-# Copy the package file to the image,
-#  as it needs to be used later during configuration.
-dd if=/tmp/in_target.d/vertica.deb of=/vertica.deb
 
 # Install base packages
 apt-get install -qy build-essential bc iptables
@@ -20,7 +15,61 @@ apt-get install -qy dialog libbz2-dev libboost-all-dev libcurl4-gnutls-dev
 apt-get install -qy openjdk-7-jdk
 
 # Install Vertica package
-dpkg -i /vertica.deb
+
+# Copy the package file to the image,
+#  as it needs to be used later during configuration.
+# .deb package files need to be in the root directory for
+# install_vertica script
+
+if [ -d /opt/datastore_package ]
+then
+    # install vertica db package
+    for vertica_file in `ls -1r /opt/datastore_package/vertica*.deb`
+    do
+        if ! [[ $vertica_file =~ 'console' ]]
+        then
+            dpkg -i $vertica_file
+
+            # we need the debian package to run install cluster commands
+            mv $vertica_file /opt/datastore_package/vertica.deb
+        fi
+
+    done
+
+    # install vertica console package
+    for vertica_file in `ls -1r /opt/datastore_package/vertica*.deb`
+    do
+        if [[ $vertica_file =~ 'console' ]]
+        then
+            dpkg -i $vertica_file
+            rm $vertica_file
+        fi
+
+    done
+
+    # Un-tar the the vconsole and put it in /opt/vconsole
+    # Restart the vertica management console
+    if [ -f /opt/datastore_package/vconsole.tgz ] && [ -d /opt/vconsole ]
+    then
+        echo "Updating vconsole configuration"
+        sudo service vertica-consoled stop
+        pushd /opt
+        tar -xzf /opt/datastore_package/vconsole.tgz
+        popd
+        sudo update-rc.d vertica-consoled disable
+        rm /opt/datastore_package/vconsole.tgz
+    else
+        echo "WARNING: vconsole configuration will not be updated, as the vconsole.tgz not found"
+    fi
+
+    if [ -d /opt/vconsole ]
+    then
+        #Set up JAVA_HOME and PATH variables
+        echo 'export JAVA_HOME=/opt/vconsole/vendor/oracle/java/jre/1.7.0_51' > /etc/profile.d/java.sh
+        echo 'export PATH=$PATH:$JAVA_HOME/bin' >>  /etc/profile.d/java.sh
+        chmod 755  /etc/profile.d/java.sh
+    fi
+fi
 
 # Creating dbadmin user and verticadba group
 groupadd verticadba
