@@ -10,5 +10,18 @@ set -o xtrace
 source $_LIB/die
 
 [ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
-[ -f "$DATASTORE_PKG_LOCATION" ] || die "Datastore package installer file not found at:" $DATASTORE_PKG_LOCATION
-dd if=${DATASTORE_PKG_LOCATION} of=${TMP_HOOKS_PATH}/vertica.deb
+[ -d "$DATASTORE_PKG_LOCATION" ] || die "Datastore package installer files not found at the directory:" $DATASTORE_PKG_LOCATION
+#[ -f "$DATASTORE_CONSOLE_PKG_LOCATION" ] || die "Datastore management console package installer file not found at:" $DATASTORE_CONSOLE_PKG_LOCATION
+
+#dd if=${DATASTORE_PKG_LOCATION} of=${TMP_HOOKS_PATH}/vertica.deb
+#dd if=${DATASTORE_CONSOLE_PKG_LOCATION} of=${TMP_HOOKS_PATH}/vertica-console.deb
+mkdir $TMP_HOOKS_PATH/vertica
+
+ls -1r $DATASTORE_PKG_LOCATION/
+
+for f in `ls -1 $DATASTORE_PKG_LOCATION`
+do
+    package_name=$(basename "$f" ".deb")
+    deb_file_name=`echo $package_name | cut -d "_" -f 1`
+    cp $DATASTORE_PKG_LOCATION/$f $TMP_HOOKS_PATH/vertica/$deb_file_name.deb
+done
