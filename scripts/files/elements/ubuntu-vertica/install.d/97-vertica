@@ -7,18 +7,22 @@ set -e
 set -o xtrace
 export DEBIAN_FRONTEND=noninteractive
 
-
-# Copy the package file to the image,
-#  as it needs to be used later during configuration.
-dd if=/tmp/in_target.d/vertica.deb of=/vertica.deb
-
 # Install base packages
 apt-get install -qy build-essential bc iptables
 apt-get install -qy curl sysstat pstack mcelog
 apt-get install -qy python-dev g++ unixODBC unixODBC-dev
 
 # Install Vertica package
-dpkg -i /vertica.deb
+
+# Copy the package file to the image,
+#  as it needs to be used later during configuration.
+# .deb package files need to be in the root directory for install_vertica script
+
+for file in `ls -1r /tmp/in_target.d/vertica/`
+do
+    cp /tmp/in_target.d/vertica/$file /$file
+    dpkg -i /$file
+done
 
 # Creating dbadmin user and verticadba group
 groupadd verticadba
