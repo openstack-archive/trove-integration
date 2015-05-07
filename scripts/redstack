@@ -83,6 +83,7 @@ TROVE_LOGDIR=${TROVE_LOGDIR:-$DEST/logs}
 # This can either be a url to a private repository or a location on the local
 # filesystem that contains the datastore packages.
 DATASTORE_PKG_LOCATION=${DATASTORE_PKG_LOCATION:-}
+DATASTORE_PKG_LOCATION_DIR=${DATASTORE_PKG_LOCATION_DIR:-}
 
 # Support entry points installation of console scripts
 if [[ -d $PATH_TROVE/bin ]]; then
