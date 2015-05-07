@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+[ -n "${TMP_HOOKS_PATH}" ] || die "Temp hook path not set"
+[ -n "${DATASTORE_PKG_LOCATION}" ] || die "DATASTORE_PKG_LOCATION not set"
+
+mkdir -p ${TMP_HOOKS_PATH}/datastore_package
+
+# First check if the package is file
+if [ -f "${DATASTORE_PKG_LOCATION}" ]; then
+    echo "Datastore packages location ${DATASTORE_PKG_LOCATION} is a file"
+    PKG_FILE_NAME=`basename ${DATASTORE_PKG_LOCATION}`
+    dd if="${DATASTORE_PKG_LOCATION}" of=${TMP_HOOKS_PATH}/datastore_package/${PKG_FILE_NAME}
+
+# else, check if the package is directory
+elif [ -d "${DATASTORE_PKG_LOCATION}" ]; then
+    echo "Datastore packages location ${DATASTORE_PKG_LOCATION} is a directory"
+    pushd "${DATASTORE_PKG_LOCATION}"
+    TMP_DIR=`mktemp -d`
+    tar -czf ${TMP_DIR}/datastore_package.tgz .
+    popd
+    dd if="${TMP_DIR}/datastore_package.tgz" of=${TMP_HOOKS_PATH}/datastore_package/datastore_package.tgz
+    rm -rf ${TMP_DIR}
+
+# else, download package from specified URL and store it as and archive
+# datastore_package.tgz
+elif [[ "${DATASTORE_PKG_LOCATION}" =~ "http"|"ftp" ]]; then
+    pushd ${TMP_HOOKS_PATH}/datastore_package
+    wget ${DATASTORE_DOWNLOAD_OPTS} -O datastore_package.tgz "${DATASTORE_PKG_LOCATION}"
+    if [ $? != 0 ]; then
+        exit -1
+    fi
+    popd
+
+else
+    echo "Unable to process datastore package at ${DATASTORE_PKG_LOCATION}"
+    exit -1
+fi

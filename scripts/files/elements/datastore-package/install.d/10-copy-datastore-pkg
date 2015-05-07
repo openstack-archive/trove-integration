@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+export DEBIAN_FRONTEND=noninteractive
+
+mkdir -p /opt/datastore_package/
+
+# if datastore package location was a directory or a tar.gz file then lets
+# extract the datastore_package.tgz into /opt/datastore_package directory
+if [ -f  /tmp/in_target.d/datastore_package/datastore_package.tgz ]
+then
+    pushd /opt/datastore_package/
+    tar -xzf /tmp/in_target.d/datastore_package/datastore_package.tgz
+    if [ $? != 0 ]; then
+        exit -1
+    fi
+    popd
+fi
