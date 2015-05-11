@@ -468,7 +468,7 @@ function cmd_set_datastore() {
         VERSION="2.0.4"
     elif [ "$DATASTORE_TYPE" == "redis" ]; then
         PACKAGES=${PACKAGES:-"redis-server"}
-        VERSION="2.8"
+        VERSION="3.0"
     elif [ "$DATASTORE_TYPE" == "cassandra" ]; then
         PACKAGES=${PACKAGES:-"cassandra"}
         VERSION="2.1.0"
