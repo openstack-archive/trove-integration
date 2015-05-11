@@ -7,21 +7,43 @@ set -ex
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" >> /etc/apt/sources.list.d/trusty.sources.list
+cat > "/etc/sysctl.d/10-redis-performance.conf" << _EOF_
+# See 'http://redis.io/topics/admin' for best practices.
+# Make sure to set the Linux kernel overcommit memory setting to 1.
+vm.overcommit_memory=1
 
-# The following preferences say:
-# never install trusty packages...
-# ...except for redis-server and redis-tools (501 is higher than default priority)
-cat << EOF >> /etc/apt/preferences.d/redis-trusty
-Package: *
-Pin: release n=trusty
-Pin-Priority: -10
+# Linux kernel will silently truncate 'tcp-backlog' to the value of
+# '/proc/sys/net/core/somaxconn' so make sure to raise both the value of
+# 'somaxconn' and 'tcp_max_syn_backlog' in order to get the desired effect.
+net.ipv4.tcp_max_syn_backlog=1024
+net.core.somaxconn=1024
 
-Package: redis-server redis-tools
-Pin: release n=trusty
-Pin-Priority: 501
-EOF
+_EOF_
 
-apt-get update
+cat > "/etc/rc.local" << _EOF_
+# Make sure to disable Linux kernel feature transparent huge pages,
+# it will affect greatly both memory usage and latency in a negative way.
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+exit \$?
 
+_EOF_
+
+add-apt-repository -y ppa:chris-lea/redis-server
+apt-get -y update
 apt-get install -y redis-server
+
+cat > "/etc/default/redis-server" << _EOF_
+# Call ulimit -n with this argument prior to invoking Redis itself.
+# This may be required for high-concurrency environments. Redis itself cannot
+# alter its limits as it is not being run as root.
+ULIMIT=65536
+
+_EOF_
+
+# Install Python driver for Redis ('redis-py').
+pip install redis
+
+# By default, redis-py will attempt to use the HiredisParser if installed.
+# Using Hiredis can provide up to a 10x speed improvement in parsing responses
+# from the Redis server.
+pip install hiredis
