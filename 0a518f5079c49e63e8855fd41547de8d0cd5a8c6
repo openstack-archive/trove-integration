@@ -1,0 +1,13 @@
+Verified+2: Jenkins
+Code-Review+2: Victoria Martinez de la Cruz <victoria@redhat.com>
+Code-Review+1: Sushil Kumar <skm.net@gmail.com>
+Code-Review+2: amrith <amrith@tesora.com>
+Workflow+1: amrith <amrith@tesora.com>
+Code-Review+1: Morgan Jones <morgan@parelastic.com>
+Code-Review+1: Petr Malik <pmalik@tesora.com>
+Code-Review+1: Ashleigh Farnham <ashleighfarnham@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 26 May 2015 15:39:47 +0000
+Reviewed-on: https://review.openstack.org/177324
+Project: openstack/trove-integration
+Branch: refs/heads/master
