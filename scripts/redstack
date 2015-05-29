@@ -121,6 +121,8 @@ function exclaim () {
 # devstack trove plugin, if required.  We'll use the devstack version if it
 # exists, otherwise we assume the plugin method.
 function set_trove_plugin_vars () {
+    FAIL_IF_MISSING=${1:-true}
+
     TROVE_SETUP_CMD_FILE="$PATH_DEVSTACK_SRC/lib/trove"
     if [ -f "$TROVE_SETUP_CMD_FILE" ]; then
         USE_DEVSTACK_TROVE_PLUGIN=false
@@ -128,8 +130,8 @@ function set_trove_plugin_vars () {
         TROVE_SETUP_CMD_FILE="$DEST/trove/devstack/plugin.sh"
         USE_DEVSTACK_TROVE_PLUGIN=true
     fi
-    # Only complain if we have a devstack directory
-    if [ -d "$PATH_DEVSTACK_SRC" ] && [ ! -f "$TROVE_SETUP_CMD_FILE" ]; then
+    # Only complain if we have a devstack directory and are told to
+    if [ "$FAIL_IF_MISSING" = "true" ] && [ -d "$PATH_DEVSTACK_SRC" ] && [ ! -f "$TROVE_SETUP_CMD_FILE" ]; then
         exclaim "${COLOR_RED}Trove setup file '${TROVE_SETUP_CMD_FILE}' not found!${COLOR_NONE}"
         exit 1
     fi
@@ -1057,7 +1059,7 @@ set -o errexit
 
 set_home_dir
 set_http_proxy
-set_trove_plugin_vars
+set_trove_plugin_vars false
 
 function print_usage() {
     echo "Usage: $0 [command]"
