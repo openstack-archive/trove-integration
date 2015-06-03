@@ -5,4 +5,4 @@
 
 dd if=/tmp/in_target.d/trove-guest.service of=/usr/lib/systemd/system/trove-guest.service
 
-
+systemctl enable trove-guest.service
