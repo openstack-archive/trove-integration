@@ -8,4 +8,14 @@ set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
 
-apt-get -y install mongodb
+# see http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" \
+    | tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+apt-get update
+apt-get install -y mongodb-org
+
+# the following config changes are needed: smallfiles set to true, and bind_ip
+# set to default
+sed -e '/smallfiles =/ s/false/true/I' -i /etc/mongod.conf
+sed -e '/bind_ip/ s/^#*/#/' -i /etc/mongod.conf
