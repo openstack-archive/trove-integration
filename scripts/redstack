@@ -339,7 +339,7 @@ function run_devstack() {
     USER_OPTS_TAG_END="$MARKER_TOKEN End Of User Specified Options $MARKER_TOKEN"
     ADD_OPTS_TAG="$MARKER_TOKEN Additional Options $MARKER_TOKEN"
     ADD_OPTS_TAG_END="$MARKER_TOKEN End Of Additional Options $MARKER_TOKEN"
-    set_trove_plugin_vars
+    set_trove_plugin_vars false
 
     pushd "$PATH_DEVSTACK_SRC"
     DEVSTACK_LOCAL_CONF=$LOCAL_CONF
