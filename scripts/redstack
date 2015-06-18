@@ -108,6 +108,8 @@ APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
 
 # Colors that can be used in 'exclaim'
 COLOR_RED='\033[0;31m'
+COLOR_GREEN='\033[0;32m'
+COLOR_BLUE='\033[0;34m'
 COLOR_NONE='\033[0m'
 
 function exclaim () {
@@ -215,6 +217,9 @@ function install_devstack_code() {
         mkdir -p $PATH_DEVSTACK_SRC
         git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
     fi
+    PROJ_BRANCH=$(get_project_branch DEVSTACK_BRANCH $PROJECT_BRANCH)
+    ENV_VARS="DEVSTACK_BRANCH' or 'PROJECT_BRANCH"
+    git_checkout "devstack" "$PATH_DEVSTACK_SRC" "$PROJ_BRANCH" "$ENV_VARS"
 
     exclaim "Installing devstack projects..."
     # Ensures present user can get to the devstack dirs
@@ -423,7 +428,7 @@ function cmd_install() {
     install_reviews_on_top_of_devstack
     fixup_broken_devstack
     run_devstack
-    exclaim "FINISHED INSTALL"
+    exclaim "${COLOR_GREEN}FINISHED INSTALL${COLOR_NONE}"
 }
 
 
@@ -1055,6 +1060,22 @@ function cmd_clone_projects() {
                 git pull
             fi
         fi
+        PROJECT_BRANCH_NAME=$(eval echo "${project}_BRANCH" | tr '[:lower:]-' '[:upper:]_')
+
+        # Set up the default branch and env var names for the project
+        DEFAULT_BRANCH="$PROJECT_BRANCH"
+        ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_BRANCH"
+        # Don't use 'PROJECT_BRANCH' or 'PROJECT_CLIENT_BRANCH' for the Trove project
+        if [[ "$project" =~ "trove" ]]; then
+            DEFAULT_BRANCH=master
+            ENV_VARS="$PROJECT_BRANCH_NAME"
+        # Use 'PROJECT_CLIENT_BRANCH' first for clients
+        elif [[ "$project" =~ "client" ]]; then
+            DEFAULT_BRANCH="${PROJECT_CLIENT_BRANCH:-$PROJECT_BRANCH}"
+            ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_CLIENT_BRANCH' or 'PROJECT_BRANCH"
+        fi
+        PROJ_BRANCH=$(get_project_branch $PROJECT_BRANCH_NAME $DEFAULT_BRANCH)
+        git_checkout "$project" "$PATH_DEVSTACK_OUTPUT/$project" "$PROJ_BRANCH" "$ENV_VARS"
   done
 }
 
@@ -1089,6 +1110,8 @@ function print_usage() {
                           - devstack config can be altered by using a USER_LOCAL_CONF file
                             which will be copied into devstack/local.conf on each 'install' run
                             (defaults to \$HOME/$USER_LOCAL_CONF_NAME)
+                          - Set DEVSTACK_BRANCH to switch the branch/commit of devstack
+                            (i.e. 'stable/kilo' or '7ef2462')
           test-init       - Configure the test configuration files and add keystone test users
           build-image     - Builds the vm image for the trove guest
           initialize      - Reinitialize the trove database, users, services, and test config
@@ -1097,6 +1120,7 @@ function print_usage() {
           kick-start      - kick start the setup of trove.
                             (redstack test-init/build-image in one step)
                             [mysql no-clean] no clean avoids rebuilding packages from scratch
+                          - Set REBUILD_IMAGE=True to force rebuild (won't use cached image)
 
         --trove dependency services--
           start-deps      - Start or resume daemons Trove depends on.
