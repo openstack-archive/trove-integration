@@ -17,5 +17,6 @@ apt-get install -y mongodb-org
 
 # the following config changes are needed: smallfiles set to true, and bind_ip
 # set to default
-sed -e '/smallfiles =/ s/false/true/I' -i /etc/mongod.conf
-sed -e '/bind_ip/ s/^#*/#/' -i /etc/mongod.conf
+sed -i '/bind_ip/d' /etc/mongod.conf
+sed -i '/smallfiles/d' /etc/mongod.conf
+echo 'smallfiles = true' >> /etc/mongod.conf
