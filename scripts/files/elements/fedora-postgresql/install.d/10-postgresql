@@ -3,4 +3,18 @@
 set -e
 set -o xtrace
 
-yum -y install postgresql93
+yum install -y http://yum.postgresql.org/9.3/fedora/fedora-21-x86_64/pgdg-fedora93-9.3-2.noarch.rpm
+
+yum install -y postgresql93-server postgresql93-contrib
+
+# Though /var/lib/pgsql is the preferred directory, need to move it as
+# this is where the volume will be mounted
+su - postgres -c "/usr/pgsql-9.3/bin/initdb /var/lib/pgsql/9.3/data"
+mv /var/lib/pgsql /var/lib/postgresql
+
+mv /lib/systemd/system/postgresql-9.3.service /lib/systemd/system/postgresql.service
+
+sed -i 's/PGDATA=\/var\/lib\/pgsql\/9.3\/data/PGDATA=\/var\/lib\/postgresql\/9.3\/data/' /lib/systemd/system/postgresql.service
+
+systemctl enable postgresql.service
+systemctl start postgresql.service
