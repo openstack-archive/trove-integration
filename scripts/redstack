@@ -482,6 +482,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
         PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
         VERSION="5.5"
+    elif [ "$DATASTORE_TYPE" == "pxc" ]; then
+        PACKAGES=${PACKAGES:-"percona-xtradb-cluster-server"}
+        VERSION="5.5"
     elif [ "$DATASTORE_TYPE" == "mongodb" ]; then
         PACKAGES=${PACKAGES:-"mongodb-org"}
         VERSION="3.0"
@@ -635,22 +638,29 @@ function mod_confs() {
     fi
 
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
-        # Setting cluster_member_count to 2 to decrease cluster spawn time.
-        iniset $TROVE_CONF vertica cluster_member_count 2
-
         # Vertica needs more time than mysql for its boot/start/stop operations.
-        iniset $TROVE_TASKMANAGER_CONF DEFAULT agent_call_high_timeout 300
-        iniset $TROVE_TASKMANAGER_CONF DEFAULT cluster_usage_timeout 2000
-        iniset $TROVE_TASKMANAGER_CONF DEFAULT resize_time_out 900
-        iniset $TROVE_TASKMANAGER_CONF DEFAULT usage_timeout 1500
+        setup_cluster_configs
 
         # Setting flavor to be >= 2GB RAM for Vertica guest instances in test.conf.
         sed -i "s/m1.rd-tiny/m1.small/g" $TEST_CONF
         sed -i "s/m1.rd-smaller/m1.medium/g" $TEST_CONF
     fi
 
+    if [ "$DATASTORE_TYPE" = "pxc" ]; then
+        setup_cluster_configs
+    fi
+
 }
 
+function setup_cluster_configs() {
+    # Setting cluster_member_count to 2 to decrease cluster spawn time.
+    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count 2
+    # Setting cluster configs
+    iniset $TROVE_TASKMANAGER_CONF DEFAULT agent_call_high_timeout 300
+    iniset $TROVE_TASKMANAGER_CONF DEFAULT cluster_usage_timeout 2000
+    iniset $TROVE_TASKMANAGER_CONF DEFAULT resize_time_out 900
+    iniset $TROVE_TASKMANAGER_CONF DEFAULT usage_timeout 1500
+}
 
 function add_test_flavors() {
     add_flavor 'tinier' 6 506 10 1 0
