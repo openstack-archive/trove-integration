@@ -1,0 +1,10 @@
+#!/bin/sh
+
+
+# CONTEXT: GUEST during PRE-CONSTRUCTION as ROOT
+# PURPOSE: Force a repo update
+
+set -e
+set -o xtrace
+
+apt-get update
