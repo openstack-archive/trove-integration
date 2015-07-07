@@ -472,6 +472,9 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
         PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
         VERSION="5.5"
+    elif [ "$DATASTORE_TYPE" == "pxc" ]; then
+        PACKAGES=${PACKAGES:-"percona-xtradb-cluster-server"}
+        VERSION="5.5"
     elif [ "$DATASTORE_TYPE" == "mongodb" ]; then
         PACKAGES=${PACKAGES:-"mongodb-org"}
         VERSION="3.0"
