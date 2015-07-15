@@ -1036,10 +1036,11 @@ function cmd_dsvm_gate_tests() {
 
     # Update the local swift endpoint in the catalog to use the NETWORK_GATEWAY instead of 127.0.0.1
     source $DEST/devstack/accrc/admin/admin
-    SWIFT_ENDPOINT=$(openstack endpoint list | grep 'swift' | get_field 1)
-    openstack endpoint create swift --region RegionOne --publicurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' \
-        --internalurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'$NETWORK_GATEWAY':8080'
-    openstack endpoint delete $SWIFT_ENDPOINT
+    SWIFT_ENDPOINTS=$(openstack endpoint list --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 --service swift -c ID -f value)
+    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift public 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift internal 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift admin 'http://'$NETWORK_GATEWAY':8080' --region RegionOne
+    echo $SWIFT_ENDPOINTS | xargs -n 1 openstack endpoint delete --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3
 
     cmd_int_tests --group=$DATASTORE_TYPE
 }
