@@ -298,15 +298,25 @@ function git_checkout() {
         if [ $PROJECT == "diskimage-builder" ] || [ $PROJECT == "tripleo-image-elements" ]; then
             REPO_BRANCH=master
         fi
+        CURRENT_BRANCH=$(git branch | grep "\*" | awk '{print $2}')
         GIT_STATUS=$(git checkout "$REPO_BRANCH" &> /dev/null || echo "failed")
         if [[ "$GIT_STATUS" = "failed" ]]; then
             exclaim "${COLOR_RED}Could not switch to branch/commit '$REPO_BRANCH' in $PROJECT, exiting${COLOR_NONE}"
             echo "Please set '$REPO_BRANCH_VAR_NAME' to a valid branch/commit and try again."
-            echo "Note: This error may also mean that there are modified files in $PROJECT."
-            echo "      If that is the case, please stash them and re-run your command."
+            if [[ "$CURRENT_BRANCH" != "master" ]]; then
+                echo "Note: This repo is currently on branch ${CURRENT_BRANCH} - if this is correct,"
+                echo "you should set $REPO_BRANCH_VAR_NAME=${CURRENT_BRANCH} and re-run your command."
+            else
+                echo "Note: This error may also mean that there are modified files in $PROJECT."
+                echo "      If that is the case, please stash them and re-run your command."
+            fi
             exit 1
         else
-            exclaim "${COLOR_BLUE}Using $PROJECT branch '$REPO_BRANCH'${COLOR_NONE}"
+            if [[ "$REPO_BRANCH" != "$CURRENT_BRANCH" ]]; then
+                exclaim "${COLOR_BLUE}Switched to $PROJECT branch '$REPO_BRANCH'${COLOR_NONE}"
+            else
+                echo "Using $PROJECT branch '$REPO_BRANCH'"
+            fi
         fi
         popd
     fi
