@@ -28,6 +28,10 @@ if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
 fi
 
+# NOTE(mriedem): The gate-trove-functional-dsvm-* job config in project-config
+# sets this value for Jenkins runs.
+BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
+
 # Bail on errors.
 set -e
 
@@ -48,9 +52,15 @@ function get_default_host_ip() {
 # allow overrides from devstack if already set
 [[ -f $PATH_DEVSTACK_SRC/functions-common ]] && source $PATH_DEVSTACK_SRC/functions-common
 [[ -f $PATH_DEVSTACK_SRC/functions ]] && source $PATH_DEVSTACK_SRC/functions
-# source the old-style localrc, or new-style .local.auto - only one should exist
+
+# Source the old-style localrc, or new-style .local.auto - only one should exist.
+# Note: The devstack localrc's have references to 'enable_plugin' which causes
+# errors when sourcing them in the stable/juno and stable/kilo branches.
+# These errors are safe to ignore when sourcing these files.
+set +e
 [[ -f $PATH_DEVSTACK_SRC/$LOCALRC ]] && source $PATH_DEVSTACK_SRC/$LOCALRC
 [[ -f $PATH_DEVSTACK_SRC/$LOCALRC_AUTO ]] && source $PATH_DEVSTACK_SRC/$LOCALRC_AUTO
+set -e
 
 # Set up variables for the CONF files - this has to happen after loading redstack.rc, since
 # TROVE_CONF_DIR is defined there - these will be used by devstack too
@@ -700,14 +710,16 @@ function cmd_build_and_upload_image() {
         IMAGE_URL="file://$QCOW_IMAGE"
     fi
 
-    source $PATH_DEVSTACK_SRC/openrc admin admin
+    # The devstack openrc has references to 'enable_plugin' which causes errors
+    # in the stable/juno and stable/kilo branches. These are safe to ignore.
+    set +e; source $PATH_DEVSTACK_SRC/openrc admin admin; set -e
     TOKEN=$(openstack token issue | grep ' id ' | get_field 2)
     GLANCE_IMAGEIDS=$(glance image-list | grep $(basename $IMAGE_URL .qcow2) | get_field 1)
     if [[ -n $GLANCE_IMAGEIDS ]]; then
         glance image-delete $GLANCE_IMAGEIDS
     fi
     GLANCE_IMAGEID=`get_glance_id upload_image $IMAGE_URL $TOKEN`
-    source $PATH_DEVSTACK_SRC/openrc demo demo
+    set +e; source $PATH_DEVSTACK_SRC/openrc demo demo; set -e
     [[ -z "$GLANCE_IMAGEID" ]] && echo "Glance upload failed!" && exit 1
     echo "IMAGE ID: $GLANCE_IMAGEID"
 
@@ -1036,11 +1048,20 @@ function cmd_dsvm_gate_tests() {
 
     # Update the local swift endpoint in the catalog to use the NETWORK_GATEWAY instead of 127.0.0.1
     source $DEST/devstack/accrc/admin/admin
-    SWIFT_ENDPOINTS=$(openstack endpoint list --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 --service swift -c ID -f value)
-    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift public 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
-    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift internal 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
-    openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift admin 'http://'$NETWORK_GATEWAY':8080' --region RegionOne
-    echo $SWIFT_ENDPOINTS | xargs -n 1 openstack endpoint delete --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3
+    # NOTE(mriedem): We have to treat stable branches before liberty special
+    # due to constraints with older versions of python-openstackclient.
+    if [[ $BRANCH_OVERRIDE == "stable/juno" || $BRANCH_OVERRIDE == "stable/kilo" ]]; then
+        SWIFT_ENDPOINT=$(openstack endpoint list | grep 'swift' | get_field 1)
+        openstack endpoint create swift --region RegionOne --publicurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' \
+            --internalurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'$NETWORK_GATEWAY':8080'
+        openstack endpoint delete $SWIFT_ENDPOINT
+    else
+        SWIFT_ENDPOINTS=$(openstack endpoint list --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 --service swift -c ID -f value)
+        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift public 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift internal 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift admin 'http://'$NETWORK_GATEWAY':8080' --region RegionOne
+        echo $SWIFT_ENDPOINTS | xargs -n 1 openstack endpoint delete --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3
+    fi
 
     cmd_int_tests --group=$DATASTORE_TYPE
 }

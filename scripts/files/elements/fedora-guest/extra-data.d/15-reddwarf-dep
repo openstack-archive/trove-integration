@@ -8,7 +8,8 @@ set -o xtrace
 
 source $_LIB/die
 
-REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/fedora-requirements.txt
+ADD_BRANCH=$(basename ${BRANCH_OVERRIDE})
+REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/fedora-requirements-${ADD_BRANCH}.txt
 
 [ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 [ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
