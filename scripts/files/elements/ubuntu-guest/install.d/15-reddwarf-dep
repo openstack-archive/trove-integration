@@ -18,5 +18,5 @@ apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools \
 # extra-data.d/15-reddwarf-dep
 
 TMP_HOOKS_DIR="/tmp/in_target.d"
-
+cat ${TMP_HOOKS_DIR}/requirements.txt
 pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt
