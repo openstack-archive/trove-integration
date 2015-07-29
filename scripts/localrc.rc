@@ -10,7 +10,7 @@ TROVE_LOGDIR=$TROVE_LOGDIR
 TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
 
 # Enable the Trove plugin for devstack
-if [[ $USE_DEVSTACK_TROVE_PLUGIN = true ]]; then
+if [[ $USE_DEVSTACK_TROVE_PLUGIN = true && $BRANCH_OVERRIDE = default ]]; then
     enable_plugin trove $OPENSTACK_GITSOURCE/trove
     enable_plugin python-troveclient $OPENSTACK_GITSOURCE/python-troveclient
 fi
@@ -77,4 +77,3 @@ VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False)
 UNDO_REQUIREMENTS=False
-
