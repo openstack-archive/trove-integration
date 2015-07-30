@@ -39,9 +39,16 @@ PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
-# Devstack and OpenStack git repo source path
-REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
-OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
+# Devstack and OpenStack git repo source paths, etc.
+GIT_BASE=${GIT_BASE:-git://git.openstack.org}
+GIT_OPENSTACK=${GIT_OPENSTACK:-${GIT_BASE}/openstack}
+DEVSTACK_REPO=${DEVSTACK_REPO:-${GIT_BASE}/openstack-dev/devstack.git}
+TROVE_REPO=${TROVE_REPO:-${GIT_OPENSTACK}/trove.git}
+TROVE_DIR=${TROVE_DIR:-${PATH_TROVE}}
+TROVE_BRANCH=${TROVE_BRANCH:-master}
+TROVECLIENT_REPO=${TROVECLIENT_REPO:-${GIT_OPENSTACK}/python-troveclient.git}
+TROVECLIENT_DIR=${TROVECLIENT_DIR:-${PATH_PYTHON_TROVECLIENT}}
+TROVECLIENT_BRANCH=${TROVECLIENT_BRANCH:-master}
 
 # Destination for working data
 DATA_DIR=${DEST}/data
