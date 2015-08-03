@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT - install.d
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+export DEBIAN_FRONTEND=noninteractive
+
+mkdir -p /opt/datastore_pkg/
+
+if [ -d  /tmp/in_target.d/datastore_package/datastore_package.tgz ]
+then
+    pushd /opt/datastore_pkg/
+    tar -xzf /tmp/in_target.d/datastore_package/datastore_package.tgz
+    popd
+
+else
+    for package_file in `ls -1r /tmp/in_target.d/datastore_pkg/`
+    do
+        cp /tmp/in_target.d/datastore_package/${package_file} /opt/datastore_package/
+    done
+fi
