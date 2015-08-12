@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
+echo exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster* >> /etc/yum.conf
+
+yum -y install mariadb-server percona-xtrabackup
