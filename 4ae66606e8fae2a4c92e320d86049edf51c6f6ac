@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Craig Vyvial <cp16net@gmail.com>
+Code-Review+1: Sushil Kumar <skm.net@gmail.com>
+Code-Review+2: Peter Stachowski <peter@tesora.com>
+Workflow+1: Peter Stachowski <peter@tesora.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 13 Aug 2015 07:47:14 +0000
+Reviewed-on: https://review.openstack.org/207193
+Project: openstack/trove-integration
+Branch: refs/heads/master
