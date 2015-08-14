@@ -12,7 +12,17 @@ DB2_PKG_LOCATION="/db2"
 mkdir ${DB2_PKG_LOCATION}
 cd ${DB2_PKG_LOCATION}
 
-tar -xvzf /tmp/in_target.d/db2.tar.gz
+if [ -f /opt/datastore_package/db2.tar.gz ]
+then
+    tar -xvzf /opt/datastore_package/db2.tar.gz
+elif [ -f /opt/datastore_package/v10.5_linuxx64_expc.tar.gz ]
+then
+    tar -xvzf /opt/datastore_package/v10.5_linuxx64_expc.tar.gz
+else
+    echo "ERROR: DB2 Package (db2.tar.gz or v10.5_linuxx64_expc.tar.gz) not found in /opt/datastore_package/"
+    echo "Please register and download the DB2 Express-C packages to a private repository or local filesystem."
+    exit 1
+fi
 
 # installing dependencies
 apt-get install libaio1
