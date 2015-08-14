@@ -28,6 +28,10 @@ if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
     . $REDSTACK_SCRIPTS/options.rc
 fi
 
+echo $BRANCH_OVERRIDE
+echo $OVERRIDE_ZUUL_BRANCH
+exit 0
+
 # NOTE(mriedem): The gate-trove-functional-dsvm-* job config in project-config
 # sets this value for Jenkins runs.
 BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
