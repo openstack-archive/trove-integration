@@ -32,7 +32,7 @@ fi
 # sets this value for Jenkins runs.
 BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
 if [[ $BRANCH_OVERRIDE == "default" && $OVERRIDE_ZUUL_BRANCH != "master" ]]; then
-    $BRANCH_OVERRIDE=$OVERRIDE_ZUUL_BRANCH
+    BRANCH_OVERRIDE=$OVERRIDE_ZUUL_BRANCH
 fi
 
 # Bail on errors.
