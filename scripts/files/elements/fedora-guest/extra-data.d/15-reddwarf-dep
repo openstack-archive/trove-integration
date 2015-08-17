@@ -10,9 +10,10 @@ source $_LIB/die
 
 BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
 ADD_BRANCH=$(basename ${BRANCH_OVERRIDE})
-REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/fedora-requirements-${ADD_BRANCH}.txt
 
 [ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
-[ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
+[ -e ${REDSTACK_SCRIPTS} ] || die "Redstack scripts not found"
+
+REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/fedora-requirements-${ADD_BRANCH}.txt
 
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
