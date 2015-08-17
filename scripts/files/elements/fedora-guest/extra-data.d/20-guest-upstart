@@ -9,6 +9,8 @@ set -o xtrace
 
 source $_LIB/die
 
+HOST_SCP_USERNAME=${HOST_SCP_USERNAME:-$HOST_USERNAME}
+
 [ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 
 [ -n "${GUEST_USERNAME}" ] || die "GUEST_USERNAME needs to be set to the user for the guest image"
