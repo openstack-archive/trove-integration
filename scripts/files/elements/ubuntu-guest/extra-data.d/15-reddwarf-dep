@@ -14,5 +14,6 @@ REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements-${A
 
 [ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 [ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
+[ -n "$HOST_USERNAME" ] || die "HOST_USERNAME needs to be set to the user for the current user on the host"
 
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
