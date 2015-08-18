@@ -11,17 +11,16 @@ yum install -y python-devel libxml2-devel libxslt-devel python-setuptools \
     python-routes python-eventlet python-webob \
     python-kombu python-paste-deploy python-paste python-netaddr \
     python-httplib2 python-iso8601 MySQL-python \
-    python-migrate python-anyjson gcc
+    python-migrate python-anyjson gcc python-pexpect
 
 # pick up the requirements file left for us by
 # extra-data.d/15-reddwarf-dep
 
 TMP_HOOKS_DIR="/tmp/in_target.d"
 
-pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt
+# python-pip package from fedora can get tangled up in the six dependency
+# so use easy_install instead
+yum remove -y python-pip
+easy_install pip
 
-# Even though six is not in the requirements.txt, pip seems to pull it in as
-# a dependency and conflicts with the python-six package needed by yum
-# This causes a problem which prevents trove-guest from starting up
-pip uninstall six -y
-yum reinstall -y python-six
+pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt
