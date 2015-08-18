@@ -228,7 +228,7 @@ function install_devstack_code() {
     if [ ! -d $PATH_DEVSTACK_SRC ]; then
         echo "DevStack not in a shared folder, cloning from git."
         mkdir -p $PATH_DEVSTACK_SRC
-        git clone $REPO_DEVSTACK $PATH_DEVSTACK_SRC
+        git clone $DEVSTACK_REPO $PATH_DEVSTACK_SRC
     fi
 
     source $PATH_DEVSTACK_SRC/functions-common
@@ -1079,7 +1079,7 @@ function cmd_clone_projects() {
     for project in $(cat $PROJECT_LIST_FILES); do
         if [ ! -d $PATH_DEVSTACK_OUTPUT/$project ]; then
             echo "Creating a new clone of $project..."
-            git_clone $OPENSTACK_GITSOURCE/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
+            git_clone $GIT_OPENSTACK/"$project".git ${PATH_DEVSTACK_OUTPUT}/$project master
         else
             if [ $UPDATE_PROJECTS != "force_update" ]; then
                 echo "$project was already cloned or exists in a shared folder. Ignoring..."
