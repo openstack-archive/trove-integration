@@ -31,6 +31,7 @@ function build_vm() {
     if [ $DISTRO == 'fedora' ]; then
         EXTRA_ELEMENTS=selinux-permissive
     fi
+
     export HOST_USERNAME
     export HOST_SCP_USERNAME
     export GUEST_USERNAME
@@ -135,7 +136,7 @@ function manage_ssh_keys() {
     fi
 
     if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
-        sudo apt-get -y install expect
+        sudo ${PKG_MGR} ${PKG_GET_ARGS} install expect
         generate_empty_passphrase_ssh_key ${HOST_USERNAME}
     fi
 
