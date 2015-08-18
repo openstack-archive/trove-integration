@@ -112,12 +112,18 @@ if [ -f /tmp/integration/env.rc ]; then
     source /tmp/integration/env.rc
 fi
 
+# set up respective package managers
+if is_fedora; then
+    PKG_MGR=yum
+    PKG_GET_ARGS="-y"
+else
+    PKG_MGR=apt-get
+    PKG_GET_ARGS="-y --allow-unauthenticated --force-yes"
+fi
 
 ###############################################################################
 # Utility functions
 ###############################################################################
-
-APT_GET_ARGS="-y --allow-unauthenticated --force-yes"
 
 # Colors that can be used in 'exclaim'
 COLOR_RED='\033[0;31m'
@@ -154,12 +160,12 @@ function set_trove_plugin_vars () {
 
 function pkg_install () {
     echo Installing $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS install $@
+    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@
 }
 
 function pkg_update () {
     echo Updating $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY apt-get $APT_GET_ARGS update $@
+    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@
 }
 
 function set_home_dir() {
@@ -218,7 +224,16 @@ function install_prep_packages() {
     exclaim 'Updating dependencies (part 1a)...'
     pkg_update
     exclaim 'Installing dependencies (part 1b)...'
-    pkg_install git-core kvm-ipxe python-pip gettext
+    if is_fedora; then
+      # need to avoid packaged pip/dep problems
+      sudo yum remove -y python-pip
+      pkg_install python-setuptools
+      sudo easy_install pip
+      pkg_install git gettext
+    else
+      pkg_install python-pip
+      pkg_install git-core kvm-ipxe gettext
+    fi
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
 }
 
@@ -429,7 +444,6 @@ function run_devstack() {
         # this is to add a blank line for readability
         add_file_contents "$DEVSTACK_LOCAL_CONF" "" "$ADD_OPTS_TAG"
     fi
-    export MYSQL_HOST=$SERVICE_HOST
     ./stack.sh
     popd
 }
@@ -473,6 +487,23 @@ function get_glance_id () {
     echo `$@ | grep ' id ' | get_field 2`
 }
 
+function set_bin_path() {
+    if is_fedora; then
+       sed -i "s|%bin_path%|/usr/bin|g" $TEST_CONF
+    else
+       sed -i "s|%bin_path%|/usr/local/bin|g" $TEST_CONF
+    fi
+}
+
+function set_mysql_pkg() {
+    if is_fedora; then
+       MYSQL_PKG="mysql-community-server"
+    else
+       MYSQL_PKG="mysql-server-5.6"
+    fi
+}
+
+
 function cmd_set_datastore() {
     IMAGEID=$1
     DATASTORE_TYPE=$2
@@ -480,7 +511,8 @@ function cmd_set_datastore() {
     rd_manage datastore_update "$DATASTORE_TYPE" ""
     PACKAGES=${PACKAGES:-""}
     if [ "$DATASTORE_TYPE" == "mysql" ]; then
-        PACKAGES=${PACKAGES:-"mysql-server-5.6"}
+        set_mysql_pkg
+        PACKAGES=${PACKAGES:-$MYSQL_PKG}
         VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
         PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
@@ -652,6 +684,8 @@ function mod_confs() {
         sed -i "s/m1.rd-smaller/m1.medium/g" $TEST_CONF
     fi
 
+    set_bin_path
+
 }
 
 
@@ -690,8 +724,8 @@ function cmd_build_image() {
     GUEST_USERNAME=${4:-'ubuntu'}
 
     exclaim "Ensuring we have all packages needed to build image."
-    sudo $HTTP_PROXY apt-get -y update
-    sudo $HTTP_PROXY apt-get -y install qemu
+    sudo $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update
+    sudo $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install qemu
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
     cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
 
@@ -734,7 +768,6 @@ function cmd_build_and_upload_image() {
 function cmd_initialize() {
     exclaim '(Re)Initializing Trove...'
     pushd $PATH_DEVSTACK_SRC
-    export MYSQL_HOST=$SERVICE_HOST
     ./unstack.sh
     ./stack.sh
     popd
@@ -777,7 +810,7 @@ function init_fake_mode() {
             'Test_Datastore_1', ''); \
          INSERT INTO datastore_versions VALUES ('b00000b0-00b0-0b00-00b0-000b000000bb', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', '5.6', \
-            'c00000c0-00c0-0c00-00c0-000c000000cc', 'mysql-server-5.6', 1, 'mysql'); \
+            'c00000c0-00c0-0c00-00c0-000c000000cc', $MYSQL_PKG, 1, 'mysql'); \
          INSERT INTO datastore_versions VALUES ('d00000d0-00d0-0d00-00d0-000d000000dd', \
             'a00000a0-00a0-0a00-00a0-000a000000aa', 'inactive_version', \
             '', '', 0, 'manager1'); \
