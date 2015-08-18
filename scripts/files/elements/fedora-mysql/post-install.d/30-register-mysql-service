@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# Enable and start service
+systemctl enable mysqld
+systemctl start mysqld

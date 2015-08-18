@@ -6,4 +6,12 @@
 set -e
 set -o xtrace
 
-yum -y install mysql mysql-server-5.6 percona-xtrabackup
+yum -y install https://dev.mysql.com/get/mysql-community-release-fc21-6.noarch.rpm
+yum -y install mysql-community-server
+
+# move the config until proper changes are placed in the service file for fedora
+# ln -s creates problems for the systemd script
+mkdir /etc/mysql
+mv /etc/my.cnf /etc/mysql/my.cnf
+mv /etc/my.cnf.d /etc/mysql/conf.d
+chown -R mysql:mysql /etc/mysql
