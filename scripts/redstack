@@ -89,8 +89,8 @@ TROVE_AUTH_ENDPOINT=$KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:$KEYSTONE_AUTH
 
 # PATH_TROVE more than likely has file separators, which sed does not like
 # This will escape them
-ESCAPED_PATH_TROVE=`echo $PATH_TROVE | sed 's/\//\\\\\//g'`
-ESCAPED_REDSTACK_SCRIPTS=`echo $REDSTACK_SCRIPTS | sed 's/\//\\\\\//g'`
+ESCAPED_PATH_TROVE=$(echo $PATH_TROVE | sed 's/\//\\\//g')
+ESCAPED_REDSTACK_SCRIPTS=$(echo $REDSTACK_SCRIPTS | sed 's/\//\\\//g')
 TROVE_AUTH_CACHE_DIR=${TROVE_AUTH_CACHE_DIR:-/var/cache/trove}
 TROVE_LOGDIR=${TROVE_LOGDIR:-$DEST/logs}
 # DATASTORE_PKG_LOCATION defines the location from where the datastore packages
