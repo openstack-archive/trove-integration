@@ -21,6 +21,7 @@ function build_vm() {
     if [ $DISTRO == 'ubuntu' ]; then
         export RELEASE=trusty
         export DIB_RELEASE=$RELEASE
+        export BASE_IMAGE_FILE=ubuntu-14.04-server-cloudimg-amd64-root.tar.gz
         export DIB_CLOUD_IMAGES=cloud-images.ubuntu.com
         # Use the apt sources.list on the build host, its almost always preferred
         if [ -f /etc/apt/sources.list ]; then
