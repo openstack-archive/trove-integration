@@ -8,6 +8,7 @@
 # test.                                                                       #
 #                                                                             #
 ###############################################################################
+exit 0
 
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
