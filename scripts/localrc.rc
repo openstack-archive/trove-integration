@@ -34,7 +34,15 @@ if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
 fi
 
 # Use Git repositories for client components
-LIBS_FROM_GIT=python-troveclient
+
+# NOTE(cp16net) Troveclient will not work on the master branch when testing the
+# stable/juno branch so force the branch to the tag 1.0.8
+if [[ $TROVECLIENT_BRANCH == "master" && $BRANCH_OVERRIDE == "stable/juno" ]]; then
+    echo "Use troveclient from pip not from git."
+else
+    LIBS_FROM_GIT=python-troveclient
+fi
+
 if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
     LIBS_FROM_GIT+=,python-ceilometerclient,python-cinderclient
     LIBS_FROM_GIT+=,python-glanceclient,python-heatclient
