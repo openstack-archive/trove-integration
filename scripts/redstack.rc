@@ -4,9 +4,26 @@
 [ -z $BRIDGE_IP ] && BRIDGE_IP=10.0.0.1
 [ -z $PATH_DEVSTACK_SRC ] && PATH_DEVSTACK_SRC=~/devstack
 [ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
+[ -z $MYSQL_HOST ] && MYSQL_HOST=$SERVICE_HOST
 
 # Enable neutron instead of nova-network
-[ -z $ENABLE_NEUTRON ] && ENABLE_NEUTRON=false
+ENABLE_NEUTRON=$(get_bool ENABLE_NEUTRON false)
+
+# Enable ceilometer
+ENABLE_CEILOMETER=$(get_bool ENABLE_CEILOMETER false)
+
+# Enable osprofiler - note: Enables Ceilometer as well
+ENABLE_PROFILER=$(get_bool ENABLE_PROFILER false)
+PROFILER_TRACE_SQL=$(get_bool PROFILER_TRACE_SQL false)
+[ -z $PROFILER_HMAC_KEYS ] && PROFILER_HMAC_KEYS=SECRET_KEY
+
+# Enable LIBS_FROM_GIT
+LIBS_FROM_GIT_ALL_CLIENTS=$(get_bool LIBS_FROM_GIT_ALL_CLIENTS true)
+LIBS_FROM_GIT_ALL_OSLO=$(get_bool LIBS_FROM_GIT_ALL_OSLO true)
+
+# Don't include certain .rc files in local.conf.d by default
+USING_VAGRANT=$(get_bool USING_VAGRANT false)
+USE_UUID_TOKEN=$(get_bool USE_UUID_TOKEN false)
 
 # Paths for various OpenStack components
 PATH_DEVSTACK_OUTPUT=$DEST
@@ -17,17 +34,27 @@ PATH_SWIFT=$DEST/swift
 PATH_TROVE=$DEST/trove
 PATH_PYTHON_NOVACLIENT=$DEST/python-novaclient
 PATH_KEYSTONECLIENT=$DEST/python-keystoneclient
+PATH_OPENSTACKCLIENT=$DEST/python-openstackclient
 PATH_PYTHON_SWIFTCLIENT=$DEST/python-swiftclient
 PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
-# Devstack and OpenStack git repo source path
-REPO_DEVSTACK=git://git.openstack.org/openstack-dev/devstack.git
-OPENSTACK_GITSOURCE=git://git.openstack.org/openstack
+# Devstack and OpenStack git repo source paths, etc.
+GIT_BASE=${GIT_BASE:-git://git.openstack.org}
+GIT_OPENSTACK=${GIT_OPENSTACK:-${GIT_BASE}/openstack}
+DEVSTACK_REPO=${DEVSTACK_REPO:-${GIT_BASE}/openstack-dev/devstack.git}
+TROVE_REPO=${TROVE_REPO:-${GIT_OPENSTACK}/trove.git}
+TROVE_DIR=${TROVE_DIR:-${PATH_TROVE}}
+TROVE_BRANCH=${TROVE_BRANCH:-master}
+TROVECLIENT_REPO=${TROVECLIENT_REPO:-${GIT_OPENSTACK}/python-troveclient.git}
+TROVECLIENT_DIR=${TROVECLIENT_DIR:-${PATH_PYTHON_TROVECLIENT}}
+TROVECLIENT_BRANCH=${TROVECLIENT_BRANCH:-master}
 
 # Destination for working data
 DATA_DIR=${DEST}/data
+# Destination for status files
+SERVICE_DIR=${DEST}/status
 
 # Cinder Volume Group Name
 VOLUME_GROUP=${VOLUME_GROUP:-stack-volumes}

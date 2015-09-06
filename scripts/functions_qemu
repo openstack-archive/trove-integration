@@ -19,13 +19,19 @@ function build_vm() {
     manage_ssh_keys
 
     if [ $DISTRO == 'ubuntu' ]; then
-        export RELEASE=precise
+        export RELEASE=trusty
         export DIB_RELEASE=$RELEASE
         export DIB_CLOUD_IMAGES=cloud-images.ubuntu.com
+        # Use the apt sources.list on the build host, its almost always preferred
+        if [ -f /etc/apt/sources.list ]; then
+            export DIB_APT_SOURCES=/etc/apt/sources.list
+            EXTRA_ELEMENTS=apt-sources
+        fi
     fi
     if [ $DISTRO == 'fedora' ]; then
         EXTRA_ELEMENTS=selinux-permissive
     fi
+
     export HOST_USERNAME
     export HOST_SCP_USERNAME
     export GUEST_USERNAME
@@ -39,6 +45,8 @@ function build_vm() {
     export ESCAPED_GUEST_LOGDIR
     export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
     export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
+    export DATASTORE_PKG_LOCATION
+    export BRANCH_OVERRIDE
     local QEMU_IMG_OPTIONS=$(! $(qemu-img | grep -q 'version 1') && echo "--qemu-img-options compat=0.10")
     ${PATH_DISKIMAGEBUILDER}/bin/disk-image-create -a amd64 -o "${VM}" -x ${QEMU_IMG_OPTIONS} ${DISTRO} ${EXTRA_ELEMENTS} vm heat-cfntools cloud-init-datasources ${DISTRO}-guest ${DISTRO}-${SERVICE_TYPE}
 }
@@ -51,7 +59,7 @@ function build_guest_image() {
         exit 1
     fi
     SERVICE_TYPE=$1
-    VALID_SERVICES='mysql percona redis cassandra couchbase mongodb postgresql couchdb'
+    VALID_SERVICES='mysql percona mariadb redis cassandra couchbase mongodb postgresql couchdb vertica db2 pxc'
     if ! [[ " $VALID_SERVICES " =~ " $SERVICE_TYPE " ]]; then
         exclaim "You did not pass in a valid image type. Valid types are:" $VALID_SERVICES
         exit 1
@@ -128,7 +136,7 @@ function manage_ssh_keys() {
     fi
 
     if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
-        sudo apt-get -y install expect
+        sudo ${PKG_MGR} ${PKG_GET_ARGS} install expect
         generate_empty_passphrase_ssh_key ${HOST_USERNAME}
     fi
 

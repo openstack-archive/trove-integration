@@ -7,16 +7,20 @@ set -e
 set -o xtrace
 
 yum install -y python-devel libxml2-devel libxslt-devel python-setuptools \
-    python-pip python-sqlalchemy python-lxml \
+    python-sqlalchemy python-lxml \
     python-routes python-eventlet python-webob \
     python-kombu python-paste-deploy python-paste python-netaddr \
-    python-httplib2 python-iso8601 python-pexpect MySQL-python \
-    python-migrate python-pip python-anyjson gcc
-
+    python-httplib2 python-iso8601 MySQL-python \
+    python-migrate python-anyjson gcc python-pexpect
 
 # pick up the requirements file left for us by
 # extra-data.d/15-reddwarf-dep
 
 TMP_HOOKS_DIR="/tmp/in_target.d"
+
+# python-pip package from fedora can get tangled up in the six dependency
+# so use easy_install instead
+yum remove -y python-pip
+easy_install pip
 
 pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt

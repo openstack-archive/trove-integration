@@ -22,7 +22,7 @@ class Config(object):
         'horizon': '/opt/stack/horizon',
         'keystone': "/opt/stack/keystone",
         'nova': "/opt/stack/nova",
-        'python_keystoneclient': "/opt/stack/python-keystoneclient",
+        'python_openstackclient': "/opt/stack/python-openstackclient",
         'python_novaclient': "/opt/stack/python-novaclient",
         'trove':"/opt/stack/trove",
         'python_troveclient':"/opt/stack/python-troveclient",

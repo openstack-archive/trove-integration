@@ -1,14 +1,19 @@
-# Trove-integration
-# Set some arguments for devstack.
 # These passwords originally come from redstack.rc.
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 RABBIT_PASSWORD=$RABBIT_PASSWORD
 SERVICE_TOKEN=$SERVICE_TOKEN
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 SERVICE_PASSWORD=$SERVICE_PASSWORD
+
 PUBLIC_INTERFACE=eth0
 TROVE_LOGDIR=$TROVE_LOGDIR
 TROVE_AUTH_CACHE_DIR=$TROVE_AUTH_CACHE_DIR
+
+# Enable the Trove plugin for devstack
+if [[ $USE_DEVSTACK_TROVE_PLUGIN = true ]]; then
+    enable_plugin trove $TROVE_REPO $TROVE_DIR $TROVE_BRANCH
+fi
+
 # Enable Trove, Swift, and Heat
 ENABLED_SERVICES+=,trove,tr-api,tr-tmgr,tr-cond
 ENABLED_SERVICES+=,s-proxy,s-object,s-container,s-account
@@ -18,31 +23,44 @@ if [[ $ENABLE_NEUTRON = true ]]; then
     ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
     disable_service n-net
 fi
+# OSprofiler depends on Ceilometer
+if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
+    CEILOMETER_BACKEND=mysql
+    CEILOMETER_NOTIFICATION_TOPICS=notifications,profiler
+    ENABLED_SERVICES+=,ceilometer-acompute,ceilometer-acentral
+    ENABLED_SERVICES+=,ceilometer-anotification,ceilometer-collector
+    ENABLED_SERVICES+=,ceilometer-alarm-evaluator,ceilometer-alarm-notifier
+    ENABLED_SERVICES+=,ceilometer-api
+fi
 
 # Use Git repositories for client components
 LIBS_FROM_GIT=python-troveclient
-LIBS_FROM_GIT+=,python-ceilometerclient,python-cinderclient
-LIBS_FROM_GIT+=,python-glanceclient,python-heatclient
-LIBS_FROM_GIT+=,python-keystoneclient
-if [[ $ENABLE_NEUTRON = true ]]; then
-    LIBS_FROM_GIT+=,python-neutronclient
+if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
+    LIBS_FROM_GIT+=,python-ceilometerclient,python-cinderclient
+    LIBS_FROM_GIT+=,python-glanceclient,python-heatclient
+    LIBS_FROM_GIT+=,python-keystoneclient
+    if [[ $ENABLE_NEUTRON = true ]]; then
+        LIBS_FROM_GIT+=,python-neutronclient
+    fi
+    LIBS_FROM_GIT+=,python-novaclient,python-openstackclient
+    LIBS_FROM_GIT+=,python-saharaclient,python-swiftclient
 fi
-LIBS_FROM_GIT+=,python-novaclient,python-openstackclient
-LIBS_FROM_GIT+=,python-saharaclient,python-swiftclient
 # Add Git repositories for libraries
-LIBS_FROM_GIT+=,cliff,cookiecutter
-LIBS_FROM_GIT+=,oslo.concurrency,oslo.context
-LIBS_FROM_GIT+=,oslo.config,oslo-cookiecutter
-LIBS_FROM_GIT+=,oslo.db,oslo.i18n
-LIBS_FROM_GIT+=,oslo.log,oslo.messaging
-LIBS_FROM_GIT+=,oslo.middleware,oslo.rootwrap
-LIBS_FROM_GIT+=,oslo.serialization,oslosphinx
-LIBS_FROM_GIT+=,oslotest,oslo.utils
-LIBS_FROM_GIT+=,oslo.version,oslo.vmware
-LIBS_FROM_GIT+=,pylockfile,hacking
-LIBS_FROM_GIT+=,pbr,pyCADF
-LIBS_FROM_GIT+=,stevedore,taskflow
-LIBS_FROM_GIT+=,tooz
+if [[ $LIBS_FROM_GIT_ALL_OSLO = true ]]; then
+    LIBS_FROM_GIT+=,cliff,cookiecutter
+    LIBS_FROM_GIT+=,oslo.concurrency,oslo.context
+    LIBS_FROM_GIT+=,oslo.config,oslo-cookiecutter
+    LIBS_FROM_GIT+=,oslo.db,oslo.i18n
+    LIBS_FROM_GIT+=,oslo.log,oslo.messaging
+    LIBS_FROM_GIT+=,oslo.middleware,oslo.rootwrap
+    LIBS_FROM_GIT+=,oslo.serialization,oslosphinx
+    LIBS_FROM_GIT+=,oslotest,oslo.utils
+    LIBS_FROM_GIT+=,oslo.version,oslo.vmware
+    LIBS_FROM_GIT+=,pylockfile,hacking
+    LIBS_FROM_GIT+=,pbr,pyCADF
+    LIBS_FROM_GIT+=,stevedore,taskflow
+    LIBS_FROM_GIT+=,tooz
+fi
 
 NOVNC_FROM_PACKAGE=false
 SWIFT_HASH=$SWIFT_HASH
@@ -50,6 +68,7 @@ SWIFT_HASH=$SWIFT_HASH
 # reconnecting Volume Group to Backing File
 DEST=$DEST
 DATA_DIR=$DATA_DIR
+SERVICE_DIR=$SERVICE_DIR
 VOLUME_GROUP=${VOLUME_GROUP}
 VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared

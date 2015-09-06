@@ -8,9 +8,12 @@ set -o xtrace
 
 source $_LIB/die
 
-REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements.txt
+BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
+ADD_BRANCH=$(basename ${BRANCH_OVERRIDE})
+REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements-${ADD_BRANCH}.txt
 
-[ -n "$TMP_HOOKS_PATH." ] || die "Temp hook path not set"
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
 [ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
+[ -n "$HOST_USERNAME" ] || die "HOST_USERNAME not set"
 
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt

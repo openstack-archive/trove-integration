@@ -5,7 +5,7 @@ horizon
 swift
 neutron
 heat
-python-keystoneclient
+python-openstackclient
 python-novaclient
 python-troveclient
 python-neutronclient

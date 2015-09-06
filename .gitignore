@@ -20,3 +20,6 @@ Vagrantfile
 options.rc
 .novaclient
 *.log
+.local.conf
+scripts/local.conf.d/local.conf.d
+*.config/
