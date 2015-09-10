@@ -249,9 +249,14 @@ function install_devstack_code() {
     source $PATH_DEVSTACK_SRC/functions-common
     source $PATH_DEVSTACK_SRC/functions
 
-    PROJ_BRANCH=$(get_project_branch DEVSTACK_BRANCH $PROJECT_BRANCH)
-    ENV_VARS="DEVSTACK_BRANCH' or 'PROJECT_BRANCH"
-    git_checkout "devstack" "$PATH_DEVSTACK_SRC" "$PROJ_BRANCH" "$ENV_VARS"
+    # Switch to a branch if specified.  The order the variables are checked is:
+    # DEVSTACK_BRANCH then PROJECT_BRANCH
+    BRANCH_SPECIFIED=$(test -z "${DEVSTACK_BRANCH}${PROJECT_BRANCH}" || echo 'True')
+    if [[ "${BRANCH_SPECIFIED}" = "True" ]]; then
+        PROJ_BRANCH=$(get_project_branch DEVSTACK_BRANCH $PROJECT_BRANCH)
+        ENV_VARS="DEVSTACK_BRANCH' or 'PROJECT_BRANCH"
+        git_checkout "devstack" "$PATH_DEVSTACK_SRC" "$PROJ_BRANCH" "$ENV_VARS"
+    fi
 
     exclaim "Installing devstack projects..."
     # Ensures present user can get to the devstack dirs
@@ -1140,23 +1145,33 @@ function cmd_clone_projects() {
                 git pull
             fi
         fi
+        # Switch to a branch if specified.  The order the variables are checked is:
+        # <PROJECT>_BRANCH then PROJECT_CLIENT_BRANCH (if a client) then PROJECT_BRANCH
+        # Note: For the Trove project, only TROVE_BRANCH and PYTHON_TROVECLIENT_BRANCH are used
         PROJECT_BRANCH_NAME=$(eval echo "${project}_BRANCH" | tr '[:lower:]-' '[:upper:]_')
-
-        # Set up the default branch and env var names for the project
-        DEFAULT_BRANCH="$PROJECT_BRANCH"
-        ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_BRANCH"
-        # Don't use 'PROJECT_BRANCH' or 'PROJECT_CLIENT_BRANCH' for the Trove project
-        if [[ "$project" =~ "trove" ]]; then
-            DEFAULT_BRANCH=master
-            ENV_VARS="$PROJECT_BRANCH_NAME"
-        # Use 'PROJECT_CLIENT_BRANCH' first for clients
-        elif [[ "$project" =~ "client" ]]; then
-            DEFAULT_BRANCH="${PROJECT_CLIENT_BRANCH:-$PROJECT_BRANCH}"
-            ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_CLIENT_BRANCH' or 'PROJECT_BRANCH"
+        PROJECT_BRANCH_VALUE=${!PROJECT_BRANCH_NAME}
+        # TROVE_BRANCH is defaulted to master if not set, so use the original value here
+        if [[ "$project" = "trove" ]]; then
+            PROJECT_BRANCH_VALUE=${TROVE_BRANCH_ORIG}
         fi
-        PROJ_BRANCH=$(get_project_branch $PROJECT_BRANCH_NAME $DEFAULT_BRANCH)
-        git_checkout "$project" "$PATH_DEVSTACK_OUTPUT/$project" "$PROJ_BRANCH" "$ENV_VARS"
-  done
+        BRANCH_SPECIFIED=$(test -z "${PROJECT_BRANCH_VALUE}${PROJECT_CLIENT_BRANCH}${PROJECT_BRANCH}" || echo 'True')
+        if [[ "${BRANCH_SPECIFIED}" = "True" ]]; then
+            # Set up the default branch and env var names for the project
+            DEFAULT_BRANCH="$PROJECT_BRANCH"
+            ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_BRANCH"
+            # Don't use 'PROJECT_BRANCH' or 'PROJECT_CLIENT_BRANCH' for the Trove project
+            if [[ "$project" =~ "trove" ]]; then
+                DEFAULT_BRANCH=master
+                ENV_VARS="$PROJECT_BRANCH_NAME"
+            # Use 'PROJECT_CLIENT_BRANCH' first for clients
+            elif [[ "$project" =~ "client" ]]; then
+                DEFAULT_BRANCH="${PROJECT_CLIENT_BRANCH:-$PROJECT_BRANCH}"
+                ENV_VARS="$PROJECT_BRANCH_NAME' or 'PROJECT_CLIENT_BRANCH' or 'PROJECT_BRANCH"
+            fi
+            PROJ_BRANCH=$(get_project_branch $PROJECT_BRANCH_NAME $DEFAULT_BRANCH)
+            git_checkout "$project" "$PATH_DEVSTACK_OUTPUT/$project" "$PROJ_BRANCH" "$ENV_VARS"
+        fi
+    done
 }
 
 function cmd_repl() {
