@@ -556,10 +556,9 @@ function cmd_set_datastore() {
     sed -i "s/%datastore_type%/$DATASTORE_TYPE/g" $TEST_CONF
     sed -i "s/%datastore_version%/$VERSION/g" $TEST_CONF
 
-    #rd_manage datastore_version_update <datastore_name> <version_name> <datastore_manager> <image_id> <packages> <active>
-    rd_manage datastore_version_update "$DATASTORE_TYPE" "$VERSION" "$DATASTORE_TYPE" $IMAGEID "$PACKAGES" 1
-    rd_manage datastore_version_update "$DATASTORE_TYPE" "inactive_version" "manager1" $IMAGEID "" 0
-    rd_manage datastore_update "$DATASTORE_TYPE" "$VERSION"
+    #trove datastore-version-create <version_name> <datastore_name> <datastore_manager> <image_id> --packages <packages> --active <true/false> --default <true/false>
+    trove --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT datastore-version-create "$VERSION" "$DATASTORE_TYPE" "$DATASTORE_TYPE" $IMAGEID --packages "$PACKAGES" --active true --default true
+    trove --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT datastore-version-create "inactive_version" "$DATASTORE_TYPE" "manager1" $IMAGEID --active false
     rd_manage datastore_update Test_Datastore_1 ""
 
     if [ -f "$PATH_TROVE"/trove/templates/$DATASTORE_TYPE/validation-rules.json ]; then
