@@ -43,23 +43,24 @@ if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
         LIBS_FROM_GIT+=,python-neutronclient
     fi
     LIBS_FROM_GIT+=,python-novaclient,python-openstackclient
-    LIBS_FROM_GIT+=,python-saharaclient,python-swiftclient
+    LIBS_FROM_GIT+=,python-swiftclient
 fi
 # Add Git repositories for libraries
 if [[ $LIBS_FROM_GIT_ALL_OSLO = true ]]; then
-    LIBS_FROM_GIT+=,cliff,cookiecutter
-    LIBS_FROM_GIT+=,oslo.concurrency,oslo.context
-    LIBS_FROM_GIT+=,oslo.config,oslo-cookiecutter
+    LIBS_FROM_GIT+=,cliff,futurist
+    LIBS_FROM_GIT+=,debtcollector,automaton
+    LIBS_FROM_GIT+=,oslo.cache,oslo.concurrency
+    LIBS_FROM_GIT+=,oslo.config,oslo.context
     LIBS_FROM_GIT+=,oslo.db,oslo.i18n
     LIBS_FROM_GIT+=,oslo.log,oslo.messaging
-    LIBS_FROM_GIT+=,oslo.middleware,oslo.rootwrap
-    LIBS_FROM_GIT+=,oslo.serialization,oslosphinx
-    LIBS_FROM_GIT+=,oslotest,oslo.utils
-    LIBS_FROM_GIT+=,oslo.version,oslo.vmware
-    LIBS_FROM_GIT+=,pylockfile,hacking
-    LIBS_FROM_GIT+=,pbr,pyCADF
-    LIBS_FROM_GIT+=,stevedore,taskflow
-    LIBS_FROM_GIT+=,tooz
+    LIBS_FROM_GIT+=,oslo.middleware,oslo.policy
+    LIBS_FROM_GIT+=,oslo.reports,oslo.rootwrap
+    LIBS_FROM_GIT+=,oslo.serialization,oslo.service
+    LIBS_FROM_GIT+=,oslo.utils,oslo.versionedobjects
+    LIBS_FROM_GIT+=,oslo.vmware
+    LIBS_FROM_GIT+=,pycadf,stevedore
+    LIBS_FROM_GIT+=,taskflow,tooz
+    LIBS_FROM_GIT+=,pbr
 fi
 
 NOVNC_FROM_PACKAGE=false
