@@ -322,3 +322,24 @@ function git_checkout() {
     fi
 }
 
+# Since redstack changes the location of the 'home' directory, we need to link
+# the clouds.yaml that's created by stack.sh to where it needs to be
+function link_clouds_yaml() {
+    local FROM_DIR=$1
+    local TO_DIR=$2
+
+    CLOUDS_YAML=.config/openstack/clouds.yaml
+
+    FROM_FILE="${FROM_DIR}/${CLOUDS_YAML}"
+    TO_FILE="${TO_DIR}/${CLOUDS_YAML}"
+    if [[ -f "${FROM_FILE}" ]]; then
+        if [[ -f "${TO_FILE}" ]]; then
+            echo "Found file '${TO_FILE}'"
+        else
+            echo "Linking '${CLOUDS_YAML}' from '${FROM_DIR}' to '${TO_DIR}'"
+            FULL_DIR=$(dirname "${TO_FILE}")
+            mkdir -p ${FULL_DIR}
+            ln -s "${FROM_FILE}" "${TO_FILE}"
+        fi
+    fi
+}
