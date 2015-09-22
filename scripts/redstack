@@ -1172,7 +1172,15 @@ fi
 # Set this to exit immediately on error
 set -o errexit
 
+# make sure the clouds.yaml file is where it's needed
+# we'll write it into both home directories, just to be sure
+export TOP_DIR=${PATH_DEVSTACK_SRC}
+source $TOP_DIR/stackrc
+source $TOP_DIR/lib/keystone
+write_clouds_yaml
 set_home_dir
+write_clouds_yaml
+
 set_http_proxy
 set_trove_plugin_vars false
 
