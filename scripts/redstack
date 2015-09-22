@@ -1172,6 +1172,15 @@ fi
 # Set this to exit immediately on error
 set -o errexit
 
+if [[ $BRANCH_OVERRIDE != "stable/juno" && $BRANCH_OVERRIDE != "stable/kilo" ]]; then
+    # make sure the clouds.yaml file is where it's needed
+    export TOP_DIR=${PATH_DEVSTACK_SRC}
+    . $TOP_DIR/stackrc
+    . $TOP_DIR/lib/tls
+    . $TOP_DIR/lib/keystone
+    write_clouds_yaml
+fi
+
 set_home_dir
 set_http_proxy
 set_trove_plugin_vars false
