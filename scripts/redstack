@@ -760,6 +760,7 @@ function cmd_build_and_upload_image() {
         IMAGE_URL="file://$QCOW_IMAGE"
     fi
 
+    set -x
     # The devstack openrc has references to 'enable_plugin' which causes errors
     # in the stable/juno and stable/kilo branches. These are safe to ignore.
     set +e; source $PATH_DEVSTACK_SRC/openrc admin admin; set -e
@@ -1080,6 +1081,12 @@ function cmd_dsvm_gate_tests() {
     GUEST_USERNAME=${3:-'ubuntu'}
     NETWORK_GATEWAY=${4:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
+
+    set -x
+
+    # Ensure we have access to the clouds.yaml file set up by devstack-vmgate
+    mkdir -p ~/.config/openstack
+    ln -s $DEST/.config/openstack/clouds.yaml ~/.config/openstack/clouds.yaml
 
     # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
     echo "User=ubuntu" >> /home/jenkins/.ssh/config
