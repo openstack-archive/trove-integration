@@ -321,4 +321,3 @@ function git_checkout() {
         popd
     fi
 }
-
