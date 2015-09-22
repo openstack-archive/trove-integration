@@ -1081,6 +1081,11 @@ function cmd_dsvm_gate_tests() {
     NETWORK_GATEWAY=${4:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
 
+    # Ensure we have access to the clouds.yaml file set up by devstack-gate
+    sudo mkdir -p ~/.config/openstack
+    sudo ln -s $DEST/.config/openstack/clouds.yaml ~/.config/openstack/clouds.yaml
+    sudo chown -R $(whoami) ~/.config
+
     # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
     echo "User=ubuntu" >> /home/jenkins/.ssh/config
 
