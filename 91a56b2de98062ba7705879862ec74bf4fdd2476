@@ -1,0 +1,13 @@
+Verified+2: Jenkins
+Code-Review+2: Craig Vyvial <cp16net@gmail.com>
+Workflow+1: Craig Vyvial <cp16net@gmail.com>
+Code-Review+1: Sushil Kumar <skm.net@gmail.com>
+Code-Review+1: Masaki Matsushita <glass.saga@gmail.com>
+Code-Review+2: Edmond Kotowski <ekotowski@gmail.com>
+Code-Review+1: Petr Malik <pmalik@tesora.com>
+Code-Review+1: Ishita Mandhan <imandha@us.ibm.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 23 Sep 2015 08:35:47 +0000
+Reviewed-on: https://review.openstack.org/223843
+Project: openstack/trove-integration
+Branch: refs/heads/master
