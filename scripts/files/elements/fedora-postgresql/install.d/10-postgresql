@@ -3,9 +3,9 @@
 set -e
 set -o xtrace
 
-yum install -y http://yum.postgresql.org/9.3/fedora/fedora-21-x86_64/pgdg-fedora93-9.3-2.noarch.rpm
+dnf install -y http://yum.postgresql.org/9.3/fedora/fedora-21-x86_64/pgdg-fedora93-9.3-2.noarch.rpm
 
-yum install -y postgresql93-server postgresql93-contrib
+dnf install -y postgresql93-server postgresql93-contrib
 
 # Though /var/lib/pgsql is the preferred directory, need to move it as
 # this is where the volume will be mounted
