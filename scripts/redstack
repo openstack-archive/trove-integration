@@ -1100,6 +1100,7 @@ function cmd_dsvm_gate_tests() {
 
     cmd_kick_start $DATASTORE_TYPE
 
+    set -x
     # Update the local swift endpoint in the catalog to use the NETWORK_GATEWAY instead of 127.0.0.1
     source $DEST/devstack/accrc/admin/admin
     # NOTE(mriedem): We have to treat stable branches before liberty special
@@ -1110,12 +1111,13 @@ function cmd_dsvm_gate_tests() {
             --internalurl 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'$NETWORK_GATEWAY':8080'
         openstack endpoint delete $SWIFT_ENDPOINT
     else
-        SWIFT_ENDPOINTS=$(openstack endpoint list --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 --service swift -c ID -f value)
-        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift public 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
-        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift internal 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
-        openstack endpoint create --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3 swift admin 'http://'$NETWORK_GATEWAY':8080' --region RegionOne
-        echo $SWIFT_ENDPOINTS | xargs -n 1 openstack endpoint delete --os-url http://$NETWORK_GATEWAY:5000/v3 --os-identity-api-version=3
+        SWIFT_ENDPOINTS=$(openstack --debug endpoint list --os-auth-type v3password --os-auth-url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:5000/v3 --os-identity-api-version=3 --service swift -c ID -f value)
+        openstack --debug endpoint create --os-auth-type v3password --os-auth-url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:5000/v3 --os-identity-api-version=3 swift public 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+        openstack --debug endpoint create --os-auth-type v3password --os-auth-url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:5000/v3 --os-identity-api-version=3 swift internal 'http://'$NETWORK_GATEWAY':8080/v1/AUTH_$(tenant_id)s' --region RegionOne
+        openstack --debug endpoint create --os-auth-type v3password --os-auth-url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:5000/v3 --os-identity-api-version=3 swift admin 'http://'$NETWORK_GATEWAY':8080' --region RegionOne
+        echo $SWIFT_ENDPOINTS | xargs -n 1 openstack --debug endpoint delete --os-auth-type v3password --os-auth-url $KEYSTONE_AUTH_PROTOCOL://$KEYSTONE_AUTH_HOST:5000/v3 --os-identity-api-version=3
     fi
+    set +x
 
     cmd_int_tests --group=$DATASTORE_TYPE
 }
