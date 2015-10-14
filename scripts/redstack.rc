@@ -40,6 +40,8 @@ PATH_PYTHON_TROVECLIENT=$DEST/python-troveclient
 PATH_DISKIMAGEBUILDER=$DEST/diskimage-builder
 PATH_TRIPLEO_ELEMENTS=$DEST/tripleo-image-elements
 
+# Save the state of TROVE_BRANCH first, since it's used in redstack
+TROVE_BRANCH_ORIG=${TROVE_BRANCH}
 # Devstack and OpenStack git repo source paths, etc.
 GIT_BASE=${GIT_BASE:-git://git.openstack.org}
 GIT_OPENSTACK=${GIT_OPENSTACK:-${GIT_BASE}/openstack}
