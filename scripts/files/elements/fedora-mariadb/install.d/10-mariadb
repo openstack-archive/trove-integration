@@ -6,4 +6,4 @@
 set -e
 set -o xtrace
 
-yum -y install mariadb-server percona-xtrabackup
+dnf -y install mariadb-server percona-xtrabackup

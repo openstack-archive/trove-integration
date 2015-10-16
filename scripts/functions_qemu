@@ -161,6 +161,7 @@ function add_host_key_to_authorizedkeys () {
     if [ $is_in_keyfile == 0 ]; then
         echo "Adding keyfile to authorized_keys, it does not yet exist"
         cat ${SSH_DIR}/id_rsa.pub >> ${SSH_DIR}/authorized_keys
+        chmod 600 ${SSH_DIR}/authorized_keys
     else
         echo "Keyfile already exists in authorized_keys - skipping"
     fi

@@ -21,13 +21,4 @@ exit \$?
 
 _EOF_
 
-# see http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/
-cat >/etc/yum.repos.d/mongodb-org-3.0.repo <<EOL
-[mongodb-org-3.0]
-name=MongoDB Repository
-baseurl=http://repo.mongodb.org/yum/redhat/\$releasever/mongodb-org/3.0/x86_64/
-gpgcheck=0
-enabled=1
-EOL
-
-yum -y install mongodb-org
+dnf -y install mongodb-server

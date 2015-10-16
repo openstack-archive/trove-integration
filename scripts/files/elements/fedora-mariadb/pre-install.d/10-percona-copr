@@ -6,7 +6,5 @@
 set -e
 set -o xtrace
 
-# Add Percona Repo
-# TODO(vkmc) Remove this repository when the package for percona-xtrabackup lands in f22
-yum -y install wget
-wget -P /etc/yum.repos.d/ https://copr.fedoraproject.org/coprs/pmackinn/percona-xtrabackup/repo/fedora-22/pmackinn-percona-xtrabackup-fedora-22.repo
+# install from Fedora repos
+dnf -y install percona-xtrabackup

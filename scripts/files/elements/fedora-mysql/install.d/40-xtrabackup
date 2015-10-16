@@ -6,10 +6,5 @@
 set -e
 set -o xtrace
 
-yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
-echo exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster* >> /etc/yum.conf
+dnf -y install percona-xtrabackup
 
-# coerce Fedora releasever to CentOS7 available from Percona
-sed -i "s|\$releasever|centos/7Server|g" /etc/yum.repos.d/percona-release.repo
-
-rpm -Va --nofiles --nodigest percona-xtrabackup
