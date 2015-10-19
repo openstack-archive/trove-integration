@@ -160,12 +160,14 @@ function set_trove_plugin_vars () {
 
 function pkg_install () {
     echo Installing $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@
+     apt-get update && sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@
+     yum check-update
 }
 
 function pkg_update () {
     echo Updating $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@
+    apt-get install -y -q package &&  sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@
+    yum check-update
 }
 
 function set_home_dir() {
