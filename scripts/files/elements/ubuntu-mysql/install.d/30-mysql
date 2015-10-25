@@ -7,7 +7,7 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install libmysqlclient18 mysql-server-5.6 percona-xtrabackup
+apt-get -y install libmysqlclient18 mysql-server-5.6 percona-xtrabackup-22
 
 cat >/etc/mysql/conf.d/no_perf_schema.cnf <<_EOF_
 [mysqld]

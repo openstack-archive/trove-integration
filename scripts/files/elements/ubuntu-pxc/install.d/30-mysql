@@ -7,7 +7,7 @@ set -e
 set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y install percona-xtradb-cluster-server percona-xtrabackup
+apt-get -y install percona-xtradb-cluster-server percona-xtrabackup-22
 
 # Don't auto start mysql (we'll start it up in guest)
 update-rc.d mysql defaults

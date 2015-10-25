@@ -18,7 +18,7 @@ add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu trusty
 sudo echo -e "Package: *\nPin: origin ftp.osuosl.org\nPin-Priority: 1000" > /etc/apt/preferences.d/mariadb.pref
 
 apt-get -y update
-apt-get -y install libmariadbclient18 mariadb-server percona-xtrabackup
+apt-get -y install libmariadbclient18 mariadb-server percona-xtrabackup-22
 
 cat >/etc/mysql/conf.d/no_perf_schema.cnf <<_EOF_
 [mysqld]
