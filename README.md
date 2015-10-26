@@ -2,7 +2,7 @@
 
 ***
 
-### Steps to setup this environment:
+### Steps to setup this environment :
 
 Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a development virtual machine using the image_ )
 
