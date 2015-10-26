@@ -744,6 +744,7 @@ function cmd_build_image() {
     sudo $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update
     sudo $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install qemu
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
+    exclaim "PATH_DEVSTACK_SRC is " $PATH_DEVSTACK_SRC
     cmd_clone_projects do_not_force_update $REDSTACK_SCRIPTS/image-projects-list
 
     exclaim "Use tripleo-diskimagebuilder to actually build the Trove Guest Agent Image."
