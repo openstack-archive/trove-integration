@@ -767,6 +767,7 @@ function cmd_build_and_upload_image() {
         IMAGE_URL="file://$QCOW_IMAGE"
     fi
 
+    set -x
     # The devstack openrc has references to 'enable_plugin' which causes errors
     # in the stable/juno and stable/kilo branches. These are safe to ignore.
     set +e; source $PATH_DEVSTACK_SRC/openrc admin admin; set -e
@@ -782,6 +783,7 @@ function cmd_build_and_upload_image() {
 
     exclaim "Updating Datastores"
     cmd_set_datastore $GLANCE_IMAGEID $1
+    set +x
 }
 
 
