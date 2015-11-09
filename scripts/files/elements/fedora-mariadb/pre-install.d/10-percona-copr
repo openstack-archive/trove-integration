@@ -7,4 +7,4 @@ set -e
 set -o xtrace
 
 # install from Fedora repos
-dnf -y install percona-xtrabackup-22
+dnf -y install percona-xtrabackup
