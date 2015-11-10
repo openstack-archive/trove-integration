@@ -27,10 +27,7 @@ fi
 if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
     CEILOMETER_BACKEND=mysql
     CEILOMETER_NOTIFICATION_TOPICS=notifications,profiler
-    ENABLED_SERVICES+=,ceilometer-acompute,ceilometer-acentral
-    ENABLED_SERVICES+=,ceilometer-anotification,ceilometer-collector
-    ENABLED_SERVICES+=,ceilometer-alarm-evaluator,ceilometer-alarm-notifier
-    ENABLED_SERVICES+=,ceilometer-api
+    enable_plugin ceilometer ${GIT_OPENSTACK}/ceilometer.git
 fi
 
 # Use Git repositories for client components
