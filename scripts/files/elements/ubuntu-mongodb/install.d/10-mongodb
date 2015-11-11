@@ -30,8 +30,8 @@ echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.
 apt-get update
 apt-get install -y mongodb-org
 
-# the following config changes are needed: smallfiles set to true, and bind_ip
-# set to default
-sed -i '/bind_ip/d' /etc/mongod.conf
-sed -i '/smallfiles/d' /etc/mongod.conf
-echo 'smallfiles = true' >> /etc/mongod.conf
+# MongoDB configuration settings
+# use the default bindIP
+sed -i '/bindIp/d' /etc/mongod.conf
+# need to use smallFiles until the device is mounted
+sed -i 's/#  mmapv1:/  mmapv1:\n    smallFiles: true/' /etc/mongod.conf
