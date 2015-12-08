@@ -700,8 +700,8 @@ function mod_confs() {
 }
 
 function setup_cluster_configs() {
-    # Setting cluster_member_count to 2 to decrease cluster spawn time.
-    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count 2
+    # Setting min_cluster_member_count to 2 to decrease cluster spawn time.
+    iniset $TROVE_CONF $DATASTORE_TYPE min_cluster_member_count 2
     # Setting cluster configs
     iniset $TROVE_TASKMANAGER_CONF DEFAULT agent_call_high_timeout 300
     iniset $TROVE_TASKMANAGER_CONF DEFAULT cluster_usage_timeout 2000
