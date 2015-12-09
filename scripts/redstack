@@ -676,6 +676,10 @@ function mod_confs() {
         iniset $TROVE_CONF DEFAULT network_driver trove.network.neutron.NeutronDriver
         iniset $TROVE_TASKMANAGER_CONF DEFAULT network_driver trove.network.neutron.NeutronDriver
         iniset $TROVE_TASKMANAGER_CONF mysql tcp_ports 22,3306
+    else
+        # do not leave invalid keys in the configuration when using Nova for networking
+        sed -i "/%shared_network%/d" $TEST_CONF
+        sed -i "/%shared_network_subnet%/d" $TEST_CONF
     fi
 
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
