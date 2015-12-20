@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# This is a pre-install.d script that will register the hadoop user
+# which will be used to run the hadoop and hbase.
+
+
+useradd -m hadoop -s /bin/bash -d /home/hadoop
+adduser hadoop sudo
+
+HADOOP_SSH_DIR="/home/hadoop/.ssh"
+TMP_HOOKS_DIR="/tmp/in_target.d"
+
+mkdir ${HADOOP_SSH_DIR}
+cd ${HADOOP_SSH_DIR}
+
+ssh-keygen -f id_rsa -t rsa -P "" -C 'hbase@redstack'
+
+cat ./id_rsa.pub >> authorized_keys
+
+cp ${TMP_HOOKS_DIR}/id_rsa.hbase .
+cp ${TMP_HOOKS_DIR}/id_rsa.hbase.pub .
+
+cat ./id_rsa.hbase.pub >> authorized_keys
+
+chmod 700 ${HADOOP_SSH_DIR}
+chown -R hadoop.hadoop ${HADOOP_SSH_DIR}
+
+cd /home/hadoop
+
+echo -e 'if [ -f ~/.bashrc ]; then\n\tsource ~/.bashrc\nfi' > .bash_profile
+chmod 644 .bash_profile
+chown hadoop.hadoop .bash_profile
+
+echo "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre" >> .bashrc
+

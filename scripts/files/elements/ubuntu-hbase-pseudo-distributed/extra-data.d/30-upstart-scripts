@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -x
+set -o xtrace
+
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
+
+# copy the upstart scripts to the hadoop users
+# home directory
+
+#mkdir ${TMP_HOOKS_PATH}/upstart-scripts
+#cp ${REDSTACK_SCRIPTS}/files/hbase-files/*.conf ${TMP_HOOKS_PATH}/upstart-scripts
