@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# Copyright 2015 Tesora, Inc
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+. /lib/lsb/init-functions || exit 1
+
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/jre
+
+# init_hosts_file is invoked on start, and from initialize (because 
+# initialize invokes namenode format). It consttucts a hosts file which
+# is the kind required by HBase
+
+init_hosts_file() {
+    hostname=$(hostname)
+    ip=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -f 2 -d ':' | awk '{ print $1}')
+    echo "# Hosts file reconstructed by Trove HBase startup" > /tmp/hosts
+    echo "127.0.0.1 localhost" >> /tmp/hosts
+    echo "${ip} ${hostname}" >> /tmp/hosts
+    echo "::1     ip6-localhost ip6-loopback" >> /tmp/hosts
+    echo "fe00::0 ip6-localnet" >> /tmp/hosts
+    echo "ff00::0 ip6-mcastprefix" >> /tmp/hosts
+    echo "ff02::1 ip6-allnodes" >> /tmp/hosts
+    echo "ff02::2 ip6-allrouters" >> /tmp/hosts
+    cp /tmp/hosts /etc/hosts
+    chmod 644 /etc/hosts
+}
+
+case "${1:-''}" in
+    'initialize')
+        init_hosts_file
+        su -c "ssh-keyscan -t rsa $(hostname) > ~hadoop/.ssh/known_hosts" hadoop
+        su -c "ssh-keyscan -t rsa localhost >> ~hadoop/.ssh/known_hosts" hadoop
+        su -c "ssh-keyscan -t rsa ::1 >> ~hadoop/.ssh/known_hosts" hadoop
+        su -c "ssh-keyscan -t rsa 0.0.0.0 >> ~hadoop/.ssh/known_hosts" hadoop
+        su -c "ssh-keyscan -t rsa 127.0.0.1 >> ~hadoop/.ssh/known_hosts" hadoop
+        su -c "/usr/local/hadoop/bin/hdfs namenode -format" hadoop
+        ;;
+
+    'start')
+        init_hosts_file
+        su -c "/usr/local/hadoop/sbin/start-dfs.sh" hadoop
+        su -c "/usr/local/hbase/bin/start-hbase.sh" hadoop
+        su -c "/usr/local/hbase/bin/hbase-daemon.sh start rest -p 8080" hadoop
+        su -c "/usr/local/hbase/bin/hbase-daemon.sh start thrift -p 9090" hadoop
+        ;;
+
+    'stop')
+        su -c "/usr/local/hadoop/sbin/stop-dfs.sh" hadoop
+        su -c "/usr/local/hbase/bin/hbase-daemon.sh stop thrift" hadoop
+        su -c "/usr/local/hbase/bin/hbase-daemon.sh stop rest" hadoop
+        su -c "/usr/local/hbase/bin/stop-hbase.sh" hadoop
+        ;;
+
+    'status')
+        master=$(netstat -nlp | grep java | grep 16010| wc -l | awk '{print $1}')
+        zookeeper=$(netstat -nlp | grep java | grep 2181| wc -l | awk '{print $1}')
+        rest=$(netstat -nlp | grep java | grep 8080| wc -l | awk '{print $1}')
+        thrift=$(netstat -nlp | grep java | grep 9090 | wc -l | awk '{print $1}')
+        fail=""
+
+        if [ "${master}" != "1" ]; then
+            echo "HBase Master is not listening on port 16010"
+            fail="yes"
+        fi
+
+        if [ "${zookeeper}" != "1" ]; then
+            echo "Zookeeper is not listening on port 2181"
+            fail="yes"
+        fi
+
+        if [ "${rest}" != "1" ]; then
+            echo "HBase REST API is not listening on port 8080"
+            fail="yes"
+        fi
+
+        if [ "${thrift}" != "1" ]; then
+            echo "HBase Thrift API is not listening on port 9090"
+            fail="yes"
+        fi
+
+        if [ "${fail}" = "yes" ]; then
+            exit 0
+        fi
+
+        out=$(su -c "echo 'status' | /usr/local/hbase/bin/hbase shell 2>&1 | grep '[0-9]* servers'" hadoop)
+        stat=$?
+        if [ $? -ne 0 ]; then
+            echo "HBase is not reachable. ${stat}"
+            exit 0
+        fi
+
+        curlstatus=$(curl localhost:8080/version)
+        stat=$?
+        if [ $? -ne 0 ]; then
+            echo "REST API Service is not reachable. ${stat}"
+            exit 0
+        fi
+
+        echo "HBase is reachable"
+        ;;
+
+    'restart')
+        su -c "/usr/local/hbase/bin/stop-hbase.sh" hadoop
+        su -c "/usr/local/hbase/bin/start-hbase.sh" hadoop
+        ;;
+esac
+
+exit 0

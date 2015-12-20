@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# CONTEXT: HOST after IMAGE BUILD as SCRIPT USER
+# PURPOSE: add the hadoop user to sudoers with NOPASSWD
+
+TEMPFILE=`mktemp`
+echo "hadoop ALL=(ALL) NOPASSWD:ALL" > $TEMPFILE
+chmod 0440 $TEMPFILE
+sudo chown root:root $TEMPFILE
+sudo mv $TEMPFILE /etc/sudoers.d/60_hadoop
