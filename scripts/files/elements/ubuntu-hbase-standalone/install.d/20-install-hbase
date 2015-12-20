@@ -1,0 +1,128 @@
+#!/bin/sh
+
+# This is an install.d phase script to setup hbase in standalone mode.
+
+cd /tmp
+
+TMP_HOOKS_DIR="/tmp/in_target.d"
+HBASE_SITE_CONF_FILE="/usr/local/hbase/conf/hbase-site.xml"
+
+tar zxvf ${TMP_HOOKS_DIR}/hbase-1.1.2-bin.tar.gz
+
+mv hbase-1.1.2 /usr/local/hbase
+
+sudo chown -R hadoop.hadoop /usr/local/hbase
+
+sudo mkdir /var/log/hbase
+sudo chown -R hadoop.hadoop /var/log/hbase
+
+# Update .bashrc with HBASE_HOME
+
+cd /home/hadoop
+echo "export HBASE_HOME=/usr/local/hbase" >> .bashrc
+
+HBASE_SITE_CONF_FILE="/usr/local/hbase/conf/hbase-site.xml"
+
+# Update HBASE_LOG_DIR
+sudo sed -i 's/# export HBASE_LOG_DIR=${HBASE_HOME}\/logs/export HBASE_LOG_DIR=\/var\/log\/hbase/' \
+    /usr/local/hbase/conf/hbase-env.sh
+
+# Set JAVA_HOME in the env script.
+sed 's/# export JAVA_HOME=\/usr\/java\/jdk1.6.0\//export JAVA_HOME=\/usr\/lib\/jvm\/java-7-openjdk-amd64\/jre/' -i /usr/local/hbase/conf/hbase-env.sh
+
+# Create the HBase conf file
+
+cat > /tmp/hbase-site.xml <<EOF
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+# Copyright 2015 Tesora, Inc
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+-->
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>file:///data/hbase</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/data/zookeeper</value>
+  </property>
+
+  <property>
+    <name>hbase.master.port</name>
+    <value>16000</value>
+  </property>
+  <property>
+    <name>hbase.master.info.port</name>
+    <value>16010</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.port</name>
+    <value>16020</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.info.port</name>
+    <value>16030</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.clientPort</name>
+    <value>2181</value>
+  </property>
+
+  <property>
+    <name>hbase.rest.port</name>
+    <value>8080</value>
+  </property>
+
+  <property>
+    <name>hbase.rest.info.port</name>
+    <value>8085</value>
+  </property>
+
+  <property>
+    <name>hbase.thrift.port</name>
+    <value>9090</value>
+  </property>
+
+  <property>
+    <name>hbase.thrift.info.port</name>
+    <value>9095</value>
+  </property>
+
+<!--
+  # Even though this is the hbase-standlone configuration
+  # file, we set the cluster.distributed property to true.
+  # This is because in simple standalone mode, HBase operates
+  # under the assumption that you may want to have >1 hbase
+  # on a single machine. Therefore, it ignores the values for
+  # the ports specified above and instead uses ephemeral ports.
+  # Given that in the trove context, the user will be
+  # expecting to connect remotely, the fact that we're opening
+  # specific ports in the firewall makes this a problem.
+  # Setting (faking) distributed operation fixes this.
+-->
+
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+  </property>
+</configuration>
+EOF
+
+sudo mv /tmp/hbase-site.xml ${HBASE_SITE_CONF_FILE}
+sudo chown hadoop.hadoop ${HBASE_SITE_CONF_FILE}
