@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+set -o xtrace
+
+# This is a pre-install phase script that installs prerequisite
+# software for the HBase installation.
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+
+# install java and openssh-server
+
+apt-get -y install openjdk-7-jre curl
+
+

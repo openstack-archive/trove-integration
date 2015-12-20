@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# This is an install.d phase script to install hbase for pseudo-distributed-mode
+# It will override whatever standalone may have done ... (if required)
+
+HBASE_SITE_CONF_FILE="/usr/local/hbase/conf/hbase-site.xml"
+
+cat > /tmp/hbase-site.xml <<EOF
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+# Copyright 2015 Tesora, Inc
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+-->
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>hdfs://localhost:9000/hbase</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/data/zookeeper</value>
+  </property>
+
+  <property>
+    <name>hbase.master.port</name>
+    <value>16000</value>
+  </property>
+  <property>
+    <name>hbase.master.info.port</name>
+    <value>16010</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.port</name>
+    <value>16020</value>
+  </property>
+  <property>
+    <name>hbase.regionserver.info.port</name>
+    <value>16030</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.clientPort</name>
+    <value>2181</value>
+  </property>
+
+  <property>
+    <name>hbase.rest.port</name>
+    <value>8080</value>
+  </property>
+
+  <property>
+    <name>hbase.rest.info.port</name>
+    <value>8085</value>
+  </property>
+
+  <property>
+    <name>hbase.thrift.port</name>
+    <value>9090</value>
+  </property>
+
+  <property>
+    <name>hbase.thrift.info.port</name>
+    <value>9095</value>
+  </property>
+
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+  </property>
+
+</configuration>
+EOF
+
+sudo mv /tmp/hbase-site.xml ${HBASE_SITE_CONF_FILE}
+sudo chown hadoop.hadoop ${HBASE_SITE_CONF_FILE}

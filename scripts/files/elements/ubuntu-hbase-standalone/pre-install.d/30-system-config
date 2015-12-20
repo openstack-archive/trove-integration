@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This is a pre-install.d script that verifies system configuration
+# parameters for the HBase installation.
+#
+# This includes the ulimit settings, loopback IP and other things that
+# are expected by the HBase installation.
+
+set -x
+set -o xtrace
+
+if [ $(grep '127.0.0.1' /etc/hosts | grep localhost | wc -l) != "1" ]; then
+    echo "127.0.0.1       localhost" > /tmp/lh
+    cat /tmp/lh /etc/hosts > /tmp/hosts
+    mv /tmp/hosts /etc/hosts
+    chmod 644 /etc/hosts
+    chown root.root /etc/hosts
+fi
+
+echo "hadoop - nofile 32768" >> /etc/security/limits.conf
+echo "hadoop soft/hard nproc 32000" >> /etc/security/limits.conf
+echo "session required pam_limits.so" >> /etc/pam.d/common-session
+
+mkdir /data
+chown -R hadoop.hadoop /data
