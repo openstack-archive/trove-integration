@@ -550,6 +550,10 @@ function cmd_set_datastore() {
     elif [ "$DATASTORE_TYPE" == "db2" ]; then
         PACKAGES=${PACKAGES:-""}
         VERSION="10.5"
+    elif [ "$DATASTORE_TYPE" == "hbase-standalone" ]; then
+        VERSION="1.1.2"
+    elif [ "$DATASTORE_TYPE" == "hbase-pseudo-distributed" ]; then
+        VERSION="1.1.2"
     else
         echo "Unrecognized datastore type. ($DATASTORE_TYPE)"
         exit 1

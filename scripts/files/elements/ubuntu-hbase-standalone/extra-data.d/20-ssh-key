@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# CONTEXT: this is an extra-data.d script so it runs outside chroot
+# PURPOSE: To copy the hbase ssh key into the right place
+
+source $_LIB/die
+
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
+
+# The files we want to copy are located in the
+# files/keys directory
+
+cp ${REDSTACK_SCRIPTS}/files/keys/id_rsa.hbase ${TMP_HOOKS_PATH}/id_rsa.hbase
+cp ${REDSTACK_SCRIPTS}/files/keys/id_rsa.hbase.pub ${TMP_HOOKS_PATH}/id_rsa.hbase.pub

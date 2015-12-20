@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -x
+set -o xtrace
+
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
+
+# copy the upstart scripts to the hadoop users
+# home directory
+
+# this will overwrite what 30-sysv-init-scripts would have done.
+
+cp ${REDSTACK_SCRIPTS}/files/hbase-files/hbase-pseudo-distributed.sysv ${TMP_HOOKS_PATH}/sysv-init-scripts/hbase

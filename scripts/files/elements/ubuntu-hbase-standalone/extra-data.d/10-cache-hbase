@@ -1,0 +1,72 @@
+#!/bin/bash
+
+set -x
+set -o xtrace
+
+source $_LIB/die
+
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
+[ -n "$DIB_IMAGE_CACHE" ] || die "DIB_IMAGE_CACHE not set"
+
+# cache the hadoop downloadable.
+# run as extra-data.d script, so outside chroot
+
+get_binary() {
+    IMAGE_FILE=$1
+    BASE_URL=$2
+    IMAGE_URL=${BASE_URL}/${IMAGE_FILE}
+    SUMS_FILE=${IMAGE_FILE}.mds
+    SUMS_URL=${IMAGE_URL}.mds
+
+    CACHE_IMAGE=${DIB_IMAGE_CACHE}/${IMAGE_FILE}
+    CACHE_SUMS=${DIB_IMAGE_CACHE}/${SUMS_FILE}
+
+    if [ -n "${DIB_OFFLINE}" -a -f "${CACHE_FILE}" ] ; then
+        echo "Not checking freshness of ${CACHE_FILE}"
+    else
+        echo "Fetching ${SUMS_FILE}"
+        ${TMP_HOOKS_PATH}/bin/cache-url -f ${SUMS_URL} ${CACHE_SUMS}
+
+        REQUIRED_SUM=$(xargs -a ${CACHE_SUMS} | \
+            sed "s/${IMAGE_FILE}/\n${IMAGE_FILE}/g" | \
+            grep 'SHA256' | sed 's/ //g' | \
+            cut -d = -f 2)
+
+        if [ "x${REQUIRED_SUM}" = "x" ]; then
+            echo "Error getting REQUIRED_SUM"
+            exit 1
+        fi
+
+        if [ -e ${CACHE_IMAGE} ]; then
+            echo "Verifying freshness of ${CACHE_IMAGE}"
+            CURRENT_SUM=$(sha256sum ${CACHE_IMAGE} | cut -f 1 -d ' ')
+        else
+            CURRENT_SUM=""
+        fi
+
+        # compare the upper-cased strings
+        if [ "${CURRENT_SUM^^}" = "${REQUIRED_SUM^^}" ]; then
+            echo "${CACHE_IMAGE} is current, not downloading again."
+        else
+            echo "Fetching ${CACHE_IMAGE}"
+
+            ${TMP_HOOKS_PATH}/bin/cache-url -f ${IMAGE_URL} ${CACHE_IMAGE}
+
+            CURRENT_SUM=$(sha256sum ${CACHE_IMAGE} | cut -f 1 -d ' ')
+
+            if [ "x${CURRENT_SUM}" = "x" ]; then
+                echo "Error getting CURRENT_SUM"
+                exit 1
+            fi
+
+            if [ "${CURRENT_SUM^^}" != "${REQUIRED_SUM^^}" ]; then
+                echo "After downloading ${CACHE_IMAGE}, sums don't match."
+                exit 1
+            fi
+        fi
+    fi
+
+    cp ${CACHE_IMAGE} ${TMP_HOOKS_PATH}/${IMAGE_FILE}
+}
+
+get_binary "hbase-1.1.2-bin.tar.gz" "http://apache.arvixe.com/hbase/stable/"

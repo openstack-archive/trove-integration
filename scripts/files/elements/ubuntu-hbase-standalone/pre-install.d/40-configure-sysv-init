@@ -1,0 +1,7 @@
+#!/bin/bash
+
+TMP_HOOKS_DIR="/tmp/in_target.d"
+
+cp -R ${TMP_HOOKS_DIR}/sysv-init-scripts/hbase /etc/init.d
+chown -R root.root /etc/init.d/hbase
+chmod +x /etc/init.d/hbase
