@@ -16,6 +16,8 @@ dd if=/tmp/in_target.d/vertica.deb of=/vertica.deb
 apt-get install -qy build-essential bc iptables
 apt-get install -qy curl sysstat pstack mcelog
 apt-get install -qy python-dev g++ unixODBC unixODBC-dev
+apt-get install -qy dialog libbz2-dev libboost-all-dev libcurl4-gnutls-dev
+apt-get install -qy openjdk-7-jdk
 
 # Install Vertica package
 dpkg -i /vertica.deb
@@ -32,3 +34,8 @@ chown dbadmin:verticadba /var/lib/vertica
 
 # Backup /etc/hosts
 cp -p /etc/hosts /etc/hosts.bkp
+
+# Compile the SDK examples - the supplied UDFs can then be loaded
+cd /opt/vertica/sdk/examples
+TMPDIR=/tmp JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 make
+cd
