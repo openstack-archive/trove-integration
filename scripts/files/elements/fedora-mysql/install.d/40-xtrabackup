@@ -6,5 +6,5 @@
 set -e
 set -o xtrace
 
-dnf -y install percona-xtrabackup-22
+dnf -y install percona-xtrabackup
 
