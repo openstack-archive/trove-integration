@@ -522,11 +522,11 @@ function cmd_set_datastore() {
         PACKAGES=${PACKAGES:-$MYSQL_PKG}
         VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
-        PACKAGES=${PACKAGES:-"percona-server-server-5.5"}
-        VERSION="5.5"
+        PACKAGES=${PACKAGES:-"percona-server-server-5.6"}
+        VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "pxc" ]; then
-        PACKAGES=${PACKAGES:-"percona-xtradb-cluster-server"}
-        VERSION="5.5"
+        PACKAGES=${PACKAGES:-"percona-xtradb-cluster-server-5.6"}
+        VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "mariadb" ]; then
         PACKAGES=${PACKAGES:-"mariadb-server"}
         VERSION="10.1"
@@ -704,6 +704,12 @@ function mod_confs() {
         setup_cluster_configs 2
         # Decrease the number of required config servers per cluster to save resources.
         iniset $TROVE_CONF $DATASTORE_TYPE num_config_servers_per_cluster 1
+    fi
+
+    if [[ "$DATASTORE_TYPE" == "pxc" || "$DATASTORE_TYPE" == "percona" ]]; then
+        # Percona 5.6 needs more than 512mb of RAM to start
+        sed -i "s/m1.rd-smaller/m1.small/g" $TEST_CONF
+        sed -i "s/m1.rd-tiny/m1.rd-smaller/g" $TEST_CONF
     fi
 
     set_bin_path
