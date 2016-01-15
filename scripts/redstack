@@ -160,12 +160,22 @@ function set_trove_plugin_vars () {
 
 function pkg_install () {
     echo Installing $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@
+    cmd="sudo -E"
+    if ! is_fedora; then
+        cmd="$cmd DEBIAN_FRONTEND=noninteractive"
+    fi
+    cmd="$cmd $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@"
+    $cmd
 }
 
 function pkg_update () {
     echo Updating $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@
+    cmd="sudo -E"
+    if ! is_fedora; then
+        cmd="$cmd DEBIAN_FRONTEND=noninteractive"
+    fi
+    cmd="$cmd $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@"
+    $cmd
 }
 
 function set_home_dir() {
