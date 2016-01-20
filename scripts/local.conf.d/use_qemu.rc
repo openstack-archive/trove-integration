@@ -1,0 +1,4 @@
+[[local|localrc]]
+
+# force qemu as the libvirt type.
+LIBVIRT_TYPE=qemu
