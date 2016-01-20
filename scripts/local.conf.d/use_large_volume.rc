@@ -1,0 +1,12 @@
+[[local|localrc]]
+
+# large volume backing for cinder
+VOLUME_BACKING_FILE_SIZE=30G
+
+[[post-config|\$TROVE_CONF]]
+
+# increase max instance and volumes
+[DEFAULT]
+max_instances_per_tenant=100
+max_accepted_volume_size=10
+max_volumes_per_tenant=100
