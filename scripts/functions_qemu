@@ -43,7 +43,7 @@ function build_vm() {
     export SSH_DIR
     export GUEST_LOGDIR
     export ESCAPED_GUEST_LOGDIR
-    export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_TRIPLEO_ELEMENTS/elements
+    export ELEMENTS_PATH=$REDSTACK_SCRIPTS/files/elements:$PATH_DISKIMAGEBUILDER/elements:$PATH_TRIPLEO_ELEMENTS/elements
     export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive"
     export DATASTORE_PKG_LOCATION
     export BRANCH_OVERRIDE
