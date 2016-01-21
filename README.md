@@ -208,3 +208,5 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+foo bar
