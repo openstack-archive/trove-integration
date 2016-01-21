@@ -8,7 +8,7 @@ set -o xtrace
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools \
-    python-pip python-sqlalchemy python-lxml \
+    gcc python-sqlalchemy python-lxml \
     python-routes python-eventlet python-webob \
     python-pastedeploy python-paste python-netaddr \
     python-httplib2 python-iso8601 python-pexpect python-mysqldb python-migrate
@@ -19,4 +19,5 @@ apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools \
 
 TMP_HOOKS_DIR="/tmp/in_target.d"
 
+pip install pip==7.1.2
 pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt
