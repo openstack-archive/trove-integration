@@ -6,4 +6,4 @@
 set -e
 set -o xtrace
 
-dnf -y install percona-toolkit Percona-Server-shared-55 Percona-Server-server-55 Percona-Server-test-55 Percona-Server-client-55 percona-xtrabackup-22
+dnf -y install percona-toolkit Percona-Server-shared-56 Percona-Server-server-56 Percona-Server-test-56 Percona-Server-client-56 percona-xtrabackup-22

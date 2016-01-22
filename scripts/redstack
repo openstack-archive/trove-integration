@@ -682,27 +682,63 @@ function mod_confs() {
         sed -i "/%shared_network_subnet%/d" $TEST_CONF
     fi
 
+    # Increase default quota.
+    iniset $TROVE_CONF DEFAULT max_accepted_volume_size 10
+    iniset $TROVE_CONF DEFAULT max_instances_per_user 10
+    iniset $TROVE_CONF DEFAULT max_volumes_per_user 10
+
+    # Test instance properties.
+    TROVE_VOLUME_SUPPORT="true"
+    TROVE_VOLUME_SIZE="1"
+
+    INSTANCE_FLAVOR="test.small"
+    EPH_INSTANCE_FLAVOR="test.eph.small"
+    BIGGER_INSTANCE_FLAVOR="test.small.resize"
+    BIGGER_EPH_INSTANCE_FLAVOR="test.eph.small.resize"
+
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
         # Vertica needs more time than mysql for its boot/start/stop operations.
         setup_cluster_configs
-
         # Setting flavor to be >= 2GB RAM for Vertica guest instances in test.conf.
-        sed -i "s/m1.rd-tiny/m1.small/g" $TEST_CONF
-        sed -i "s/m1.rd-smaller/m1.medium/g" $TEST_CONF
+        INSTANCE_FLAVOR="test.large"
+        BIGGER_INSTANCE_FLAVOR="test.large.resize"
+        # Setting cluster_member_count to 2 to decrease cluster spawn time.
+        iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count 2
+    elif [ "$DATASTORE_TYPE" = "pxc" ]; then
+        setup_cluster_configs
+    elif [[ "$DATASTORE_TYPE" = "cassandra" || "$DATASTORE_TYPE" = "dse" ]]; then
+        setup_cluster_configs
+        INSTANCE_FLAVOR="test.large"
+        BIGGER_INSTANCE_FLAVOR="test.large.resize"
+    elif [ "$DATASTORE_TYPE" = "mongodb" ]; then
+        setup_cluster_configs
+        INSTANCE_FLAVOR="test.large"
+        BIGGER_INSTANCE_FLAVOR="test.large.resize"
+        # Decrease the number of required config servers per cluster to save resources.
+        iniset $TROVE_CONF $DATASTORE_TYPE num_config_servers_per_cluster 1
+        # MongoDB require replicas require 5GB data volume.
+        # Increase the Cinder backing file size to accommodate at least 8 such volumes.
+        TROVE_VOLUME_SIZE="5"
+        export VOLUME_BACKING_FILE_SIZE="50G"
+    elif [[ "$DATASTORE_TYPE" = "couchbase" || "$DATASTORE_TYPE" = "couchdb" || "$DATASTORE_TYPE" = "redis" ]]; then
+        INSTANCE_FLAVOR="test.tiny"
+        BIGGER_INSTANCE_FLAVOR="test.tiny.resize"
     fi
 
-    if [ "$DATASTORE_TYPE" = "pxc" ]; then
-        setup_cluster_configs
-    fi
+    sed -i "s/%trove_volume_support%/$TROVE_VOLUME_SUPPORT/g" $TEST_CONF
+    sed -i "s/%trove_volume_size%/$TROVE_VOLUME_SIZE/g" $TEST_CONF
+
+    sed -i "s/%instance_flavor%/$INSTANCE_FLAVOR/g" $TEST_CONF
+    sed -i "s/%eph_instance_flavor%/$EPH_INSTANCE_FLAVOR/g" $TEST_CONF
+    sed -i "s/%bigger_instance_flavor%/$BIGGER_INSTANCE_FLAVOR/g" $TEST_CONF
+    sed -i "s/%bigger_eph_instance_flavor%/$BIGGER_EPH_INSTANCE_FLAVOR/g" $TEST_CONF
 
     set_bin_path
 
 }
 
 function setup_cluster_configs() {
-    # Setting cluster_member_count to 2 to decrease cluster spawn time.
-    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count 2
-    # Setting cluster configs
+    # Some generic cluster-related configurations required by the tests to run.
     iniset $TROVE_TASKMANAGER_CONF DEFAULT agent_call_high_timeout 300
     iniset $TROVE_TASKMANAGER_CONF DEFAULT cluster_usage_timeout 2000
     iniset $TROVE_TASKMANAGER_CONF DEFAULT resize_time_out 900
@@ -710,11 +746,24 @@ function setup_cluster_configs() {
 }
 
 function add_test_flavors() {
-    add_flavor 'tinier' 6 506 10 1 0
-    add_flavor 'm1.rd-tiny' 7 512 3 1 0
-    add_flavor 'm1.rd-smaller' 8 768 3 1 0
-    add_flavor 'eph.rd-tiny' 9 512 3 1 1
-    add_flavor 'eph.rd-smaller' 10 768 3 1 2
+    # name id ram root_vol vcpu eph_vol
+    add_flavor 'test.tiny' 11 512 3 1 0
+    add_flavor 'test.tiny.resize' 12 528 3 2 0
+
+    add_flavor 'test.eph.tiny' 13 512 3 1 1
+    add_flavor 'test.eph.tiny.resize' 14 528 3 2 1
+
+    add_flavor 'test.small' 15 768 3 1 0
+    add_flavor 'test.small.resize' 16 784 3 2 0
+
+    add_flavor 'test.eph.small' 17 768 3 1 1
+    add_flavor 'test.eph.small.resize' 18 784 3 2 1
+
+    add_flavor 'test.large' 19 2048 3 1 0
+    add_flavor 'test.large.resize' 20 2064 3 2 0
+
+    add_flavor 'test.eph.large' 21 2048 3 1 1
+    add_flavor 'test.eph.large.resize' 22 2064 3 2 1
 }
 
 function cmd_test_init() {
@@ -1110,7 +1159,11 @@ function cmd_dsvm_gate_tests() {
     sudo chown -R $(whoami) $DEST/trove-integration
     iniset $TROVE_GUESTAGENT_CONF DEFAULT rabbit_host $NETWORK_GATEWAY
     cd $DEST/trove-integration/scripts
+
+    # Install required packages.
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
+    sudo -H $HTTP_PROXY apt-get -y install libpq-dev
+    sudo -H $HTTP_PROXY pip install --upgrade -r "$PATH_TROVE/test-requirements.txt"
 
     cmd_kick_start $DATASTORE_TYPE
 
