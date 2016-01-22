@@ -70,6 +70,7 @@ DATA_DIR=$DATA_DIR
 SERVICE_DIR=$SERVICE_DIR
 VOLUME_GROUP=${VOLUME_GROUP}
 VOLUME_BACKING_FILE=${VOLUME_BACKING_FILE}
+VOLUME_BACKING_FILE_SIZE=${VOLUME_BACKING_FILE_SIZE}
 # The lock_path is by default /opt/stack/nova; if this path is a shared
 # folder in VirtualBox things seem to break. We fix it by setting EXTRA_OPS
 # to force lock_path to /tmp.
