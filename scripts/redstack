@@ -689,15 +689,23 @@ function mod_confs() {
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
         # Vertica needs more time than mysql for its boot/start/stop operations.
         setup_cluster_configs 3
-
-        # Setting flavor to be >= 2GB RAM for Vertica guest instances in test.conf.
-        sed -i "s/m1.rd-tiny/m1.small/g" $TEST_CONF
-        sed -i "s/m1.rd-smaller/m1.medium/g" $TEST_CONF
-    fi
-
-    if [ "$DATASTORE_TYPE" = "pxc" ]; then
+    elif [ "$DATASTORE_TYPE" = "pxc" ]; then
         setup_cluster_configs 2
+    elif [ "$DATASTORE_TYPE" = "cassandra" ]; then
+        setup_cluster_configs 2
+    elif [ "$DATASTORE_TYPE" = "mongodb" ]; then
+        setup_cluster_configs 2
+        # Decrease the number of required config servers per cluster to save resources.
+        iniset $TROVE_CONF $DATASTORE_TYPE num_config_servers_per_cluster 1
     fi
+
+    # Append datastore specific configuration file
+    DATASTORE_CONF=$REDSTACK_SCRIPTS/conf/$DATASTORE_TYPE.conf
+    if [ ! -f $DATASTORE_CONF ]; then
+        exclaim "Datastore configuration file ${DATASTORE_CONF} not found"
+        exit 1
+    fi
+    cat $DATASTORE_CONF >> $TEST_CONF
 
     set_bin_path
 
@@ -714,11 +722,24 @@ function setup_cluster_configs() {
 }
 
 function add_test_flavors() {
-    add_flavor 'tinier' 6 506 10 1 0
-    add_flavor 'm1.rd-tiny' 7 512 3 1 0
-    add_flavor 'm1.rd-smaller' 8 768 3 1 0
-    add_flavor 'eph.rd-tiny' 9 512 3 1 1
-    add_flavor 'eph.rd-smaller' 10 768 3 1 2
+    # name id ram root_vol vcpu eph_vol
+    add_flavor 'test.tiny' 11 512 3 1 0
+    add_flavor 'test.tiny.resize' 12 528 3 2 0
+
+    add_flavor 'test.eph.tiny' 13 512 3 1 1
+    add_flavor 'test.eph.tiny.resize' 14 528 3 2 1
+
+    add_flavor 'test.small' 15 768 3 1 0
+    add_flavor 'test.small.resize' 16 784 3 2 0
+
+    add_flavor 'test.eph.small' 17 768 3 1 1
+    add_flavor 'test.eph.small.resize' 18 784 3 2 1
+
+    add_flavor 'test.large' 19 2048 5 1 0
+    add_flavor 'test.large.resize' 20 2064 5 2 0
+
+    add_flavor 'test.eph.large' 21 2048 5 1 1
+    add_flavor 'test.eph.large.resize' 22 2064 5 2 1
 }
 
 function cmd_test_init() {
