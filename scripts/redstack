@@ -114,12 +114,16 @@ fi
 
 # set up respective package managers
 if is_fedora; then
+    PKG_INSTALL_OPTS=""
     PKG_MGR=dnf
     PKG_GET_ARGS="-y"
 else
+    PKG_INSTALL_OPTS="DEBIAN_FRONTEND=noninteractive"
     PKG_MGR=apt-get
     PKG_GET_ARGS="-y --allow-unauthenticated --force-yes"
 fi
+PKG_INSTALL_ARG="install"
+PKG_UPDATE_ARG="update"
 
 ###############################################################################
 # Utility functions
@@ -160,12 +164,12 @@ function set_trove_plugin_vars () {
 
 function pkg_install () {
     echo Installing $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS install $@
+    sudo -E $PKG_INSTALL_OPTS $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS $PKG_INSTALL_ARG $@
 }
 
 function pkg_update () {
     echo Updating $@...
-    sudo -E DEBIAN_FRONTEND=noninteractive $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS update $@
+    sudo -E $PKG_INSTALL_OPTS $HTTP_PROXY $PKG_MGR $PKG_GET_ARGS $PKG_UPDATE_ARG $@
 }
 
 function set_home_dir() {
