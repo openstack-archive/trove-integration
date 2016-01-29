@@ -12,13 +12,14 @@ export DEBIAN_FRONTEND=noninteractive
 # https://mariadb.com/kb/en/mariadb/installing-mariadb-deb-files/
 apt-get -y install software-properties-common
 apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/10.0/ubuntu trusty main'
+add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/10.1/ubuntu trusty main'
 
 # Pin MariaDB repository
 sudo echo -e "Package: *\nPin: origin ftp.osuosl.org\nPin-Priority: 1000" > /etc/apt/preferences.d/mariadb.pref
 
 apt-get -y update
-apt-get -y install libmariadbclient18 mariadb-server percona-xtrabackup-22
+apt-get -y install socat percona-xtrabackup-22
+apt-get -y install libmariadbclient18 mariadb-server
 
 cat >/etc/mysql/conf.d/no_perf_schema.cnf <<_EOF_
 [mysqld]
