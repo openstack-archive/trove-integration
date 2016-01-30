@@ -8,7 +8,7 @@
 # test.                                                                       #
 #                                                                             #
 ###############################################################################
-
+# Testing gate - do not merge
 REDSTACK_SCRIPTS=${REDSTACK_SCRIPTS:-`pwd`}
 REDSTACK_TESTS=$REDSTACK_SCRIPTS/../tests/
 
