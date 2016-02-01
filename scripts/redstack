@@ -1091,10 +1091,11 @@ function cmd_kick_start() {
 
 function cmd_dsvm_gate_tests() {
     DATASTORE_TYPE=${1:-'mysql'}
-    HOST_SCP_USERNAME=${2:-'jenkins'}
-    GUEST_USERNAME=${3:-'ubuntu'}
-    NETWORK_GATEWAY=${4:-'10.1.0.1'}
-    ESCAPED_PATH_TROVE=${5:-'\/opt\/stack\/new\/trove'}
+    TEST_GROUP=${2:-${DATASTORE_TYPE}}
+    HOST_SCP_USERNAME=${3:-'jenkins'}
+    GUEST_USERNAME=${4:-'ubuntu'}
+    NETWORK_GATEWAY=${5:-'10.1.0.1'}
+    ESCAPED_PATH_TROVE=${6:-'\/opt\/stack\/new\/trove'}
 
     if [[ $BRANCH_OVERRIDE == "stable/liberty" || $BRANCH_OVERRIDE == "stable/liberty" ]]; then
         # Devstack in liberty doesn't copy the clouds.yaml file to /etc so we need to
@@ -1136,7 +1137,7 @@ function cmd_dsvm_gate_tests() {
         echo $SWIFT_ENDPOINTS | xargs -n 1 openstack endpoint delete $OS_CLIENT_ARGS
     fi
 
-    cmd_int_tests --group=$DATASTORE_TYPE
+    cmd_int_tests --group=$TEST_GROUP
 }
 
 function cmd_reset_task() {
