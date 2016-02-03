@@ -688,7 +688,7 @@ function mod_confs() {
 
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
         # Vertica needs more time than mysql for its boot/start/stop operations.
-        setup_cluster_configs
+        setup_cluster_configs 3
 
         # Setting flavor to be >= 2GB RAM for Vertica guest instances in test.conf.
         sed -i "s/m1.rd-tiny/m1.small/g" $TEST_CONF
@@ -696,7 +696,7 @@ function mod_confs() {
     fi
 
     if [ "$DATASTORE_TYPE" = "pxc" ]; then
-        setup_cluster_configs
+        setup_cluster_configs 2
     fi
 
     set_bin_path
@@ -705,7 +705,7 @@ function mod_confs() {
 
 function setup_cluster_configs() {
     # Setting cluster_member_count to 2 to decrease cluster spawn time.
-    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count 2
+    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count $1
     # Setting cluster configs
     iniset $TROVE_TASKMANAGER_CONF DEFAULT agent_call_high_timeout 300
     iniset $TROVE_TASKMANAGER_CONF DEFAULT cluster_usage_timeout 2000
