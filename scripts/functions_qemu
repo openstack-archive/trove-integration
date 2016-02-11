@@ -32,6 +32,7 @@ function build_vm() {
         EXTRA_ELEMENTS=selinux-permissive
     fi
 
+    export DIB_DEBUG_TRACE=1
     export HOST_USERNAME
     export HOST_SCP_USERNAME
     export GUEST_USERNAME
