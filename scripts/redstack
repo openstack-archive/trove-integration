@@ -1108,6 +1108,9 @@ function cmd_dsvm_gate_tests() {
     # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
     echo "User=ubuntu" >> /home/jenkins/.ssh/config
 
+    find /etc/apt
+    exit
+
     # Fix iptables rules that prevent amqp connections from the devstack box to the guests
     sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
 
