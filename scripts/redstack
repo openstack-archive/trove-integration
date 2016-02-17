@@ -208,10 +208,25 @@ function add_flavor() {
     FLAVOR_ROOT_GB=$4
     FLAVOR_VCPUS=$5
     FLAVOR_EPHEMERAL=$6
+    FLAVOR_RESIZE_MEMORY_MB=$7
 
-    if [[ -z $(nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-list | grep $FLAVOR_NAME) ]]; then
-        nova --os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT flavor-create $FLAVOR_NAME $FLAVOR_ID $FLAVOR_MEMORY_MB $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
-    fi
+    credentials="--os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT"
+
+    resize_name=${FLAVOR_NAME}.resize
+    for name in ${FLAVOR_NAME} ${resize_name}; do
+        id=${FLAVOR_ID}
+        memory=${FLAVOR_MEMORY_MB}
+        if [[ $name == ${resize_name} ]]; then
+            memory=${FLAVOR_RESIZE_MEMORY_MB}
+            id=${FLAVOR_ID}r
+            if [[ $BRANCH_OVERRIDE == "stable/juno" || $BRANCH_OVERRIDE == "stable/kilo" ]]; then
+                id=1${FLAVOR_ID}
+            fi
+        fi
+        if [[ -z $(nova $credentials flavor-list | grep "| $name[ ]* |") ]]; then
+            nova $credentials flavor-create $name $id $memory $FLAVOR_ROOT_GB $FLAVOR_VCPUS --ephemeral $FLAVOR_EPHEMERAL
+        fi
+    done
 }
 
 function get_attribute_id() {
@@ -715,25 +730,15 @@ function setup_cluster_configs() {
     iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count $1
 }
 
+# Add a flavor and a corresponding flavor.resize (with higher memory)
 function add_test_flavors() {
-    # name id ram root_vol vcpu eph_vol
-    add_flavor 'test.tiny' 11 512 3 1 0
-    add_flavor 'test.tiny.resize' 12 528 3 2 0
-
-    add_flavor 'test.eph.tiny' 13 512 3 1 1
-    add_flavor 'test.eph.tiny.resize' 14 528 3 2 1
-
-    add_flavor 'test.small' 15 768 3 1 0
-    add_flavor 'test.small.resize' 16 784 3 2 0
-
-    add_flavor 'test.eph.small' 17 768 3 1 1
-    add_flavor 'test.eph.small.resize' 18 784 3 2 1
-
-    add_flavor 'test.large' 19 2048 5 1 0
-    add_flavor 'test.large.resize' 20 2064 5 2 0
-
-    add_flavor 'test.eph.large' 21 2048 5 1 1
-    add_flavor 'test.eph.large.resize' 22 2064 5 2 1
+    # name id ram root_vol vcpu eph_vol resize_ram
+    add_flavor 'test.tiny' 100 512 3 1 0 528
+    add_flavor 'test.eph.tiny' 101 512 3 1 1 528
+    add_flavor 'test.small' 102 768 3 1 0 784
+    add_flavor 'test.eph.small' 103 768 3 1 1 784
+    add_flavor 'test.large' 104 2048 5 1 0 2064
+    add_flavor 'test.eph.large' 105 2048 5 1 1 2064
 }
 
 function cmd_test_init() {
