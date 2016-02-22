@@ -1,0 +1,10 @@
+Code-Review+2: mariam john <mariamj@us.ibm.com>
+Code-Review+1: Petr Malik <pmalik@tesora.com>
+Code-Review+2: Victoria Martinez de la Cruz <victoria@redhat.com>
+Workflow+1: Victoria Martinez de la Cruz <victoria@redhat.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 22 Feb 2016 20:50:23 +0000
+Reviewed-on: https://review.openstack.org/267215
+Project: openstack/trove-integration
+Branch: refs/heads/master
