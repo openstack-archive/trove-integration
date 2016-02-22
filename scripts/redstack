@@ -695,13 +695,13 @@ function mod_confs() {
 
     if [ "$DATASTORE_TYPE" = "vertica" ]; then
         # Vertica needs more time than mysql for its boot/start/stop operations.
-        setup_cluster_configs 3
+        setup_cluster_configs cluster_member_count 3
     elif [ "$DATASTORE_TYPE" = "pxc" ]; then
-        setup_cluster_configs 2
+        setup_cluster_configs min_cluster_member_count 2
     elif [ "$DATASTORE_TYPE" = "cassandra" ]; then
-        setup_cluster_configs 2
+        setup_cluster_configs cluster_member_count 2
     elif [ "$DATASTORE_TYPE" = "mongodb" ]; then
-        setup_cluster_configs 2
+        setup_cluster_configs cluster_member_count 2
         # Decrease the number of required config servers per cluster to save resources.
         iniset $TROVE_CONF $DATASTORE_TYPE num_config_servers_per_cluster 1
     fi
@@ -712,7 +712,7 @@ function mod_confs() {
 
 function setup_cluster_configs() {
     # Setting cluster_member_count to 2 to decrease cluster spawn time.
-    iniset $TROVE_CONF $DATASTORE_TYPE cluster_member_count $1
+    iniset $TROVE_CONF $DATASTORE_TYPE $1 $2
 }
 
 function add_test_flavors() {
