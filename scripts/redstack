@@ -893,6 +893,8 @@ function cmd_start() {
             source /dev/stdin < <(sed -n '/^function start_trove\(\)/,/^}/p' "$TROVE_SETUP_CMD_FILE")
             start_trove
         fi
+    else
+        echo "WARNING: Could not start Trove services because there are no stack screen sessions running"
     fi
 }
 
@@ -938,6 +940,8 @@ function cmd_stop() {
                 break
             fi
         done
+    else
+        echo "WARNING: Could not stop Trove services because there are no stack screen sessions running"
     fi
 }
 
