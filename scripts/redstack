@@ -938,6 +938,8 @@ function cmd_stop() {
                 break
             fi
         done
+    else
+        echo "WARNING: Could not stop Trove services because there are no stack screen sessions running"
     fi
 }
 
