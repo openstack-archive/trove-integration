@@ -6,6 +6,10 @@
 [ -z $TROVE_CONF_DIR ] && TROVE_CONF_DIR=/etc/trove
 [ -z $MYSQL_HOST ] && MYSQL_HOST=$SERVICE_HOST
 
+# Set up the region name
+# Try REGION_NAME then OS_REGION_NAME then RegionOne (the devstack default)
+REGION_NAME=${REGION_NAME:-${OS_REGION_NAME:-RegionOne}}
+
 # Enable neutron instead of nova-network
 ENABLE_NEUTRON=$(get_bool ENABLE_NEUTRON false)
 

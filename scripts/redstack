@@ -657,6 +657,9 @@ function mod_confs() {
     sed -i "s,%service_host%,$SERVICE_HOST,g" $TEST_CONF
     sed -i "s,%swifth_path%,$PATH_SWIFT,g" $TEST_CONF
 
+    # Add the region name into test.conf
+    sed -i "s/%region_name%/${REGION_NAME}/g" $TEST_CONF
+
     # Add the tenant id's into test.conf
     sed -i "s/%admin_tenant_id%/$(get_attribute_id project admin 1)/g" $TEST_CONF
     sed -i "s/%alt_demo_tenant_id%/$(get_attribute_id project alt_demo 1)/g" $TEST_CONF
