@@ -938,6 +938,8 @@ function cmd_stop() {
                 break
             fi
         done
+    else
+        echo "No sessions exist"
     fi
 }
 
