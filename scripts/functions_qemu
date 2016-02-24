@@ -137,7 +137,7 @@ function manage_ssh_keys() {
         echo "${SSH_DIR} already exists"
     else
         echo "Creating ${SSH_DIR} for ${HOST_USERNAME}"
-        sudo -Hiu ${HOST_USERNAME} mkdir -p ${SSH_DIR}
+        sudo -Hiu ${HOST_USERNAME} mkdir -m go-w -p ${SSH_DIR}
     fi
 
     if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
