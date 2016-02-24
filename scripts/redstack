@@ -230,8 +230,6 @@ function install_prep_packages() {
     exclaim 'Installing dependencies (part 1b)...'
     pkg_install python-pip
     if is_fedora; then
-      # python-mysql obsoletes MySQL-python
-      sudo dnf remove -y python-mysql || true
       pkg_install git gettext
     else
       pkg_install git-core kvm-ipxe gettext

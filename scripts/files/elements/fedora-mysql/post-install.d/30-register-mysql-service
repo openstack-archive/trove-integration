@@ -3,6 +3,4 @@
 set -e
 set -o xtrace
 
-# Enable and start service
-systemctl enable mysqld
-systemctl start mysqld
+# DO NOT enable or start mysqld for systemd, let the guestagent coordinate startup

@@ -6,12 +6,11 @@
 set -e
 set -o xtrace
 
-dnf -y install https://dev.mysql.com/get/mysql-community-release-fc21-6.noarch.rpm
+dnf -y install https://repo.mysql.com/mysql-community-release-fc22.rpm
 dnf -y install mysql-community-server
 
-# move the config until proper changes are placed in the service file for fedora
+# move the config dir for now but leave /etc/my.cnf alone
 # ln -s creates problems for the systemd script
 mkdir /etc/mysql
-mv /etc/my.cnf /etc/mysql/my.cnf
 mv /etc/my.cnf.d /etc/mysql/conf.d
 chown -R mysql:mysql /etc/mysql
