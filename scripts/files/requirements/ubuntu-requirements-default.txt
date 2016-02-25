@@ -24,3 +24,4 @@ oslo.utils>=1.1.0
 osprofiler>=0.3.0
 oslo.concurrency>=0.3.0
 enum34;python_version=='2.7' or python_version=='2.6' or python_version=='3.3'  # BSD
+pycrypto>=2.6  # Public Domain
