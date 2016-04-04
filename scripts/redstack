@@ -1128,7 +1128,7 @@ function cmd_dsvm_gate_tests() {
     NETWORK_GATEWAY=${5:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${6:-'\/opt\/stack\/new\/trove'}
 
-    if [[ $BRANCH_OVERRIDE == "stable/liberty" || $BRANCH_OVERRIDE == "stable/liberty" ]]; then
+    if [[ $BRANCH_OVERRIDE == "stable/liberty" ]]; then
         # Devstack in liberty doesn't copy the clouds.yaml file to /etc so we need to
         # ensure we have access to the clouds.yaml file set up by devstack-gate
         sudo mkdir -p ~/.config/openstack

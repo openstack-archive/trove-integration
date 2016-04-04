@@ -27,6 +27,7 @@ LIBS_FROM_GIT_ALL_OSLO=$(get_bool LIBS_FROM_GIT_ALL_OSLO false)
 
 # Don't include certain .rc files in local.conf.d by default
 USING_VAGRANT=$(get_bool USING_VAGRANT false)
+USE_KVM=$(get_bool USE_KVM false)
 USE_UUID_TOKEN=$(get_bool USE_UUID_TOKEN false)
 
 # Specify configuration for Ceilometer
