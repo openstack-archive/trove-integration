@@ -82,11 +82,11 @@ MAIN_RUNNER = None
 
 def initialize_rdl_config(config_file):
     from trove.common import cfg
-    from trove.openstack.common import log
+    from oslo_log import log
     from trove.db import get_db_api
     conf = cfg.CONF
     cfg.parse_args(['int_tests'], default_config_files=[config_file])
-    log.setup(None)
+    log.setup(conf, None)
     try:
         get_db_api().configure_db(conf)
         conf_file = conf.find_file(conf.api_paste_config)
@@ -94,17 +94,6 @@ def initialize_rdl_config(config_file):
         import traceback
         print(traceback.format_exc())
         sys.exit("ERROR: %s" % error)
-
-
-def initialize_nova_flags(config_file):
-    from nova import flags
-    from nova import log as logging
-    from nova import service
-    from nova import utils
-
-    flags.parse_args(['int_tests'], default_config_files=[config_file])
-    logging.setup()
-    utils.monkey_patch()
 
 
 def _clean_up():
@@ -227,8 +216,6 @@ def run_main(test_importer):
     if CONFIG.white_box:  # If white-box testing, set up the flags.
         # Handle loading up RDL's config file madness.
         initialize_rdl_config(rdl_config_file)
-        if nova_flag_file:
-            initialize_nova_flags(nova_flag_file)
 
     # Set up the report, and print out how we're running the tests.
     from tests.util import report
