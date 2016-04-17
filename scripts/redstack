@@ -173,16 +173,8 @@ function pkg_update () {
 }
 
 function set_home_dir() {
-    self="${0#./}"
-    base="${self%/*}"
-    current=`pwd`
-    if [ "$base" = "$self" ] ; then
-        HOME="$current/"
-    elif [[ $base =~ ^/ ]]; then
-        HOME="$base/"
-    else
-        HOME="$current/$base/"
-    fi
+    exclaim "set_home_dir has been nooped."
+    exit 1
 }
 
 function set_http_proxy() {
@@ -1238,7 +1230,7 @@ fi
 # Set this to exit immediately on error
 set -o errexit
 
-set_home_dir
+# set_home_dir
 set_http_proxy
 set_trove_plugin_vars false
 
