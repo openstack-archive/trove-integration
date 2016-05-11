@@ -760,6 +760,9 @@ function add_test_flavors() {
     add_flavor 'large' 25 2048 5 1
     add_flavor 'large' 26 2048 10 1
     add_flavor 'large' 27 2048 15 1
+
+    # This should be big enough to cause Nova to fail allocation
+    add_flavor 'fault' 30 131072 5 1
 }
 
 function cmd_test_init() {
