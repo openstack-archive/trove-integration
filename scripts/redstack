@@ -761,8 +761,10 @@ function add_test_flavors() {
     add_flavor 'large' 26 2048 10 1
     add_flavor 'large' 27 2048 15 1
 
-    # This should be big enough to cause Nova to fail allocation
-    add_flavor 'fault' 35 131072 5 1
+    # This will allow Nova to create an instance, but not enough disk to boot the image
+    add_flavor 'fault_1' 30 512 1 1
+    # This should be enough memory to cause Nova to fail entirely due to too much allocation
+    add_flavor 'fault_2' 31 131072 5 1
 }
 
 function cmd_test_init() {
