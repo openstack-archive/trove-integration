@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+# avoid some dep conflicts here
+yum -y remove mariadb-libs mariadb-server
+
+yum -y install https://repo.mysql.com/mysql-community-release-el7.rpm
+yum -y install mysql-community-server
+
+# move the config dir for now but leave /etc/my.cnf alone
+# ln -s creates problems for the systemd script
+mkdir /etc/mysql
+mv /etc/my.cnf.d /etc/mysql/conf.d
+chown -R mysql:mysql /etc/mysql
+chcon -Rv --type=mysqld_etc_t /etc/mysql/conf.d
+
+# not all mysql vendor packages add the
+# includedir line to ALL its default confs;
+# needs to be there for the config swaps
+sed -i '/!includedir[ \t]*\/etc\/my.cnf.d/d' /etc/my.cnf
+sed -i '$ a !includedir \/etc\/mysql\/conf.d' /etc/my.cnf

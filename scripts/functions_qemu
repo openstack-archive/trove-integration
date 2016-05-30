@@ -28,7 +28,7 @@ function build_vm() {
             EXTRA_ELEMENTS="apt-sources apt-conf-dir"
         fi
     fi
-    if [ $DISTRO == 'fedora' ]; then
+    if [ $DISTRO == 'centos7' ]; then
         EXTRA_ELEMENTS=selinux-permissive
     fi
 

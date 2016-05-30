@@ -115,7 +115,7 @@ fi
 # set up respective package managers
 if is_fedora; then
     PKG_INSTALL_OPTS=""
-    PKG_MGR=dnf
+    PKG_MGR=yum
     PKG_GET_ARGS="-y"
 else
     PKG_INSTALL_OPTS="DEBIAN_FRONTEND=noninteractive"
@@ -527,11 +527,21 @@ function set_bin_path() {
     fi
 }
 
-function set_mysql_pkg() {
+function set_default_pkg() {
     if is_fedora; then
        MYSQL_PKG="mysql-community-server"
+       PGSQL_PKG="postgresql94-server"
+       REDIS_PKG="redis"
+       PERCONA_PKG="Percona-Server-server-56"
+       PXC_PKG="Percona-XtraDB-Cluster-server-56"
+       MARIADB_PKG="MariaDB-server"
     else
        MYSQL_PKG="mysql-server-5.6"
+       PGSQL_PKG="postgresql-9.4"
+       REDIS_PKG="redis-server"
+       PERCONA_PKG="percona-server-server-5.6"
+       PXC_PKG="percona-xtradb-cluster-server-5.6"
+       MARIADB_PKG="mariadb-server"
     fi
 }
 
@@ -542,24 +552,24 @@ function cmd_set_datastore() {
     # rd_manage datastore_update <datastore_name> <default_version>
     rd_manage datastore_update "$DATASTORE_TYPE" ""
     PACKAGES=${PACKAGES:-""}
+    set_default_pkg
     if [ "$DATASTORE_TYPE" == "mysql" ]; then
-        set_mysql_pkg
         PACKAGES=${PACKAGES:-$MYSQL_PKG}
         VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "percona" ]; then
-        PACKAGES=${PACKAGES:-"percona-server-server-5.6"}
+        PACKAGES=${PACKAGES:-$PERCONA_PKG}
         VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "pxc" ]; then
-        PACKAGES=${PACKAGES:-"percona-xtradb-cluster-server-5.6"}
+        PACKAGES=${PACKAGES:-$PXC_PKG}
         VERSION="5.6"
     elif [ "$DATASTORE_TYPE" == "mariadb" ]; then
-        PACKAGES=${PACKAGES:-"mariadb-server"}
+        PACKAGES=${PACKAGES:-$MARIADB_PKG}
         VERSION="10.1"
     elif [ "$DATASTORE_TYPE" == "mongodb" ]; then
         PACKAGES=${PACKAGES:-"mongodb-org"}
         VERSION="3.0"
     elif [ "$DATASTORE_TYPE" == "redis" ]; then
-        PACKAGES=${PACKAGES:-"redis-server"}
+        PACKAGES=${PACKAGES:-$REDIS_PKG}
         VERSION="3.0"
     elif [ "$DATASTORE_TYPE" == "cassandra" ]; then
         PACKAGES=${PACKAGES:-"cassandra"}
@@ -568,7 +578,7 @@ function cmd_set_datastore() {
         PACKAGES=${PACKAGES:-"couchbase-server"}
         VERSION="2.2.0"
     elif [ "$DATASTORE_TYPE" == "postgresql" ]; then
-        PACKAGES=${PACKAGES:-"postgresql-9.4"}
+        PACKAGES=${PACKAGES:-$PGSQL_PKG}
         VERSION="9.4"
     elif [ "$DATASTORE_TYPE" == "couchdb" ]; then
         PACKAGES=${PACKAGES:-"couchdb"}

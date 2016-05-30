@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -ex
+set -o xtrace
+
+# install community version from Datastax
+cat <<_EOL_ > /etc/yum.repos.d/datastax.repo
+[datastax]
+name = DataStax Repo for Apache Cassandra
+baseurl = http://rpm.datastax.com/community
+enabled = 1
+gpgkey = http://rpm.datastax.com/rpm/repo_key
+gpgcheck = 1
+_EOL_
+
+yum -y install java-1.8.0-openjdk
+yum -y install dsc21 cassandra21
+
+# datastax RPMs are missing some LSB vars so we
+# need to help systemd-sysv-generator a bit here
+pidfile=$(grep -oP '^pid_file=\K.*' /etc/rc.d/init.d/cassandra)
+sed -i "/# description/a# pidfile: $pidfile" /etc/rc.d/init.d/cassandra
+
+# systemd wipes /run, /var/run by default
+cat <<_EOL_ > /etc/tmpfiles.d/cassandra.conf
+d /var/run/cassandra 0770 cassandra cassandra
+d /var/lock/subsys 0755 root root
+_EOL_
+
+# The Python Driver for Apache Cassandra.
+pip install cassandra-driver
+# Sorted sets support for the Python driver.
+# installing distro version due to pip issue
+yum -y install python-blist
+
+systemctl stop cassandra
+rm -rf /var/lib/cassandra/data/system/*
+systemctl start cassandra

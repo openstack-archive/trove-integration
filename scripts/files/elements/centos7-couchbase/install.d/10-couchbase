@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+set -o xtrace
+
+cat > "/etc/rc.d/rc.local" << _EOF_
+#!/bin/sh
+# Make sure to disable Linux kernel feature transparent huge pages,
+# it will affect greatly both memory usage and latency in a negative way.
+# http://developer.couchbase.com/documentation/server/current/install/thp-disable.html
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+
+exit \$?
+
+_EOF_
+
+chmod a+x /etc/rc.d/rc.local
+
+yum -y install http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-1-x86_64.rpm
+
+yum -y install couchbase-server-community

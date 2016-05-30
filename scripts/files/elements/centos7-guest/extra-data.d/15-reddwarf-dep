@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+set -o xtrace
+
+# CONTEXT: HOST prior to IMAGE BUILD as SCRIPT USER
+# PURPOSE: Setup the requirements file for use by 15-reddwarf-dep
+
+source $_LIB/die
+
+BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
+ADD_BRANCH=$(basename ${BRANCH_OVERRIDE})
+REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/centos7-requirements-${ADD_BRANCH}.txt
+
+[ -n "$TMP_HOOKS_PATH" ] || die "Temp hook path not set"
+[ -e ${REQUIREMENTS_FILE} ] || die "Requirements not found"
+[ -n "$HOST_USERNAME" ] || die "HOST_USERNAME not set"
+
+sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
