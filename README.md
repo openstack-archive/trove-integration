@@ -65,7 +65,7 @@ Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a develo
 
     Cannot open your terminal '/dev/pts/1'
 
-*If that command fails with the error chmod the corresponding /dev/pts/#*
+*chmod the corresponding /dev/pts/#*
 
     $ chmod 660 /dev/pts/1
 
@@ -74,9 +74,10 @@ To produce the list of screens that you can scroll through and select
 
     ctrl+a then "
 
+```
 Num Name
 
-..... (full list ommitted)
+..... (full list omitted)
 
 20 c-vol
 21 h-eng
@@ -86,6 +87,7 @@ Num Name
 25 tr-api
 26 tr-tmgr
 27 tr-cond
+```
 
 Alternatively, to go directly to a specific screen window
 
@@ -101,9 +103,14 @@ Allows the services to continue running in the background
 ***
 
 #### Kick start the build/test-init/build-image commands
-*Add mysql as a parameter to set build and add the mysql guest image. This will also populate /etc/trove/test.conf with appropriate values for running the integration tests.*
+Add mysql as a parameter to set build and add the mysql guest image. This will also populate /etc/trove/test.conf with appropriate values for running the integration tests.
 
     $ ./redstack kick-start mysql
+
+#### Building a CentOS 7 image
+trove-integration also supports building images for CentOS 7. The default for the upstream gate tests is ubuntu which is specified in the redstack.rc file. However, a developer can override the target DISTRO setting there or from the command-line by explicitly specifying the DISTRO environment variable as "centos7".
+
+    $ DISTRO=centos7 ./redstack kick-start mysql
 
 *Optional commands if you did not run kick-start*
 
@@ -170,23 +177,28 @@ You can also specify the TESTS_USE_INSTANCE_ID environment variable to have the 
     $./TESTS_DO_NOT_DELETE_INSTANCE=True TESTS_USE_INSTANCE_ID=INSTANCE_UUID ./redstack int-tests --group=simple_blackbox
 
 ***
+### Troubleshooting
+By far, the most common problems for a new OpenStack developer in setting up a working test environment relate to networking. Some tips to try and perhaps research further:
 
+1. If the Trove guest agent inside the guest VM can't contact the Trove control plane message bus, make sure that a firewall like iptables is not blocking AMQP traffic on the host (port 5672)
+2. If the Trove control plane can't reach your guest VM at all you may have to masquerade traffic using:
+   `iptables -t nat -A POSTROUTING -o <name_of_adapter> -j MASQUERADE`
+3. If running trove-integration inside a VM, make sure that the hypervisor supports promiscuous mode for the NAT network adapter it provides to the host VM
+4. If running neutron instead of the default nova-network, make sure that the br-ex adapter created by neutron is configured with the gateway IP that was attached to your host adapter connected to the external public network. This will provide connectivity for the floating IP network
+
+***
 ### VMware Fusion 5 speed improvement
 Running Ubuntu with KVM or Qemu can be extremely slow without certain optimizations. The following are some VMware settings that can improve performance and may also apply to other virtualization platforms.
 
-1. Shutdown the Ubuntu VM.
-
-2. Go to VM Settings -> Processors & Memory -> Advanced Options.
+1. Shutdown the Ubuntu VM
+2. Go to VM Settings -> Processors & Memory -> Advanced Options
    Check the "Enable hypervisor applications in this virtual machine"
-
-3. Go to VM Settings -> Advanced.
+3. Go to VM Settings -> Advanced
    Set the "Troubleshooting" option to "None"
-
-4. After setting these create a snapshot so that in cases where things break down you can revert to a clean snapshot.
-
+4. After setting these create a snapshot so that in cases where things break down you can revert to a clean snapshot
 5. Boot up the VM and run the `./redstack install`
+6. To verify that KVM is setup properly after the devstack installation you can run these commands
 
-6. To verify that KVM is setup properly after the devstack installation you can run these commands.
 ```
 ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists

@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+cat > "/etc/rc.d/rc.local" << _EOF_
+# Make sure to disable Linux kernel feature transparent huge pages,
+# it will affect greatly both memory usage and latency in a negative way.
+# See: http://docs.mongodb.org/manual/tutorial/transparent-huge-pages/
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+
+exit \$?
+
+_EOF_
+
+chmod a+x /etc/rc.d/rc.local
+
+wget --directory-prefix=/etc/yum.repos.d https://repo.mongodb.org/yum/redhat/mongodb-org.repo
+
+yum -y install mongodb-org-server
+
+# MongoDB configuration settings
+# use the default bindIP
+sed -i '/bindIp/d' /etc/mongod.conf
+# need to use smallFiles until the device is mounted
+sed -i 's/#  mmapv1:/  mmapv1:\n    smallFiles: true/' /etc/mongod.conf
+
+# adjust for Trove and mongodb.org assumptions
+mkdir -p /var/lib/mongodb
+chown -R mongod:mongod /var/lib/mongodb
+chcon -Rv --type=mongod_var_lib_t /var/lib/mongodb
+sed -i 's|/var/lib/mongo|/var/lib/mongodb|g' /etc/mongod.conf
+sed -i 's|mongod.pid|mongodb.pid|g' /etc/mongod.conf
+sed -i 's|mongod.pid|mongodb.pid|g' /etc/init.d/mongod
+
+# Trove overrides forking to keep Ubuntu init.d pid
+# tracking happy but systemd will generate a unit file
+# from the vendor's init.d which MUST fork mongod
+echo 'OPTIONS="--fork -f /etc/mongod.conf"' > /etc/sysconfig/mongod

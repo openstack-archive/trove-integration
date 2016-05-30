@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+# avoid some dep conflicts here
+yum -y remove mariadb-libs mariadb-server
+
+# use MariaDB vendor repo
+cat <<_EOL_ > /etc/yum.repos.d/mariadb.repo
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+_EOL_
+
+yum -y install MariaDB-server MariaDB-client
+
+# move conf dir
+mkdir /etc/mysql
+mv /etc/my.cnf.d /etc/mysql/conf.d
+chown -R mysql:mysql /etc/mysql
+chcon -Rv --type=mysqld_etc_t /etc/mysql/conf.d
+
+# not all mysql vendor packages add the
+# includedir line to ALL its default confs;
+# needs to be there for the config swaps
+sed -i '/!includedir[ \t]*\/etc\/my.cnf.d/d' /etc/my.cnf
+sed -i '$ a !includedir \/etc\/mysql\/conf.d' /etc/my.cnf
+
+# let Trove manage the service
+systemctl disable mariadb

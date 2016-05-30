@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# CONTEXT: GUEST during CONSTRUCTION as ROOT
+# PURPOSE: Install controller base required packages
+
+set -e
+set -o xtrace
+
+cat > "/etc/rc.d/rc.local" << _EOF_
+#!/bin/sh
+# Make sure to disable Linux kernel feature transparent huge pages,
+# it will affect greatly both memory usage and latency in a negative way.
+# http://redis.io/topics/latency
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+
+exit \$?
+
+_EOF_
+
+chmod a+x /etc/rc.d/rc.local
+
+# NOTE: unofficial 3.0 version from Remi Collet; EPEL is still at 2.8.19
+# devel and test only
+yum -y install http://mirrors.mediatemple.net/remi/enterprise/7/remi/x86_64/redis-3.0.7-2.el7.remi.x86_64.rpm
+systemctl start redis
+
+# Install Python driver for Redis ('redis-py').
+pip install redis
+
+# By default, redis-py will attempt to use the HiredisParser if installed.
+# Using Hiredis can provide up to a 10x speed improvement in parsing responses
+# from the Redis server.
+pip install hiredis

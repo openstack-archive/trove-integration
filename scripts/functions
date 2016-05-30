@@ -207,9 +207,12 @@ function GetDistro() {
         else
             DISTRO="sle${os_RELEASE}sp${os_UPDATE}"
         fi
-    elif [[ "$os_VENDOR" =~ (Red Hat) || "$os_VENDOR" =~ (CentOS) ]]; then
+    elif [[ "$os_VENDOR" =~ (Red Hat) ]]; then
         # Drop the . release as we assume it's compatible
         DISTRO="rhel${os_RELEASE::1}"
+    elif [[ "$os_VENDOR" =~ (CentOS) ]]; then
+        # Drop the . release as we assume it's compatible
+        DISTRO="centos${os_RELEASE::1}"
     elif [[ "$os_VENDOR" =~ (XenServer) ]]; then
         DISTRO="xs$os_RELEASE"
     else
