@@ -11,7 +11,7 @@ add-apt-repository -y ppa:openjdk-r/ppa
 
 apt-get update
 apt-get install -y --force-yes openjdk-8-jre python-dev
-apt-get install -y dsc21=2.1.* cassandra=2.1.*
+apt-get install -y dsc30=3.0.* cassandra=3.0.*
 
 # The Python Driver 2.0 for Apache Cassandra.
 pip install cassandra-driver
