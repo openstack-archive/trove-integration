@@ -562,8 +562,14 @@ function cmd_set_datastore() {
         PACKAGES=${PACKAGES:-"redis-server"}
         VERSION="3.0"
     elif [ "$DATASTORE_TYPE" == "cassandra" ]; then
-        PACKAGES=${PACKAGES:-"cassandra"}
-        VERSION="2.1.0"
+        PACKAGES=${PACKAGES:-""}
+        VERSION="2.1"
+    elif [ "$DATASTORE_TYPE" == "cassandra_22" ]; then
+        PACKAGES=${PACKAGES:-""}
+        VERSION="2.2"
+    elif [ "$DATASTORE_TYPE" == "cassandra_3" ]; then
+        PACKAGES=${PACKAGES:-""}
+        VERSION="3.0"
     elif [ "$DATASTORE_TYPE" == "couchbase" ]; then
         PACKAGES=${PACKAGES:-"couchbase-server"}
         VERSION="2.2.0"
