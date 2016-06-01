@@ -11,9 +11,15 @@ add-apt-repository -y ppa:openjdk-r/ppa
 
 apt-get update
 apt-get install -y --force-yes openjdk-8-jre python-dev
-apt-get install -y dsc21=2.1.* cassandra=2.1.*
+apt-get install -y dsc30=3.0.* cassandra=3.0.*
 
 # The Python Driver 2.0 for Apache Cassandra.
 pip install cassandra-driver
 # Sorted sets support for the Python driver.
 pip install blist
+
+cat >> "/etc/cassandra/cassandra-env.sh" << _EOF_
+# Workaround for CASSANDRA-11942
+JVM_OPTS="\$JVM_OPTS -Dcassandra.superuser_setup_delay_ms=0"
+
+_EOF_
