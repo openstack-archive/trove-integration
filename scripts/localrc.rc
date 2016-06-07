@@ -31,6 +31,11 @@ if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
     enable_plugin ceilometer ${GIT_OPENSTACK}/ceilometer.git
 fi
 
+# Enable Mistral, if configured
+if [[ $ENABLE_MISTRAL = true ]]; then
+    enable_plugin mistral ${GIT_OPENSTACK}/mistral.git
+fi
+
 # Use Git repositories for client components
 LIBS_FROM_GIT=python-troveclient
 if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
@@ -39,6 +44,9 @@ if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
     LIBS_FROM_GIT+=,python-keystoneclient
     if [[ $ENABLE_NEUTRON = true ]]; then
         LIBS_FROM_GIT+=,python-neutronclient
+    fi
+    if [[ $ENABLE_MISTRAL = true ]]; then
+        LIBS_FROM_GIT+=,python-mistralclient
     fi
     LIBS_FROM_GIT+=,python-novaclient,python-openstackclient
     LIBS_FROM_GIT+=,python-swiftclient
