@@ -29,7 +29,7 @@ if [ -f $REDSTACK_SCRIPTS/options.rc ]; then
 fi
 
 # NOTE(mriedem): The gate-trove-functional-dsvm-* job config in project-config
-# sets this value for Jenkins runs.
+# sets this value for Zuul runs.
 BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
 if [[ $BRANCH_OVERRIDE == "default" && $OVERRIDE_ZUUL_BRANCH != "master" ]]; then
     BRANCH_OVERRIDE=$OVERRIDE_ZUUL_BRANCH
@@ -1140,7 +1140,7 @@ function cmd_kick_start() {
 function cmd_dsvm_gate_tests() {
     DATASTORE_TYPE=${1:-'mysql'}
     TEST_GROUP=${2:-${DATASTORE_TYPE}}
-    HOST_SCP_USERNAME=${3:-'jenkins'}
+    HOST_SCP_USERNAME=${3:-'zuul'}
     GUEST_USERNAME=${4:-'ubuntu'}
     NETWORK_GATEWAY=${5:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${6:-'\/opt\/stack\/new\/trove'}
@@ -1153,8 +1153,8 @@ function cmd_dsvm_gate_tests() {
         sudo chown -R $(whoami) ~/.config
     fi
 
-    # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
-    echo "User=ubuntu" >> /home/jenkins/.ssh/config
+    # Devstack vm-gate runs as the zuul user, but needs to connect to the guest image as ubuntu
+    echo "User=ubuntu" >> /home/${HOST_SCP_USERNAME}/.ssh/config
 
     # Fix iptables rules that prevent amqp connections from the devstack box to the guests
     sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
