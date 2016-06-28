@@ -11,7 +11,7 @@ apt-get -y install python-dev libxml2-dev libxslt1-dev python-setuptools \
     python-pip python-sqlalchemy python-lxml \
     python-routes python-eventlet python-webob \
     python-pastedeploy python-paste python-netaddr \
-    python-httplib2 python-iso8601 python-pexpect python-mysqldb python-migrate
+    python-httplib2 python-iso8601 python-pexpect python-mysqldb python-pymysql python-migrate
 
 
 # pick up the requirements file left for us by
