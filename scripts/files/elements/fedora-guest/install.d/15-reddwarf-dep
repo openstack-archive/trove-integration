@@ -18,4 +18,9 @@ dnf install -y python-devel libxml2-devel libxslt-devel python-setuptools \
 
 TMP_HOOKS_DIR="/tmp/in_target.d"
 
-pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt
+UPPER_CONSTRAINTS=
+if [ -f ${TMP_HOOKS_DIR}/upper-constraints.txt ]; then
+    UPPER_CONSTRAINTS=" -c ${TMP_HOOKS_DIR}/upper-constraints.txt"
+fi
+
+pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt ${UPPER_CONSTRAINTS}
