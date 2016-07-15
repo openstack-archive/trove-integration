@@ -8,6 +8,7 @@ set -o xtrace
 
 source $_LIB/die
 
+UC_BRANCH=${BRANCH_OVERRIDE:-master}
 BRANCH_OVERRIDE=${BRANCH_OVERRIDE:-default}
 ADD_BRANCH=$(basename ${BRANCH_OVERRIDE})
 REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements-${ADD_BRANCH}.txt
@@ -17,3 +18,12 @@ REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/ubuntu-requirements-${A
 [ -n "$HOST_USERNAME" ] || die "HOST_USERNAME not set"
 
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
+
+# Grab the upper constraints file, but don't fail if we can't find it
+DIR=$(pwd)
+UPPER_CONSTRAINTS_FILE=upper-constraints.txt
+set +e; curl -o ${DIR}/${UPPER_CONSTRAINTS_FILE} https://git.openstack.org/cgit/openstack/requirements/plain/${UPPER_CONSTRAINTS_FILE}?h=${UC_BRANCH}; set -e
+if [ -f "${DIR}/${UPPER_CONSTRAINTS_FILE}" ]; then
+    sudo -Hiu ${HOST_USERNAME} dd if=${DIR}/${UPPER_CONSTRAINTS_FILE} of=${TMP_HOOKS_PATH}/${UPPER_CONSTRAINTS_FILE}
+    rm -f ${DIR}/${UPPER_CONSTRAINTS_FILE}
+fi
