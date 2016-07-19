@@ -1,0 +1,10 @@
+Code-Review+2: Peter Stachowski <peter@tesora.com>
+Code-Review+1: Petr Malik <pmalik@tesora.com>
+Code-Review+2: mariam john <mariamj@us.ibm.com>
+Workflow+1: mariam john <mariamj@us.ibm.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 19 Jul 2016 22:15:59 +0000
+Reviewed-on: https://review.openstack.org/340169
+Project: openstack/trove-integration
+Branch: refs/heads/master
