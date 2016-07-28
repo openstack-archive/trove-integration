@@ -1134,6 +1134,39 @@ function cmd_clear() {
     cmd_wipe_queues
 }
 
+function exec_cmd_on_output() {
+    local output_cmd=$1
+    local exec_cmd=$2
+    exec $output_cmd|awk -vexec_cmd="$exec_cmd" '{if (NR>3 && $2!="") { cmd = exec_cmd " " $2; print "Executing " cmd; system(cmd) } }'
+}
+
+
+function cmd_clean() {
+    # reset any stuck backups
+    mysql_trove "update backups set state='COMPLETED'"
+    # clear out any DS version metadata
+    mysql_trove "delete from datastore_version_metadata"
+    # reset any stuck instances, and clear all replicas
+    mysql_trove "update instances set task_id=2, slave_of_id=null"
+
+    # delete any trove clusters
+    exec_cmd_on_output "trove cluster-list" "trove cluster-delete"
+    # delete any trove instances
+    exec_cmd_on_output "trove list" "trove delete"
+    # delete any backups
+    exec_cmd_on_output "trove backup-list" "trove backup-delete"
+    # delete any configuration groups
+    exec_cmd_on_output "trove configuration-list" "trove configuration-delete"
+    # delete any modules
+    exec_cmd_on_output "trove module-list" "trove module-delete"
+    # sleep for a couple of seconds and then clean up
+    # any remaining nova instances or cinder volumes
+    sleep 2
+    exec_cmd_on_output "nova list" "nova delete"
+    sleep 2
+    exec_cmd_on_output "cinder list" "cinder delete"
+}
+
 function cmd_kick_start() {
     cmd_test_init $1
     cmd_build_and_upload_image $1
@@ -1304,6 +1337,7 @@ function print_usage() {
           rd-sql          - Opens the Trove MySQL database.
           vagrant-ssh     - Runs a command from the host on the server.
           clear           - Destroy instances and rabbit queues.
+          clean           - Clean up resources created by a failed test run.
           run             - Starts RD but not in a screen.
           run-fake        - Runs the server in fake mode.
           update-projects - Git pull on all the daemons trove dependencies.
@@ -1341,6 +1375,7 @@ function run_command() {
         "debug" ) shift; echo "Enabling debugging."; \
                   set -o xtrace; run_command $@;;
         "clear" ) shift; cmd_clear $@;;
+        "clean" ) shift; cmd_clean $@;;
         "run" ) shift; cmd_run $@;;
         "kick-start" ) shift; cmd_kick_start $@;;
         "dsvm-gate-tests" ) shift; cmd_dsvm_gate_tests $@;;
