@@ -19,14 +19,30 @@ REQUIREMENTS_FILE=${REDSTACK_SCRIPTS}/files/requirements/fedora-requirements-${A
 sudo -Hiu ${HOST_USERNAME} dd if=${REQUIREMENTS_FILE} of=${TMP_HOOKS_PATH}/requirements.txt
 
 # Grab the upper constraints file, but don't fail if we can't find it
-UC_DIR=$(pwd)
+# If we are running in the CI environment, REQUIREMENTS_DIR will be set.
+# Use that as it will help us chain a job with something that is changing UC.
+
 UC_FILE=upper-constraints.txt
-UC_BRANCH=${BRANCH_OVERRIDE}
-if [ "${ADD_BRANCH}" == "default" ]; then
-    UC_BRANCH=master
-fi
-set +e; curl -o "${UC_DIR}/${UC_FILE}" https://git.openstack.org/cgit/openstack/requirements/plain/${UC_FILE}?h=${UC_BRANCH}; set -e
-if [ -f "${UC_DIR}/${UC_FILE}" ]; then
-    sudo -Hiu ${HOST_USERNAME} dd if="${UC_DIR}/${UC_FILE}" of=${TMP_HOOKS_PATH}/${UC_FILE}
-    rm -f "${UC_DIR}/${UC_FILE}"
+REQUIREMENTS_DIR=${DEST}/requirements
+
+if [ -f "${REQUIREMENTS_DIR}/${UC_FILE}" ]; then
+    echo "Found ${REQUIREMENTS_DIR}/${UC_FILE}, using that"
+    sudo -Hiu ${HOST_USERNAME} dd if="$REQUIREMENTS_DIR/${UC_FILE}" \
+        of=${TMP_HOOKS_PATH}/${UC_FILE}
+else
+    UC_DIR=$(pwd)
+    UC_BRANCH=${BRANCH_OVERRIDE}
+    if [ "${ADD_BRANCH}" == "default" ]; then
+        UC_BRANCH=master
+    fi
+
+    set +e
+    curl -o "${UC_DIR}/${UC_FILE}" \
+        https://git.openstack.org/cgit/openstack/requirements/plain/${UC_FILE}?h=${UC_BRANCH}
+    set -e
+
+    if [ -f "${UC_DIR}/${UC_FILE}" ]; then
+        sudo -Hiu ${HOST_USERNAME} dd if="${UC_DIR}/${UC_FILE}" of=${TMP_HOOKS_PATH}/${UC_FILE}
+        rm -f "${UC_DIR}/${UC_FILE}"
+    fi
 fi
