@@ -70,6 +70,9 @@ from nose import core
 from nose import result
 from proboscis import case
 from proboscis import SkipTest
+from trove.tests.config import CONFIG
+import xmltodict
+
 
 class _AnsiColorizer(object):
     """
@@ -217,6 +220,8 @@ class NovaTestResult(case.TestResult):
         # be outputted.
         self.start_time = time.time()
 
+        self.report = {'@datastore': CONFIG.dbaas_datastore}
+
     def _intercept_known_bugs(self, test, err):
         name = str(test)
         excuse = self.known_bugs.get(name, None)
@@ -262,9 +267,17 @@ class NovaTestResult(case.TestResult):
             if self.show_elapsed and success:
                 self._writeElapsedTime(test)
             self.stream.writeln()
+            self.report_test_result(
+                self._last_case, test.test.id(), 0 if success else 1)
         elif self.dots:
             self.stream.write(short_result)
             self.stream.flush()
+
+    def addSkip(self, test, reason):
+        if self.showAll:
+            self.report_test_result(
+                self._last_case, test.test.id(), -1, reason)
+        return unittest.TestResult.addSkip(self, test, reason)
 
     # NOTE(vish): copied from unittest with edit to add color
     def addSuccess(self, test):
@@ -344,6 +357,7 @@ class NovaTestResult(case.TestResult):
             current_class = test.test.__class__
 
         if self.showAll:
+            doc = None
             if current_class.__name__ != self._last_case:
                 self.stream.writeln(current_class.__name__)
                 self._last_case = current_class.__name__
@@ -354,19 +368,40 @@ class NovaTestResult(case.TestResult):
                 if doc:
                     self.stream.writeln(' ' + doc)
 
+            test_desc = None
             if not test_name:
                 if hasattr(test.test, 'shortDescription'):
-                    test_name = test.test.shortDescription()
+                    test_desc = test.test.shortDescription()
+                    test_name = test_desc
                 if not test_name:
                     test_name = test.test._testMethodName
             self.stream.write('\t%s' % str(test_name).ljust(60))
             self.stream.flush()
+            self.report_test(
+                current_class.__name__, test.test.id(),
+                doc, test_desc)
+
+    def report_test(self, group_name, test_name,
+                    group_desc=None, test_desc=None):
+        group_desc = group_desc or ''
+        test_desc = test_desc or ''
+        group = self.report.get(group_name, {})
+        if not group:
+            group.update({'@desc': group_desc})
+            self.report.update({group_name: group})
+        group.update({test_name: {'@desc': test_desc}})
+
+    def report_test_result(self, group_name, test_name, result, msg=None):
+        msg = msg or ''
+        test = self.report[group_name][test_name]
+        test.update({'@result': result, '@msg': msg})
 
 
 class NovaTestRunner(core.TextTestRunner):
     def __init__(self, *args, **kwargs):
         self.show_elapsed = kwargs.pop('show_elapsed')
         self.known_bugs = kwargs.pop('known_bugs', {})
+        self.trove_report = kwargs.pop('trove_report')
         self.__result = None
         self.__finished = False
         self.__start_time = None
@@ -414,7 +449,17 @@ class NovaTestRunner(core.TextTestRunner):
         if self.show_elapsed:
             self._writeSlowTests(result_)
         self.__finished = True
+
+        if self.trove_report:
+            self.write_report(self.trove_report)
+
         return result_
+
+    def write_report(self, report_file):
+        with open(report_file, 'w') as fp:
+            xmltodict.unparse({'Report': self.__result.report},
+                              output=fp, encoding='utf-8',
+                              pretty=True)
 
 
 if __name__ == '__main__':

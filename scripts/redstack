@@ -653,6 +653,7 @@ function rd_manage() {
 
 function install_test_packages() {
     sudo -H $HTTP_PROXY pip install openstack.nose_plugin proboscis pexpect
+    sudo -H $HTTP_PROXY pip install --upgrade pip xmltodict
 }
 
 function mod_confs() {

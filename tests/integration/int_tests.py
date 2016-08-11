@@ -167,6 +167,7 @@ def run_main(test_importer):
     extra_test_conf_lines = []
     rdl_config_file = None
     nova_flag_file = None
+    trove_report = None
     index = 0
     while index < len(sys.argv):
         arg = sys.argv[index]
@@ -190,6 +191,8 @@ def run_main(test_importer):
             rdl_config_file = arg[14:]
         elif arg[:13] == "--nova-flags=":
             nova_flag_file = arg[13:]
+        elif arg.startswith('--trove-report='):
+            trove_report = arg[15:]
         elif arg.startswith('--hide-elapsed'):
             show_elapsed = False
         else:
@@ -245,7 +248,8 @@ def run_main(test_importer):
                             verbosity=c.verbosity,
                             config=c,
                             show_elapsed=show_elapsed,
-                            known_bugs=CONFIG.known_bugs)
+                            known_bugs=CONFIG.known_bugs,
+                            trove_report=trove_report)
     MAIN_RUNNER = runner
 
     if repl:
