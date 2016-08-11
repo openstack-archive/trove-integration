@@ -262,6 +262,7 @@ function install_prep_packages() {
       pkg_install git-core kvm-ipxe gettext
     fi
     sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
+    sudo -H $HTTP_PROXY pip install --upgrade pip xmltodict
 }
 
 function install_devstack_code() {
