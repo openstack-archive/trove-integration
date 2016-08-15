@@ -22,6 +22,8 @@ ENABLED_SERVICES+=,-n-novnc,-n-xvnc
 if [[ $ENABLE_NEUTRON = true ]]; then
     ENABLED_SERVICES+=,neutron,q-svc,q-agt,q-dhcp,q-l3,q-meta
     disable_service n-net
+else
+    enable_service n-net
 fi
 # OSprofiler depends on Ceilometer
 if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
