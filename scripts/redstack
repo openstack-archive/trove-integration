@@ -196,12 +196,15 @@ function ip_chunk() {
 # Add a flavor and a corresponding flavor.resize
 # (flavor.resize adds 16 to the memory and one more vcpu)
 function add_flavor() {
-    FLAVOR_NAME=$1
-    FLAVOR_ID=$2
-    FLAVOR_MEMORY_MB=$3
-    FLAVOR_ROOT_GB=$4
-    FLAVOR_VCPUS=$5
+    local FLAVOR_NAME=$1
+    local FLAVOR_ID=$2
+    local FLAVOR_MEMORY_MB=$3
+    local FLAVOR_ROOT_GB=$4
+    local FLAVOR_VCPUS=$5
 
+    if [[ -z "$FLAVOR_LIST_FOR_ADD" ]]; then
+        FLAVOR_LIST_FOR_ADD=$(nova $credentials flavor-list | cut -d'|' -f3 | sed -e's/ /,/g')
+    fi
     credentials="--os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT"
 
     base_id=${FLAVOR_ID}
@@ -234,7 +237,7 @@ function add_flavor() {
                 memory=$((${FLAVOR_MEMORY_MB} + 16))
                 vcpus=$((${FLAVOR_VCPUS} + 1))
             fi
-            if [[ -z $(nova $credentials flavor-list | grep "| $name[ ]* |") ]]; then
+            if [[ $FLAVOR_LIST_FOR_ADD != *",$name,"* ]]; then
                 nova $credentials flavor-create $name $id $memory $FLAVOR_ROOT_GB $vcpus --ephemeral $ephemeral
             fi
         done
