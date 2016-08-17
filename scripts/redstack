@@ -1210,7 +1210,7 @@ function cmd_kick_start() {
 function cmd_dsvm_gate_tests() {
     DATASTORE_TYPE=${1:-'mysql'}
     TEST_GROUP=${2:-${DATASTORE_TYPE}}
-    HOST_SCP_USERNAME=${3:-'jenkins'}
+    HOST_SCP_USERNAME=${3:-'zuul'}
     GUEST_USERNAME=${4:-'ubuntu'}
     CONTROLLER_IP=${5:-'10.1.0.1'}
     ESCAPED_PATH_TROVE=${6:-'\/opt\/stack\/new\/trove'}
@@ -1223,8 +1223,8 @@ function cmd_dsvm_gate_tests() {
         sudo chown -R $(whoami) ~/.config
     fi
 
-    # Devstack vm-gate runs as the jenkins user, but needs to connect to the guest image as ubuntu
-    echo "User=ubuntu" >> /home/jenkins/.ssh/config
+    # Devstack vm-gate runs as the zuul user, but needs to connect to the guest image as ubuntu
+    echo "User=ubuntu" >> /home/zuul/.ssh/config
 
     # Fix iptables rules that prevent amqp connections from the devstack box to the guests
     sudo iptables -D openstack-INPUT -j REJECT --reject-with icmp-host-prohibited || true
