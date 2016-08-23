@@ -11,7 +11,12 @@
 REGION_NAME=${REGION_NAME:-${OS_REGION_NAME:-RegionOne}}
 
 # Enable neutron instead of nova-network
-NEUTRON_DEFAULT=true
+# Note: Until a few key changesets land, we can't enable Neutron properly.
+# See: https://review.openstack.org/#/c/356026
+#      https://review.openstack.org/#/c/356763
+#      https://review.openstack.org/#/c/356701
+# NEUTRON_DEFAULT=true
+NEUTRON_DEFAULT=false
 if [[ $BRANCH_OVERRIDE == "stable/liberty" || $BRANCH_OVERRIDE == "stable/mitaka" ]]; then
     NEUTRON_DEFAULT=false
 fi
