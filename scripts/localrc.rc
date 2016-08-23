@@ -30,28 +30,39 @@ fi
 if [[ $ENABLE_CEILOMETER = true ]] || [[ $ENABLE_PROFILER = true ]]; then
     CEILOMETER_BACKEND=mysql
     CEILOMETER_NOTIFICATION_TOPICS=notifications,profiler
-    enable_plugin ceilometer ${GIT_OPENSTACK}/ceilometer.git
+    PROJ_BRANCH=$(get_project_branch CEILOMETER_BRANCH $PROJECT_BRANCH)
+    enable_plugin ceilometer ${GIT_OPENSTACK}/ceilometer.git $PROJ_BRANCH
 fi
 
 # Enable Mistral, if configured
 if [[ $ENABLE_MISTRAL = true ]]; then
-    enable_plugin mistral ${GIT_OPENSTACK}/mistral.git
+    PROJ_BRANCH=$(get_project_branch MISTRAL_BRANCH $PROJECT_BRANCH)
+    enable_plugin mistral ${GIT_OPENSTACK}/mistral.git $PROJ_BRANCH
 fi
 
 # Use Git repositories for client components
 LIBS_FROM_GIT=python-troveclient
 if [[ $LIBS_FROM_GIT_ALL_CLIENTS = true ]]; then
-    LIBS_FROM_GIT+=,python-ceilometerclient,python-cinderclient
-    LIBS_FROM_GIT+=,python-glanceclient,python-heatclient
+    LIBS_FROM_GIT+=,python-ceilometerclient
+    LIBS_FROM_GIT+=,python-cinderclient
+    LIBS_FROM_GIT+=,python-glanceclient
+    LIBS_FROM_GIT+=,python-heatclient
     LIBS_FROM_GIT+=,python-keystoneclient
+    LIBS_FROM_GIT+=,python-mistralclient
+    LIBS_FROM_GIT+=,python-neutronclient
+    LIBS_FROM_GIT+=,python-novaclient
+    LIBS_FROM_GIT+=,python-openstackclient
+    LIBS_FROM_GIT+=,python-swiftclient
+else
     if [[ $ENABLE_NEUTRON = true ]]; then
         LIBS_FROM_GIT+=,python-neutronclient
     fi
     if [[ $ENABLE_MISTRAL = true ]]; then
         LIBS_FROM_GIT+=,python-mistralclient
     fi
-    LIBS_FROM_GIT+=,python-novaclient,python-openstackclient
-    LIBS_FROM_GIT+=,python-swiftclient
+    if [[ $ENABLE_CEILOMETER = true ]]; then
+        LIBS_FROM_GIT+=,python-ceilometerclient
+    fi
 fi
 # Add Git repositories for libraries
 if [[ $LIBS_FROM_GIT_ALL_OSLO = true ]]; then
@@ -86,3 +97,4 @@ VOLUME_BACKING_FILE_SIZE=${VOLUME_BACKING_FILE_SIZE}
 # to force lock_path to /tmp.
 EXTRA_OPTS=(lock_path=$USERHOME/nova_locks rescan_timeout=180 resizefs_timeout=240 force_dhcp_release=False)
 UNDO_REQUIREMENTS=False
+
