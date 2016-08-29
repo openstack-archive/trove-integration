@@ -22,6 +22,9 @@ TMP_HOOKS_DIR="/tmp/in_target.d"
 UPPER_CONSTRAINTS=
 if [ -f ${TMP_HOOKS_DIR}/upper-constraints.txt ]; then
     UPPER_CONSTRAINTS=" -c ${TMP_HOOKS_DIR}/upper-constraints.txt"
+    echo "diagnostic echo of upper-constraints.txt follows"
+    cat ${TMP_HOOKS_DIR}/upper-constraints.txt
+    echo "diagnostic echo of upper-constraints.txt above"
 fi
 
 pip install -q --upgrade -r ${TMP_HOOKS_DIR}/requirements.txt ${UPPER_CONSTRAINTS}
