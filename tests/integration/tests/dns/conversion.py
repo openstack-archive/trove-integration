@@ -96,10 +96,10 @@ class WhenCreatingAnEntryForAnInstance(unittest.TestCase):
                                    FLAGS.dns_domain_name)
         self.assertEqual(expected_name, entry.name,
                          msg="Entry name should match - %s" % entry.name)
-        self.assertEqual(None, entry.content)
+        self.assertIsNone(entry.content)
         self.assertEqual("A", entry.type)
         self.assertEqual(FLAGS.dns_ttl, entry.ttl)
-        self.assertEqual(None, entry.priority)
+        self.assertIsNone(entry.priority)
         self.assertEqual(FLAGS.dns_domain_name, entry.dns_zone.name)
         if not entry.dns_zone.id:
             self.fail(msg="DNS Zone Id should not be empty")

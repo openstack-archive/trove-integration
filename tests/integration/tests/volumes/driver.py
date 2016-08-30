@@ -206,7 +206,7 @@ class AddVolumeFailure(VolumeTest):
         Make call to FAIL a prov. volume and assert the return value is a
         FAILURE.
         """
-        self.assertEqual(None, self.storyFail.volume_id)
+        self.assertIsNone(self.storyFail.volume_id)
         name = "TestVolume"
         desc = "A volume that was created for testing."
         self.storyFail.volume_name = name
@@ -257,7 +257,7 @@ class AddVolume(VolumeTest):
     @time_out(60)
     def test_add(self):
         """Make call to prov. a volume and assert the return value is OK."""
-        self.assertEqual(None, self.story.volume_id)
+        self.assertIsNone(self.story.volume_id)
         name = "TestVolume"
         desc = "A volume that was created for testing."
         self.story.volume_name = name
