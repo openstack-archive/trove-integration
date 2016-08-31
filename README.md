@@ -1,6 +1,6 @@
 ## Integration dev scripts, tests and docs for Trove.
 
-***
+*** 
 
 ### Steps to setup this environment:
 
