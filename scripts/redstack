@@ -1131,12 +1131,41 @@ function cmd_clear() {
 function exec_cmd_on_output() {
     local output_cmd=$1
     local exec_cmd=$2
-    local skip_id=${3:-""}
+    local delete_sleep_time=${3:-0}
+    local skip_pattern=${4:-""}
 
     echo "Cleaning up objects from '${output_cmd}'"
-    exec $output_cmd|awk -vexec_cmd="$exec_cmd" -vskip_id="$skip_id" '{if (NR>3 && $2!="" && $2!=skip_id && $2!="|") { cmd = exec_cmd " " $2; print "Executing " cmd; system(cmd) } }'
+    local skip_cmd="cat"
+    if [[ -n "${skip_pattern}" ]]; then
+        local temp_skip_cmd=(grep -v "${skip_pattern}")
+        skip_cmd=${temp_skip_cmd[*]}
+    fi
+    local max_retry=10
+    local count=1
+    local again=
+    while true; do
+        ids=$($output_cmd | ${skip_cmd} | grep -v -e'---' | grep -iv ' id ' | cut -d'|' -f2)
+        if [[ -n $ids ]]; then
+            for id in $ids; do
+                echo -e "Executing: ${exec_cmd} ${id} ${again}"
+                # don't stop if we get an error executing the delete, and don't print
+                # out anything from stderr
+                set +e
+                ${exec_cmd} "${id}" &> /dev/null
+                set -e
+            done
+            sleep "${delete_sleep_time}"
+        else
+            break
+        fi
+        ((count++))
+        if [[ "$count" -gt "$max_retry" ]]; then
+            exclaim "${COLOR_RED}WARNING: '$output_cmd' still returning output after ${max_retry} delete attempts${COLOR_NONE}"
+            break
+        fi
+        again="${COLOR_BLUE}(again)${COLOR_NONE}"
+    done
 }
-
 
 function cmd_clean() {
     echo "Cleaning up project '${OS_PROJECT_NAME}'"
@@ -1150,27 +1179,27 @@ function cmd_clean() {
     mysql_trove "update clusters set task_id=1"
     # get rid of any extraneous quota usage
     mysql_trove "delete from quota_usages"
+    # mark all instance modules as deleted
+    mysql_trove "update instance_modules set deleted=1"
 
-    source $PATH_DEVSTACK_SRC/openrc admin ${OS_PROJECT_NAME}
+    source "${PATH_DEVSTACK_SRC}"/openrc admin "${OS_PROJECT_NAME}"
     # delete any trove clusters
-    exec_cmd_on_output "trove cluster-list" "trove cluster-delete"
+    exec_cmd_on_output "trove cluster-list" "trove cluster-delete" 20
     # delete any trove instances
-    exec_cmd_on_output "trove list" "trove delete"
+    exec_cmd_on_output "trove list" "trove delete" 10
     # delete any backups
     exec_cmd_on_output "trove backup-list" "trove backup-delete"
-    # sleep for a bit and then clean up
-    # any remaining nova instances or cinder volumes
-    sleep 5
-    exec_cmd_on_output "nova list" "nova delete"
-    sleep 2
-    exec_cmd_on_output "cinder list" "cinder delete"
+    # clean up any remaining nova instances or cinder volumes
+    exec_cmd_on_output "nova list" "nova delete" 5
+    exec_cmd_on_output "cinder list" "cinder delete" 1
     # delete any config groups since all instances should be gone now
     exec_cmd_on_output "trove configuration-list" "trove configuration-delete"
     # delete any modules too
     exec_cmd_on_output "trove module-list" "trove module-delete"
     # make sure that security groups are also gone, except the default
-    exec_cmd_on_output "nova secgroup-list" "nova secgroup-delete" "1"
-    echo "If any errors occurred wait a few seconds and run the command again"
+    exec_cmd_on_output "nova secgroup-list" "nova secgroup-delete" 0 "default"
+    # delete server groups
+    exec_cmd_on_output "nova server-group-list" "nova sever-group-delete"
 }
 
 function cmd_kick_start() {
