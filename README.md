@@ -55,6 +55,12 @@ Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a develo
 
     $ ./redstack install
 
+*This step may be encountered two errors:
+    1.Due to network problems or erroneous operation, the installation is interrupted.
+      Please re-execute ./redstack install
+    2.Since the component download is not complete, the installation can not be completed.
+      Go opt/stack,Delete the corresponding components according to the error message and re-execute ./redstack install
+
 ***
 
 #### Connecting to the screen session
