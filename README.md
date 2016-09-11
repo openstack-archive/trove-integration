@@ -51,9 +51,19 @@ Install a fresh Ubuntu 14.04 (Trusty Tahr) image ( _We suggest creating a develo
     $ ./redstack
 
 #### Install all the dependencies and then install trove via redstack.
-*This brings up trove (rd-api rd-tmgr) and initializes the trove database.*
+*This brings up trove (tr-api tr-tmgr) and initializes the trove database.*
 
     $ ./redstack install
+
+*This step may be encounter two errors:
+    1.Due to network problems or erroneous operation, the installation is interrupted.
+
+      ~/devstack/unstack.sh; ./redstack install
+
+    2.Since the component download is not complete, the installation can not be completed.
+
+      Go to opt/stack and delete the corresponding components according to the error message
+      and re-execute ./redstack install
 
 ***
 
