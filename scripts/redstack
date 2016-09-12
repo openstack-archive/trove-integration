@@ -206,10 +206,10 @@ function add_flavor() {
     local FLAVOR_ROOT_GB=$4
     local FLAVOR_VCPUS=$5
 
+    credentials="--os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT"
     if [[ -z "$FLAVOR_LIST_FOR_ADD" ]]; then
         FLAVOR_LIST_FOR_ADD=$(nova $credentials flavor-list | cut -d'|' -f3 | sed -e's/ /,/g')
     fi
-    credentials="--os-username=admin --os-password=$ADMIN_PASSWORD --os-tenant-name=admin --os-auth-url=$TROVE_AUTH_ENDPOINT"
 
     base_id=${FLAVOR_ID}
     base_name_prefix=test
