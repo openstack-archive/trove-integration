@@ -1359,6 +1359,9 @@ function run_command() {
         print_usage
     fi
 
+    sudo apt-get install cpu-checker
+    kvm-ok
+
     case "$1" in
         "install" ) cmd_install;;
         "test-init" ) cmd_test_init $@;;
