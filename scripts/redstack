@@ -564,7 +564,7 @@ function cmd_set_datastore() {
         VERSION="10.1"
     elif [ "$DATASTORE_TYPE" == "mongodb" ]; then
         PACKAGES=${PACKAGES:-"mongodb-org"}
-        VERSION="3.0"
+        VERSION="3.2"
     elif [ "$DATASTORE_TYPE" == "redis" ]; then
         PACKAGES=${PACKAGES:-"redis-server"}
         VERSION="3.0"
