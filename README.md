@@ -208,3 +208,8 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+
+More information
+================
+The more information of installation:http://docs.openstack.org/project-install-guide/database/draft/
