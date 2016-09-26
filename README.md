@@ -208,3 +208,9 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+
+More information
+================
+
+Go http://docs.openstack.org/index.html#install-guides , open 'Installation Tutorials and Guides'. According to your OS type, check the corresponding 'Database service' section.
