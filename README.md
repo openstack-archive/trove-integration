@@ -208,3 +208,27 @@ ubuntu@ubuntu:~$ kvm-ok
 INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
+
+### Additional information
+
+Additional information can be found in the OpenStack installation guide for the Trove project. This document can be found under the "Installation Tutorials and Guides" section of the OpenStack Documentation.
+
+For the current documentation, visit:
+
+http://docs.openstack.org/index.html#install-guides
+
+Select the link for "Installation Tutorials and Guides"
+
+The installation guides for Trove (the Database Service) can be found under the appropriate operating system.
+
+If you are interested in documentation for a specific OpenStack release, visit:
+
+http://docs.openstack.org/<release-code-name>/
+
+For example, the documentation for the Newton release is found at:
+
+http://docs.openstack.org/newton/
+
+and the documentation for the Mitaka release is found at:
+
+http://docs.openstack.org/mitaka/
