@@ -110,7 +110,7 @@ class VolumeTest(unittest.TestCase):
         self.storyFail = storyFail
 
     def assert_volume_as_expected(self, volume):
-        self.assertTrue(isinstance(volume["id"], Number))
+        self.assertIsInstance(volume["id"], Number)
         self.assertEqual(self.story.volume_name, volume["display_name"])
         self.assertEqual(self.story.volume_desc, volume["display_description"])
         self.assertEqual(1, volume["size"])
