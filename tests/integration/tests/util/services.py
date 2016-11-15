@@ -41,7 +41,7 @@ _running_services = []
 
 
 def get_running_services():
-    """ Returns the list of services which this program has started."""
+    """Returns the list of services which this program has started."""
     return _running_services
 
 
