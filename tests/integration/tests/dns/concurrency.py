@@ -36,8 +36,8 @@ try:
     CAN_USE_EVENTLET = True
 except ImportError:
     CAN_USE_EVENTLET = False
-import uuid
 
+from oslo_utils import uuidutils
 from proboscis import before_class
 from proboscis import test
 from proboscis.asserts import assert_true
@@ -68,7 +68,7 @@ class RsdnsEventletTests(object):
         """Creates the DNS Driver used in subsequent tests."""
         self.driver = utils.import_object(FLAGS.dns_driver)
         self.entry_factory = RsDnsInstanceEntryFactory()
-        self.test_uuid = uuid.uuid4().hex
+        self.test_uuid = uuidutils.generate_uuid().replace('-', '')
         self.new_records = {}
 
     def make_record(self, index):
