@@ -117,14 +117,20 @@ if [ -f /tmp/integration/env.rc ]; then
 fi
 
 # set up respective package managers
-if is_fedora; then
-    PKG_INSTALL_OPTS=""
-    PKG_MGR=dnf
-    PKG_GET_ARGS="-y"
-else
+if is_ubuntu; then
     PKG_INSTALL_OPTS="DEBIAN_FRONTEND=noninteractive"
     PKG_MGR=apt-get
     PKG_GET_ARGS="-y --allow-unauthenticated --force-yes"
+elif is_fedora; then
+    PKG_INSTALL_OPTS=""
+    PKG_MGR=yum
+    PKG_GET_ARGS="-y"
+elif is_suse; then
+    PKG_INSTALL_OPTS=""
+    PKG_MGR=zypper
+    PKG_GET_ARGS="-y"
+else
+    exit_distro_not_supported "list of packages"
 fi
 PKG_INSTALL_ARG="install"
 PKG_UPDATE_ARG="update"
