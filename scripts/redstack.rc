@@ -15,8 +15,8 @@ REGION_NAME=${REGION_NAME:-${OS_REGION_NAME:-RegionOne}}
 # See: https://review.openstack.org/#/c/356026
 #      https://review.openstack.org/#/c/356763
 #      https://review.openstack.org/#/c/356701
-# NEUTRON_DEFAULT=true
-NEUTRON_DEFAULT=false
+# Note: There is no more nova-network support in Ocata.
+NEUTRON_DEFAULT=true
 if [[ $BRANCH_OVERRIDE == "stable/liberty" || $BRANCH_OVERRIDE == "stable/mitaka" ]]; then
     NEUTRON_DEFAULT=false
 fi
