@@ -44,6 +44,13 @@ function get_default_host_ip() {
     echo `LC_ALL=C ip -f inet addr show ${host_iface} | awk '/inet/ {split($2,parts,"/");  print parts[1]}' | head -1`
 }
 
+# we need diskimage-builder
+dibinstalled=$(pip list | grep diskimage-builder)
+
+if [ "${dibinstalled}" != "1" ]; then
+    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils diskimage-builder
+fi
+
 # Load functions devstack style
 . $REDSTACK_SCRIPTS/functions
 . $REDSTACK_SCRIPTS/functions_qemu
