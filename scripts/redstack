@@ -35,6 +35,14 @@ if [[ $BRANCH_OVERRIDE == "default" && $OVERRIDE_ZUUL_BRANCH != "master" ]]; the
     BRANCH_OVERRIDE=$OVERRIDE_ZUUL_BRANCH
 fi
 
+# we need diskimage-builder
+dibinstalled=$(pip list | grep diskimage-builder)
+
+if [ "${dibinstalled}" != "1" ]; then
+    echo "Installing dib-utils and diskimage-builder"
+    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils diskimage-builder
+fi
+
 # Bail on errors.
 set -e
 
