@@ -268,7 +268,7 @@ function install_prep_packages() {
     else
       pkg_install git-core kvm-ipxe gettext
     fi
-    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
+    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils diskimage-builder
 }
 
 function install_devstack_code() {
@@ -1235,7 +1235,7 @@ function cmd_dsvm_gate_tests() {
     iniset $TROVE_GUESTAGENT_CONF DEFAULT rabbit_host $CONTROLLER_IP
     iniset $TROVE_GUESTAGENT_CONF oslo_messaging_rabbit rabbit_hosts $CONTROLLER_IP
     cd $DEST/trove-integration/scripts
-    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils
+    sudo -H $HTTP_PROXY pip install --upgrade pip dib-utils diskimage-builder
 
     cmd_kick_start $DATASTORE_TYPE
 
