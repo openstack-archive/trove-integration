@@ -184,13 +184,13 @@ class SetUp(VolumeTest):
         print("real_free : %r" % real_free)
 
         check_space = self.story.api.check_for_available_space
-        self.assertFalse(check_space(self.story.context, HUGE_VOLUME))
-        self.assertFalse(check_space(self.story.context, real_free + 1))
+        self.assertEqual(False, check_space(self.story.context, HUGE_VOLUME))
+        self.assertEqual(False, check_space(self.story.context, real_free + 1))
 
         if fail:
-            self.assertFalse(check_space(self.story.context, real_free))
-            self.assertFalse(check_space(self.story.context, real_free - 1))
-            self.assertFalse(check_space(self.story.context, 1))
+            self.assertEqual(False, check_space(self.story.context, real_free))
+            self.assertEqual(False, check_space(self.story.context, real_free - 1))
+            self.assertEqual(False, check_space(self.story.context, 1))
         else:
             self.assertTrue(check_space(self.story.context, real_free))
             self.assertTrue(check_space(self.story.context, real_free - 1))
