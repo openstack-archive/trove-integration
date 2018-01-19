@@ -8,7 +8,7 @@
 <!ENTITY DELETE '<command xmlns="http://docbook.org/ns/docbook">DELETE</command>'>
 
      <!--
-         A collection of common faults, these are pretty much expected
+         A collection of common faults, these are pretty much expected 
          in every request.
      -->
      <!ENTITY commonFaults
