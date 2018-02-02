@@ -1,0 +1,10 @@
+Code-Review+2: Fan Zhang <zh.f@outlook.com>
+Code-Review+2: jian.song <jian.song@easystack.cn>
+Code-Review+2: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Workflow+1: Manoj Kumar <manoj@linux.vnet.ibm.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Fri, 02 Feb 2018 16:28:35 +0000
+Reviewed-on: https://review.openstack.org/515084
+Project: openstack/trove-integration
+Branch: refs/heads/master
