@@ -6,7 +6,7 @@ it reached its end of life, please check out the previous commit with
 "git checkout HEAD^1".
 
 The contents of this project were merged into the Trove project, see
-http://git.openstack.org/openstack/trove
+http://opendev.org/openstack/trove
 
 For any further questions, please email
 openstack-dev@lists.openstack.org or join #openstack-dev or
